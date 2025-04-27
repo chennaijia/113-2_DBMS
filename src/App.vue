@@ -1,20 +1,237 @@
-<!-- src/App.vue -->
 <template>
-  <div class="container">
-    <Sidebar />
-    <iframe
-      name="contentFrame"
-      :src="frameSrc"
-      style="width: 100%; height: 90vh; border: none"
-    ></iframe>
+  <div>
+    <header></header>
+
+    <div class="container">
+      <!-- 側邊欄觸發 Icon -->
+      <div class="side-bar">
+        <Icon
+          icon="material-symbols:menu-rounded"
+          width="50"
+          height="50"
+          class="menu-icon"
+          @click="openSidebar"
+        />
+        <div class="login-label">
+          <h4>登入</h4>
+        </div>
+      </div>
+
+      <!-- 黑色半透明背景 -->
+      <div v-if="isSidebarOpen" class="custom-backdrop" @click="backdropClick"></div>
+
+      <!-- 側邊欄本體 -->
+      <div class="offcanvas-custom" :class="{ show: isSidebarOpen }">
+        <div class="offcanvas-header">
+          <Icon
+            icon="material-symbols:menu-rounded"
+            width="40"
+            height="40"
+            class="close-icon"
+            @click="closeSidebar"
+          />
+        </div>
+
+        <div class="offcanvas-body">
+          <div class="accordion accordion-flush" id="accordionMain">
+            <!-- 主頁按鈕 -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="sidebar_accordion accordion-button collapsed" @click="goHomePage">
+                  主頁
+                </button>
+              </h2>
+            </div>
+
+            <!-- 我的錯題本按鈕 -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button
+                  class="sidebar_accordion accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseMistakeBooks"
+                >
+                  我的錯題本
+                </button>
+              </h2>
+
+              <div id="collapseMistakeBooks" class="accordion-collapse collapse">
+                <div class="accordion-body link-group">
+                  <div v-for="(item, index) in subjects" :key="index" class="subject-item">
+                    {{ item }}
+                    <div
+                      id="${id}"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="heading${index}"
+                      data-bs-parent="#list-container"
+                    >
+                      <div class="accordion-body" style="background-color: #d8e9f5">
+                        <a href="pages/Book.html" target="contentFrame" class="side-bar-text"
+                          >錯題瀏覽</a
+                        >
+                        <a
+                          href="pages/RandomPractice.html"
+                          target="contentFrame"
+                          class="side-bar-text"
+                          >隨機出題</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 登入 Footer -->
+          <div class="login-footer">
+            <h2>登入</h2>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-const frameSrc = ref('pages/homepage.html')
+<script>
+import { Icon } from '@iconify/vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+
+export default {
+  name: 'SidebarLayout',
+  components: {
+    Icon,
+  },
+  data() {
+    return {
+      isSidebarOpen: false,
+      subjects: ['高三國文', '高二數學'],
+    }
+  },
+  methods: {
+    openSidebar() {
+      this.isSidebarOpen = true
+      document.body.style.overflow = 'hidden'
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false
+      document.body.style.overflow = ''
+    },
+    backdropClick() {
+      this.closeSidebar()
+    },
+    goHomePage() {
+      const frame = document.getElementsByName('contentFrame')[0]
+      if (frame) {
+        frame.src = 'pages/homepage.html'
+      }
+      this.closeSidebar()
+    },
+  },
+}
 </script>
 
 <style scoped>
-/* 可放主頁樣式 */
+/* Sidebar主要樣式 */
+.offcanvas-custom {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100%;
+  background-color: #ffffff;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1050;
+  padding: 24px 16px;
+  transition: left 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+}
+.offcanvas-custom.show {
+  left: 0;
+  opacity: 1;
+}
+.custom-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+}
+.side-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 100%;
+  background-color: #d8e9f5;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+.menu-icon {
+  color: #7eaee4;
+  cursor: pointer;
+}
+.login-label h4 {
+  color: #7eaee4;
+  font-size: 14px;
+}
+.close-icon {
+  color: #7eaee4;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+}
+
+/* Accordion按鈕展開/收合樣式 */
+.sidebar_accordion {
+  font-weight: bold;
+  font-size: 18px;
+  color: #7eaee4;
+  background-color: transparent;
+}
+.sidebar_accordion.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #7eaee4;
+  text-shadow: 1px 1px 2px #5b92c3;
+}
+
+/* 科目列出樣式 */
+.link-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+.subject-item {
+  color: #7eaee4;
+  font-size: 17px;
+  cursor: pointer;
+  padding-left: 12px;
+}
+.subject-item:hover {
+  text-decoration: underline;
+}
+
+/* 登入 Footer */
+.login-footer {
+  position: absolute;
+  bottom: 30px;
+  width: 100%;
+  text-align: center;
+}
+.login-footer h2 {
+  color: #7eaee4;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+}
 </style>

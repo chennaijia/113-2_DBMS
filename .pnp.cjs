@@ -28,7 +28,9 @@ const RAW_RUNTIME_STATE =
       [null, {\
         "packageLocation": "./",\
         "packageDependencies": [\
+          ["@iconify/vue", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:4.3.0"],\
           ["@tsconfig/node22", "npm:22.0.1"],\
+          ["@types/bootstrap", "npm:5.2.10"],\
           ["@types/cors", "npm:2.8.17"],\
           ["@types/express", "npm:5.0.1"],\
           ["@types/vue-router", "npm:2.0.0"],\
@@ -36,6 +38,7 @@ const RAW_RUNTIME_STATE =
           ["@vue/tsconfig", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:0.7.0"],\
           ["DBMS", "workspace:."],\
           ["axios", "npm:1.8.4"],\
+          ["bootstrap", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:5.3.5"],\
           ["cors", "npm:2.8.5"],\
           ["express", "npm:5.1.0"],\
           ["mysql2", "npm:3.14.0"],\
@@ -761,6 +764,38 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@iconify/types", [\
+      ["npm:2.0.0", {\
+        "packageLocation": "../../../../.yarn/berry/cache/@iconify-types-npm-2.0.0-faa2398199-10c0.zip/node_modules/@iconify/types/",\
+        "packageDependencies": [\
+          ["@iconify/types", "npm:2.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@iconify/vue", [\
+      ["npm:4.3.0", {\
+        "packageLocation": "../../../../.yarn/berry/cache/@iconify-vue-npm-4.3.0-6c12512a92-10c0.zip/node_modules/@iconify/vue/",\
+        "packageDependencies": [\
+          ["@iconify/vue", "npm:4.3.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:4.3.0", {\
+        "packageLocation": "./.yarn/__virtual__/@iconify-vue-virtual-d8b80f7752/5/.yarn/berry/cache/@iconify-vue-npm-4.3.0-6c12512a92-10c0.zip/node_modules/@iconify/vue/",\
+        "packageDependencies": [\
+          ["@iconify/types", "npm:2.0.0"],\
+          ["@iconify/vue", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:4.3.0"],\
+          ["@types/vue", null],\
+          ["vue", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:3.5.13"]\
+        ],\
+        "packagePeers": [\
+          "@types/vue",\
+          "vue"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@isaacs/cliui", [\
       ["npm:8.0.2", {\
         "packageLocation": "../../../../.yarn/berry/cache/@isaacs-cliui-npm-8.0.2-f4364666d5-10c0.zip/node_modules/@isaacs/cliui/",\
@@ -883,6 +918,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../../.yarn/berry/cache/@polka-url-npm-1.0.0-next.29-b32b372106-10c0.zip/node_modules/@polka/url/",\
         "packageDependencies": [\
           ["@polka/url", "npm:1.0.0-next.29"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@popperjs/core", [\
+      ["npm:2.11.8", {\
+        "packageLocation": "../../../../.yarn/berry/cache/@popperjs-core-npm-2.11.8-f1692e11a0-10c0.zip/node_modules/@popperjs/core/",\
+        "packageDependencies": [\
+          ["@popperjs/core", "npm:2.11.8"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -1126,6 +1170,16 @@ const RAW_RUNTIME_STATE =
           ["@types/body-parser", "npm:1.19.5"],\
           ["@types/connect", "npm:3.4.38"],\
           ["@types/node", "npm:22.14.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@types/bootstrap", [\
+      ["npm:5.2.10", {\
+        "packageLocation": "../../../../.yarn/berry/cache/@types-bootstrap-npm-5.2.10-d5d4ae4dbf-10c0.zip/node_modules/@types/bootstrap/",\
+        "packageDependencies": [\
+          ["@popperjs/core", "npm:2.11.8"],\
+          ["@types/bootstrap", "npm:5.2.10"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -1570,7 +1624,9 @@ const RAW_RUNTIME_STATE =
       ["workspace:.", {\
         "packageLocation": "./",\
         "packageDependencies": [\
+          ["@iconify/vue", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:4.3.0"],\
           ["@tsconfig/node22", "npm:22.0.1"],\
+          ["@types/bootstrap", "npm:5.2.10"],\
           ["@types/cors", "npm:2.8.17"],\
           ["@types/express", "npm:5.0.1"],\
           ["@types/vue-router", "npm:2.0.0"],\
@@ -1578,6 +1634,7 @@ const RAW_RUNTIME_STATE =
           ["@vue/tsconfig", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:0.7.0"],\
           ["DBMS", "workspace:."],\
           ["axios", "npm:1.8.4"],\
+          ["bootstrap", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:5.3.5"],\
           ["cors", "npm:2.8.5"],\
           ["express", "npm:5.1.0"],\
           ["mysql2", "npm:3.14.0"],\
@@ -1714,6 +1771,28 @@ const RAW_RUNTIME_STATE =
           ["qs", "npm:6.14.0"],\
           ["raw-body", "npm:3.0.0"],\
           ["type-is", "npm:2.0.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["bootstrap", [\
+      ["npm:5.3.5", {\
+        "packageLocation": "../../../../.yarn/berry/cache/bootstrap-npm-5.3.5-63d2ce0f25-10c0.zip/node_modules/bootstrap/",\
+        "packageDependencies": [\
+          ["bootstrap", "npm:5.3.5"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:5.3.5", {\
+        "packageLocation": "./.yarn/__virtual__/bootstrap-virtual-c1ffb228e8/5/.yarn/berry/cache/bootstrap-npm-5.3.5-63d2ce0f25-10c0.zip/node_modules/bootstrap/",\
+        "packageDependencies": [\
+          ["@popperjs/core", null],\
+          ["@types/popperjs__core", null],\
+          ["bootstrap", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:5.3.5"]\
+        ],\
+        "packagePeers": [\
+          "@popperjs/core",\
+          "@types/popperjs__core"\
         ],\
         "linkType": "HARD"\
       }]\
