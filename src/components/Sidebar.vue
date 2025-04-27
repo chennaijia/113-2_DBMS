@@ -1,200 +1,262 @@
 <template>
-  <div>
-    <!-- 側邊欄小圖示（點擊展開 Offcanvas） -->
-    <div class="side-bar">
-      <iconify-icon
+  <div class="side-bar">
+    <Icon
+      icon="material-symbols:menu-rounded"
+      width="50"
+      height="50"
+      class="menu-icon"
+      @click="openSidebar"
+    />
+    <div class="login-label">
+      <h4>登入</h4>
+    </div>
+  </div>
+
+  <!-- 黑色半透明背景 -->
+  <div v-if="isSidebarOpen" class="custom-backdrop" @click="backdropClick"></div>
+
+  <!-- 側邊欄本體 -->
+  <div class="offcanvas-custom" :class="{ show: isSidebarOpen }">
+    <div class="offcanvas-header mb-5 mt-3">
+      <Icon
         icon="material-symbols:menu-rounded"
-        width="50"
-        height="50"
-        class="toggle-icon"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#offcanvasSidebar"
-        aria-controls="offcanvasSidebar"
+        width="40"
+        height="40"
+        class="close-icon"
+        @click="closeSidebar"
       />
-      <div class="login-label">
-        <h4>登入</h4>
-      </div>
     </div>
 
-    <!-- Offcanvas 側邊欄 -->
-    <div
-      class="offcanvas offcanvas-start sidebar-canvas"
-      tabindex="-1"
-      id="offcanvasSidebar"
-      aria-labelledby="offcanvasSidebarLabel"
-    >
-      <div class="offcanvas-header">
-        <iconify-icon
-          icon="material-symbols:menu-rounded"
-          width="50"
-          height="50"
-          class="close-icon"
-          data-bs-toggle="offcanvas"
-          data-bs-target="#offcanvasSidebar"
-          aria-controls="offcanvasSidebar"
-        />
-      </div>
-
-      <div class="offcanvas-body">
+    <div class="offcanvas-body">
+      <div class="accordion accordion-flush" id="accordionMain">
         <!-- 主頁按鈕 -->
-        <div class="nav-item home-item" @click="goHome">
-          <h2>主頁</h2>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="sidebar_accordion accordion-button collapsed" @click="goHomePage">
+              主頁
+            </button>
+          </h2>
         </div>
 
-        <!-- 動態產生的科目選單（Accordion） -->
-        <div class="accordion accordion-flush" id="sidebarAccordion">
-          <div class="accordion-item" v-for="(subject, idx) in list" :key="idx">
-            <h2 class="accordion-header" :id="`heading${idx}`">
-              <button
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                :data-bs-target="`#collapse${idx}`"
-                aria-expanded="false"
-                :aria-controls="`collapse${idx}`"
-              >
-                {{ subject }}
-              </button>
-            </h2>
-            <div
-              :id="`collapse${idx}`"
-              class="accordion-collapse collapse"
-              :aria-labelledby="`heading${idx}`"
-              data-bs-parent="#sidebarAccordion"
+        <!-- 我的錯題本按鈕 -->
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button
+              class="sidebar_accordion accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseMistakeBooks"
+              aria-expanded="false"
+              aria-controls="collapseMistakeBooks"
             >
-              <div class="accordion-body">
-                <a href="pages/Book.html" target="contentFrame" class="side-bar-text">錯題瀏覽</a>
-                <a href="pages/RandomPractice.html" target="contentFrame" class="side-bar-text"
-                  >隨機出題</a
-                >
+              我的錯題本
+            </button>
+          </h2>
+
+          <!-- 科目列表 -->
+          <div id="collapseMistakeBooks" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <div class="accordion" id="accordionSubjects">
+                <!-- v-for 每個科目 -->
+                <div v-for="(item, index) in subjects" :key="index" class="accordion-item">
+                  <h2 class="accordion-header" :id="'headingSubject' + index">
+                    <button
+                      class="sidebar_subject_button accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      :data-bs-target="'#collapseSubject' + index"
+                      aria-expanded="false"
+                      :aria-controls="'collapseSubject' + index"
+                    >
+                      {{ item }}
+                    </button>
+                  </h2>
+
+                  <!-- 錯題瀏覽/隨機出題 -->
+                  <div
+                    :id="'collapseSubject' + index"
+                    class="accordion-collapse collapse"
+                    :aria-labelledby="'headingSubject' + index"
+                    data-bs-parent="#accordionSubjects"
+                  >
+                    <div class="accordion-body link-group">
+                      <a href="pages/Book.html" target="contentFrame" class="sidebar-link">
+                        錯題瀏覽
+                      </a>
+                      <a
+                        href="pages/RandomPractice.html"
+                        target="contentFrame"
+                        class="sidebar-link"
+                      >
+                        隨機出題
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- End v-for -->
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- 登入按鈕 -->
-        <div class="login-footer" @click="onLogin">
-          <h2>登入</h2>
-        </div>
+      <!-- 登入 Footer -->
+      <div class="login-footer">
+        <h2>登入</h2>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { Icon } from '@iconify/vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+
 export default {
-  name: 'SideBar',
-  props: {
-    list: {
-      type: Array,
-      default: () => [''],
-    },
+  name: 'SidebarLayout',
+  components: {
+    Icon,
+  },
+  data() {
+    return {
+      isSidebarOpen: false,
+      subjects: ['高三國文', '高二數學'],
+    }
   },
   methods: {
-    goHome() {
-      this.$emit('navigate', 'home')
+    openSidebar() {
+      this.isSidebarOpen = true
+      document.body.style.overflow = 'hidden'
     },
-    onLogin() {
-      this.$emit('login')
+    closeSidebar() {
+      this.isSidebarOpen = false
+      document.body.style.overflow = ''
+    },
+    backdropClick() {
+      this.closeSidebar()
+    },
+    goHomePage() {
+      const frame = document.getElementsByName('contentFrame')[0]
+      if (frame) {
+        frame.src = 'pages/homepage.html'
+      }
+      this.closeSidebar()
     },
   },
 }
 </script>
 
 <style scoped>
-/* 側邊欄小圖示（固定在左側） */
+.offcanvas-custom {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100%;
+  background-color: #ffffff;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1050;
+  padding: 24px 16px;
+  transition: left 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+}
+.offcanvas-custom.show {
+  left: 0;
+  opacity: 1;
+}
+.custom-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+}
 .side-bar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100px;
+  width: 80px;
   height: 100%;
   background-color: #d8e9f5;
-  padding: 16px;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
-
-/* 小圖示樣式 */
-.toggle-icon {
+.menu-icon {
   color: #7eaee4;
-  padding: 10px;
   cursor: pointer;
 }
-
-/* 小圖示旁邊的登入文字 */
-.login-label {
-  position: absolute;
-  bottom: 30px;
+.login-label h4 {
   color: #7eaee4;
-  padding: 10px;
+  font-size: 14px;
 }
-
-/* Offcanvas 整體背景 */
-.sidebar-canvas {
-  background-color: #d8e9f5;
-  padding-top: 16px;
-}
-
-/* 關閉按鈕 */
 .close-icon {
   color: #7eaee4;
+  cursor: pointer;
   position: absolute;
   right: 20px;
-  cursor: pointer;
 }
 
-/* 主頁按鈕區 */
-.nav-item {
-  margin: 25px;
-  cursor: pointer;
-}
-
-.home-item h2 {
+/* 主頁 / 我的錯題本按鈕 */
+.sidebar_accordion {
+  font-weight: bold;
+  font-size: 18px;
   color: #7eaee4;
+  background-color: transparent;
 }
-
-/* Accordion 按鈕（科目名稱按鈕） */
-.accordion-button {
-  background-color: #d8e9f5;
-  font-size: 25px;
-}
-
-/* 收合時的按鈕文字顏色 */
-.accordion-button.collapsed {
-  color: #7eaee4;
-}
-
-/* 展開時的按鈕文字顏色 */
-.accordion-button:not(.collapsed) {
+.sidebar_accordion.accordion-button:not(.collapsed) {
   color: #ffffff;
-  text-shadow: 2px 2px 2px #7eaee4;
+  background-color: #7eaee4;
+  text-shadow: 1px 1px 2px #5b92c3;
 }
 
-/* 收合內部連結 */
-.accordion-body {
-  background-color: #d8e9f5;
+/* 科目按鈕 */
+.sidebar_subject_button {
+  font-size: 16px;
+  font-weight: normal;
+  color: #5b92c3;
+  background-color: transparent;
+}
+.sidebar_subject_button.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #5b92c3;
 }
 
-/* 側邊欄內的連結文字 */
-.side-bar-text {
-  display: block;
-  margin-bottom: 8px;
+/* 錯題瀏覽 / 隨機出題 */
+.link-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  padding-left: 20px;
+}
+.sidebar-link {
   color: #7eaee4;
   text-decoration: none;
-  font-size: 20px;
-  cursor: pointer;
+  font-size: 16px;
+}
+.sidebar-link:hover {
+  text-decoration: underline;
 }
 
-/* Offcanvas 最底部登入按鈕 */
+/* 登入 Footer */
 .login-footer {
   position: absolute;
   bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: pointer;
-  color: #7eaee4;
+  width: 100%;
+  text-align: center;
 }
-
 .login-footer h2 {
-  margin: 0;
+  color: #7eaee4;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
 }
 </style>
