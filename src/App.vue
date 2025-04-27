@@ -51,33 +51,54 @@
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseMistakeBooks"
+                  aria-expanded="false"
+                  aria-controls="collapseMistakeBooks"
                 >
                   我的錯題本
                 </button>
               </h2>
 
+              <!-- 科目列表 -->
               <div id="collapseMistakeBooks" class="accordion-collapse collapse">
-                <div class="accordion-body link-group">
-                  <div v-for="(item, index) in subjects" :key="index" class="subject-item">
-                    {{ item }}
-                    <div
-                      id="${id}"
-                      class="accordion-collapse collapse"
-                      aria-labelledby="heading${index}"
-                      data-bs-parent="#list-container"
-                    >
-                      <div class="accordion-body" style="background-color: #d8e9f5">
-                        <a href="pages/Book.html" target="contentFrame" class="side-bar-text"
-                          >錯題瀏覽</a
+                <div class="accordion-body">
+                  <div class="accordion" id="accordionSubjects">
+                    <!-- v-for 每個科目 -->
+                    <div v-for="(item, index) in subjects" :key="index" class="accordion-item">
+                      <h2 class="accordion-header" :id="'headingSubject' + index">
+                        <button
+                          class="sidebar_subject_button accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          :data-bs-target="'#collapseSubject' + index"
+                          aria-expanded="false"
+                          :aria-controls="'collapseSubject' + index"
                         >
-                        <a
-                          href="pages/RandomPractice.html"
-                          target="contentFrame"
-                          class="side-bar-text"
-                          >隨機出題</a
-                        >
+                          {{ item }}
+                        </button>
+                      </h2>
+
+                      <!-- 錯題瀏覽/隨機出題 -->
+                      <div
+                        :id="'collapseSubject' + index"
+                        class="accordion-collapse collapse"
+                        :aria-labelledby="'headingSubject' + index"
+                        data-bs-parent="#accordionSubjects"
+                      >
+                        <div class="accordion-body link-group">
+                          <a href="pages/Book.html" target="contentFrame" class="sidebar-link">
+                            錯題瀏覽
+                          </a>
+                          <a
+                            href="pages/RandomPractice.html"
+                            target="contentFrame"
+                            class="sidebar-link"
+                          >
+                            隨機出題
+                          </a>
+                        </div>
                       </div>
                     </div>
+                    <!-- End v-for -->
                   </div>
                 </div>
               </div>
@@ -191,7 +212,7 @@ export default {
   right: 20px;
 }
 
-/* Accordion按鈕展開/收合樣式 */
+/* 主頁 / 我的錯題本按鈕 */
 .sidebar_accordion {
   font-weight: bold;
   font-size: 18px;
@@ -204,20 +225,32 @@ export default {
   text-shadow: 1px 1px 2px #5b92c3;
 }
 
-/* 科目列出樣式 */
+/* 科目按鈕 */
+.sidebar_subject_button {
+  font-size: 16px;
+  font-weight: normal;
+  color: #5b92c3;
+  background-color: transparent;
+}
+.sidebar_subject_button.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #5b92c3;
+}
+
+/* 錯題瀏覽 / 隨機出題 */
 .link-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   padding-top: 8px;
+  padding-left: 20px;
 }
-.subject-item {
+.sidebar-link {
   color: #7eaee4;
-  font-size: 17px;
-  cursor: pointer;
-  padding-left: 12px;
+  text-decoration: none;
+  font-size: 16px;
 }
-.subject-item:hover {
+.sidebar-link:hover {
   text-decoration: underline;
 }
 
