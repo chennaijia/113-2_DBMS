@@ -1,7 +1,5 @@
 <template>
   <div>
-    <header></header>
-
     <div class="container">
       <!-- 側邊欄觸發 Icon -->
       <div class="side-bar">
@@ -22,7 +20,7 @@
 
       <!-- 側邊欄本體 -->
       <div class="offcanvas-custom" :class="{ show: isSidebarOpen }">
-        <div class="offcanvas-header">
+        <div class="offcanvas-header mb-5 mt-3">
           <Icon
             icon="material-symbols:menu-rounded"
             width="40"
