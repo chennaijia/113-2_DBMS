@@ -1,14 +1,9 @@
 <template>
-  <div class="side-bar">
-    <Icon
-      icon="material-symbols:menu-rounded"
-      width="50"
-      height="50"
-      class="menu-icon"
-      @click="openSidebar"
-    />
+  <div class="side-bar" @click="openSidebar">
+    <Icon icon="material-symbols:menu-rounded" width="50" height="50" class="menu-icon" />
     <div class="login-label">
-      <h4>登入</h4>
+      <p v-if="isLoggedIn">登出</p>
+      <p v-else>登入</p>
     </div>
   </div>
 
@@ -108,9 +103,14 @@
       </div>
 
       <!-- 登入 Footer -->
-      <div class="login-footer">
-        <h2>登入</h2>
+      <div class="login-footer d-flex justify-content-center" @click="handleLoginClick">
+        <div v-if="isLoggedIn">
+          <h2>{{ userName }}</h2>
+          <h2>登出</h2>
+        </div>
+        <h2 v-else>登入</h2>
       </div>
+      <Login v-if="showLoginModal" @login="handleLogin" @close="closeLoginModal" />
     </div>
   </div>
 </template>
@@ -119,10 +119,12 @@
 import { Icon } from '@iconify/vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import Login from './Login.vue'
 export default {
   name: 'Sidebar',
   components: {
     Icon,
+    Login,
   },
   props: {
     subjects: {
@@ -133,6 +135,16 @@ export default {
   data() {
     return {
       isSidebarOpen: false,
+      isLoggedIn: false,
+      userName: '',
+      showLoginModal: false,
+    }
+  },
+  created() {
+    const savedUser = localStorage.getItem('userName')
+    if (savedUser) {
+      this.isLoggedIn = true
+      this.userName = savedUser
     }
   },
   methods: {
@@ -145,6 +157,32 @@ export default {
       document.body.style.overflow = ''
     },
     backdropClick() {
+      this.closeSidebar()
+    },
+    handleLoginClick() {
+      if (this.isLoggedIn) {
+        this.logout()
+      } else {
+        this.openLoginModal()
+      }
+    },
+    openLoginModal() {
+      this.showLoginModal = true
+    },
+    closeLoginModal() {
+      this.showLoginModal = false
+    },
+    handleLogin(userName) {
+      this.isLoggedIn = true
+      this.userName = userName
+      localStorage.setItem('userName', userName)
+      this.closeLoginModal()
+      this.closeSidebar()
+    },
+    logout() {
+      this.isLoggedIn = false
+      this.userName = ''
+      localStorage.removeItem('userName')
       this.closeSidebar()
     },
   },
@@ -197,7 +235,7 @@ export default {
   color: #7eaee4;
   cursor: pointer;
 }
-.login-label h4 {
+.login-label p {
   color: #7eaee4;
   font-size: 14px;
 }

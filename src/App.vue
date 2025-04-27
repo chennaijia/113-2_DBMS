@@ -1,5 +1,5 @@
 <template>
-  <Sidebar :subjects="subjects" @change-page="handleChangePage" />
+  <Sidebar :subjects="subjects" :userName="userName" @change-page="handleChangePage" />
 
   <div class="content-area">
     <div v-if="currentPage === 'home'">
@@ -33,6 +33,7 @@ export default {
   data() {
     return {
       subjects: ['高三國文', '高二數學'],
+      userName: '使用者姓名',
       currentPage: 'home',
     }
   },
