@@ -32,7 +32,10 @@
         <!-- 主頁按鈕 -->
         <div class="accordion-item">
           <h2 class="accordion-header">
-            <button class="sidebar_accordion accordion-button collapsed" @click="goHomePage">
+            <button
+              class="sidebar_accordion accordion-button collapsed"
+              @click="$emit('change-page', 'home')"
+            >
               主頁
             </button>
           </h2>
@@ -80,12 +83,16 @@
                     data-bs-parent="#accordionSubjects"
                   >
                     <div class="accordion-body link-group">
-                      <a href="pages/Book.html" target="contentFrame" class="sidebar-link">
+                      <a
+                        href="pages/Book.html"
+                        @click.prevent="$emit('change-page', 'book', item)"
+                        class="sidebar-link"
+                      >
                         錯題瀏覽
                       </a>
                       <a
                         href="pages/RandomPractice.html"
-                        target="contentFrame"
+                        @click.prevent="$emit('change-page', 'practice', item)"
                         class="sidebar-link"
                       >
                         隨機出題
@@ -112,16 +119,20 @@
 import { Icon } from '@iconify/vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
-
 export default {
-  name: 'SidebarLayout',
+  name: 'Sidebar',
   components: {
     Icon,
+  },
+  props: {
+    subjects: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
       isSidebarOpen: false,
-      subjects: ['高三國文', '高二數學'],
     }
   },
   methods: {
@@ -134,13 +145,6 @@ export default {
       document.body.style.overflow = ''
     },
     backdropClick() {
-      this.closeSidebar()
-    },
-    goHomePage() {
-      const frame = document.getElementsByName('contentFrame')[0]
-      if (frame) {
-        frame.src = 'pages/homepage.html'
-      }
       this.closeSidebar()
     },
   },
