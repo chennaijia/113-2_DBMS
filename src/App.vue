@@ -3,12 +3,15 @@
 
   <div class="content-area w-screen h-screen">
     <div v-if="currentPage === 'home'">
-      <h1>主頁</h1>
       <HomePage />
     </div>
 
     <div v-else-if="currentPage === 'book'">
-      <ViewBooks :currentSubject="currentSubject" />
+      <ViewBooks />
+    </div>
+
+    <div v-else-if="currentPage === 'question'">
+      <ViewQuestions :currentSubject="currentSubject" />
     </div>
 
     <div v-else-if="currentPage === 'practice'">
@@ -21,6 +24,7 @@
 import Sidebar from './components/Sidebar.vue'
 import HomePage from './components/HomePage.vue'
 import ViewBooks from './components/ViewBooks.vue'
+import ViewQuestions from './components/ViewQuestions.vue'
 import Practice from './components/Practice.vue'
 
 export default {

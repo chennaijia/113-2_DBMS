@@ -46,6 +46,7 @@
               data-bs-target="#collapseMistakeBooks"
               aria-expanded="false"
               aria-controls="collapseMistakeBooks"
+              @click.prevent="$emit('change-page', 'book', item)"
             >
               我的錯題本
             </button>
@@ -80,7 +81,7 @@
                     <div class="accordion-body link-group">
                       <a
                         href="pages/Book.html"
-                        @click.prevent="$emit('change-page', 'book', item)"
+                        @click.prevent="$emit('change-page', 'question', item)"
                         class="sidebar-link"
                       >
                         錯題瀏覽
