@@ -1,20 +1,18 @@
 <template>
-  <Sidebar :subjects="subjects" :userName="userName" @change-page="handleChangePage" />
+  <Sidebar :subjects="subjects" @change-page="handleChangePage" />
 
-  <div class="content-area">
+  <div class="content-area w-screen h-screen">
     <div v-if="currentPage === 'home'">
       <h1>主頁</h1>
       <HomePage />
     </div>
 
     <div v-else-if="currentPage === 'book'">
-      <h1>{{ currentSubject }} 的錯題瀏覽</h1>
-      <ViewBooks />
+      <ViewBooks :currentSubject="currentSubject" />
     </div>
 
     <div v-else-if="currentPage === 'practice'">
-      <h1>{{ currentSubject }} 的隨機出題</h1>
-      <Practice />
+      <Practice :currentSubject="currentSubject" @change-page="handleChangePage" />
     </div>
   </div>
 </template>
@@ -29,16 +27,19 @@ export default {
   name: 'App',
   components: {
     Sidebar,
+    HomePage,
+    ViewBooks,
+    Practice,
   },
   data() {
     return {
       subjects: ['高三國文', '高二數學'],
-      userName: '使用者姓名',
       currentPage: 'home',
+      currentSubject: '',
     }
   },
   methods: {
-    handleChangePage(page, subject) {
+    handleChangePage(page, subject = '') {
       this.currentPage = page
       this.currentSubject = subject
     },
@@ -46,6 +47,4 @@ export default {
 }
 </script>
 
-<style scoped>
-/* 如果主頁需要其他樣式可以寫在這 */
-</style>
+<style scoped></style>

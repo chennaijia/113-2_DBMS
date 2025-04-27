@@ -642,7 +642,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@popperjs/core@npm:^2.9.2":
+"@popperjs/core@npm:^2.11.8, @popperjs/core@npm:^2.9.2":
   version: 2.11.8
   resolution: "@popperjs/core@npm:2.11.8"
   checksum: 10c0/4681e682abc006d25eb380d0cf3efc7557043f53b6aea7a5057d0d1e7df849a00e281cd8ea79c902a35a414d7919621fc2ba293ecec05f413598e0b23d5a1e63
@@ -951,15 +951,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/vue-router@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@types/vue-router@npm:2.0.0"
-  dependencies:
-    vue-router: "npm:*"
-  checksum: 10c0/83b35100f220ea9e797cb7e818835fd8da3b055f49bcaf382237fec3867cfe73150b9b7f7f3b32d0e26e89255c90f90a62991b84ee8d2a6e95b1fd88b4e14d63
-  languageName: node
-  linkType: hard
-
 "@vitejs/plugin-vue@npm:^5.2.3":
   version: 5.2.3
   resolution: "@vitejs/plugin-vue@npm:5.2.3"
@@ -1181,11 +1172,11 @@ __metadata:
   resolution: "DBMS@workspace:."
   dependencies:
     "@iconify/vue": "npm:^4.3.0"
+    "@popperjs/core": "npm:^2.11.8"
     "@tsconfig/node22": "npm:^22.0.1"
     "@types/bootstrap": "npm:^5"
     "@types/cors": "npm:^2"
     "@types/express": "npm:^5"
-    "@types/vue-router": "npm:^2.0.0"
     "@vitejs/plugin-vue": "npm:^5.2.3"
     "@vue/tsconfig": "npm:^0.7.0"
     axios: "npm:^1.8.4"
@@ -1197,7 +1188,7 @@ __metadata:
     vite: "npm:^6.3.2"
     vite-plugin-vue-devtools: "npm:^7.7.5"
     vue: "npm:^3.5.13"
-    vue-router: "npm:^4.5.0"
+    vue-router: "npm:^4.5.1"
   languageName: unknown
   linkType: soft
 
@@ -3563,14 +3554,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-router@npm:*, vue-router@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "vue-router@npm:4.5.0"
+"vue-router@npm:^4.5.1":
+  version: 4.5.1
+  resolution: "vue-router@npm:4.5.1"
   dependencies:
     "@vue/devtools-api": "npm:^6.6.4"
   peerDependencies:
     vue: ^3.2.0
-  checksum: 10c0/5521c8d0ab7634ea75118824d4b4cae3748964725b3d3b4064eb3dbd44013381ea3163d4d856af61655936cd897b84f8eeebb312d0668532c3074d53814bd953
+  checksum: 10c0/89fbc11e46c19a4c4d62b807596a0210726dc09bd9e6a319ded1ac0951e6933e581c56acd1b846d3891673b9bad7348564d28ecd8424126d63578b3b5d291d96
   languageName: node
   linkType: hard
 
