@@ -3,10 +3,8 @@
     <div class="login-modal-content">
       <h2 class="login-title">{{ isRegisterMode ? '註冊' : '登入系統' }}</h2>
 
-      <!-- 錯誤訊息 -->
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-      <!-- 帳號 -->
       <div class="login-field" :class="{ shake: isShaking }">
         <label for="username" class="login-label">帳號</label>
         <input
@@ -20,7 +18,6 @@
         />
       </div>
 
-      <!-- 密碼 -->
       <div class="login-field" :class="{ shake: isShaking }">
         <label for="password" class="login-label">密碼</label>
         <input
@@ -34,7 +31,6 @@
         />
       </div>
 
-      <!-- 確認密碼 (註冊才有) -->
       <div class="login-field" v-if="isRegisterMode" :class="{ shake: isShaking }">
         <label for="confirmPassword" class="login-label">確認密碼</label>
         <input
@@ -48,24 +44,19 @@
         />
       </div>
 
-      <!-- 按鈕 -->
+      <div class="toggle-mode">
+        <span @click="toggleMode">
+          {{ isRegisterMode ? '已有帳號？登入' : '還沒有帳號？註冊' }}
+        </span>
+      </div>
+
       <div class="login-buttons">
         <button @click="submit" class="login-confirm">
           {{ isRegisterMode ? '註冊' : '登入' }}
         </button>
         <button @click="$emit('close')" class="login-cancel">取消</button>
       </div>
-
-      <!-- 切換登入/註冊 -->
-      <div class="toggle-mode">
-        <span @click="toggleMode">
-          {{ isRegisterMode ? '已有帳號？登入' : '還沒有帳號？註冊' }}
-        </span>
-      </div>
     </div>
-
-    <!-- 登入成功 Toast -->
-    <div v-if="showToast" class="toast">登入成功！歡迎使用錯題歸納平台！</div>
   </div>
 </template>
 
@@ -81,7 +72,6 @@ export default {
       errorMessage: '',
       errorField: '',
       isShaking: false,
-      showToast: false,
     }
   },
   methods: {
@@ -131,12 +121,6 @@ export default {
       this.password = ''
       this.confirmPassword = ''
       this.clearError()
-    },
-    showToastMessage(msg) {
-      this.showToast = true
-      setTimeout(() => {
-        this.showToast = false
-      }, 1200)
     },
   },
 }

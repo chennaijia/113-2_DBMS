@@ -116,77 +116,76 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import Login from './Login.vue'
-export default {
-  name: 'Sidebar',
-  components: {
-    Icon,
-    Login,
+
+const props = defineProps({
+  subjects: {
+    type: Array,
+    required: true,
   },
-  props: {
-    subjects: {
-      type: Array,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      isSidebarOpen: false,
-      isLoggedIn: false,
-      userName: '',
-      showLoginModal: false,
-    }
-  },
-  created() {
-    const savedUser = localStorage.getItem('userName')
-    if (savedUser) {
-      this.isLoggedIn = true
-      this.userName = savedUser
-    }
-  },
-  methods: {
-    openSidebar() {
-      this.isSidebarOpen = true
-      document.body.style.overflow = 'hidden'
-    },
-    closeSidebar() {
-      this.isSidebarOpen = false
-      document.body.style.overflow = ''
-    },
-    backdropClick() {
-      this.closeSidebar()
-    },
-    handleLoginClick() {
-      if (this.isLoggedIn) {
-        this.logout()
-      } else {
-        this.openLoginModal()
-      }
-    },
-    openLoginModal() {
-      this.showLoginModal = true
-    },
-    closeLoginModal() {
-      this.showLoginModal = false
-    },
-    handleLogin(userName) {
-      this.isLoggedIn = true
-      this.userName = userName
-      localStorage.setItem('userName', userName)
-      this.closeLoginModal()
-      this.closeSidebar()
-    },
-    logout() {
-      this.isLoggedIn = false
-      this.userName = ''
-      localStorage.removeItem('userName')
-      this.closeSidebar()
-    },
-  },
+})
+
+const isSidebarOpen = ref(false)
+const isLoggedIn = ref(false)
+const userName = ref('')
+const showLoginModal = ref(false)
+
+onMounted(() => {
+  const savedUser = localStorage.getItem('userName')
+  if (savedUser) {
+    isLoggedIn.value = true
+    userName.value = savedUser
+  }
+})
+
+function openSidebar() {
+  isSidebarOpen.value = true
+  document.body.style.overflow = 'hidden'
+}
+
+function closeSidebar() {
+  isSidebarOpen.value = false
+  document.body.style.overflow = ''
+}
+
+function backdropClick() {
+  closeSidebar()
+}
+
+function handleLoginClick() {
+  if (isLoggedIn.value) {
+    logout()
+  } else {
+    openLoginModal()
+  }
+}
+
+function openLoginModal() {
+  showLoginModal.value = true
+}
+
+function closeLoginModal() {
+  showLoginModal.value = false
+}
+
+function handleLogin(newUserName) {
+  isLoggedIn.value = true
+  userName.value = newUserName
+  localStorage.setItem('userName', newUserName)
+  closeLoginModal()
+  closeSidebar()
+}
+
+function logout() {
+  isLoggedIn.value = false
+  userName.value = ''
+  localStorage.removeItem('userName')
+  closeSidebar()
 }
 </script>
 

@@ -33,48 +33,69 @@
     </div>
   </div>
 </template>
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-<script>
-export default {
-  name: 'Practice',
-  props: {
-    currentSubject: {
-      type: String,
-      required: true,
-    },
+const props = defineProps({
+  currentSubject: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      currentQuestionSrc: '/images/img.html',
-      timer: '10:00',
-    }
-  },
-  computed: {
-    displaySubject() {
-      return this.currentSubject || '未選擇科目'
-    },
-  },
-  methods: {
-    goBack() {
-      const btn = document.querySelector('.return-btn')
-      if (btn) {
-        btn.classList.add('clicked')
-        setTimeout(() => {
-          this.$emit('change-page', 'book', this.currentSubject)
-        }, 300)
-      }
-    },
-    adjustIframeHeight() {
-      const iframe = this.$refs.questionFrame
-      if (iframe && iframe.contentWindow && iframe.contentDocument) {
-        const img = iframe.contentDocument.querySelector('img')
-        if (img) {
+})
+
+const currentQuestionSrc = ref('/images/img.html')
+const timer = ref('00:00')
+const elapsedSeconds = ref(0)
+const timerInterval = ref(null)
+
+const questionFrame = ref(null)
+
+function startStopwatch() {
+  timerInterval.value = setInterval(() => {
+    elapsedSeconds.value++
+    const minutes = String(Math.floor(elapsedSeconds.value / 60)).padStart(2, '0')
+    const seconds = String(elapsedSeconds.value % 60).padStart(2, '0')
+    timer.value = `${minutes}:${seconds}`
+  }, 1000)
+}
+
+function adjustIframeHeight() {
+  const iframe = questionFrame.value
+  if (iframe && iframe.contentWindow && iframe.contentDocument) {
+    const img = iframe.contentDocument.querySelector('img')
+    if (img) {
+      if (img.complete) {
+        iframe.style.height = img.clientHeight + 'px'
+      } else {
+        img.onload = () => {
           iframe.style.height = img.clientHeight + 'px'
         }
       }
-    },
-  },
+    }
+  }
 }
+
+function goBack() {
+  const btn = document.querySelector('.return-btn')
+  if (btn) {
+    btn.classList.add('clicked')
+    setTimeout(() => {
+      emit('change-page', 'book', props.currentSubject)
+    }, 300)
+  }
+}
+
+const emit = defineEmits(['change-page'])
+
+onMounted(() => {
+  startStopwatch()
+})
+
+onBeforeUnmount(() => {
+  if (timerInterval.value) {
+    clearInterval(timerInterval.value)
+  }
+})
 </script>
 
 <style scoped>
