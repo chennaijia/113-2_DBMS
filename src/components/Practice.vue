@@ -21,20 +21,39 @@
     </div>
 
     <div class="img-position">
-      <div class="d-flex flex-column gap-2">
-        <iframe
-          ref="questionFrame"
-          src="/images/img.html"
-          class="w-100 py-3 fade-img"
-          style="max-width: 1200px; border: 1px solid #ccc; border-radius: 8px"
-          @load="adjustIframeHeight"
-        ></iframe>
+      <div
+        class="d-flex justify-content-center flex-column gap-2"
+        style="width: 70vw; max-width: 1200px"
+      >
+        <img
+          :src="currentImage"
+          class="w-100 py-3"
+          style="border: 1px solid #ccc; border-radius: 8px"
+        />
+        <Answer :questionType="'選擇題'" />
       </div>
+    </div>
+    <div>
+      <button
+        class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
+        @click="checkAnswer"
+      >
+        <i class="bi bi-caret-left"></i>
+        <span class="ms-2">對答案</span>
+      </button>
+      <button
+        class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
+        @click="nextQuestion"
+      >
+        <i class="bi bi-caret-left"></i>
+        <span class="ms-2">下一題</span>
+      </button>
     </div>
   </div>
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import Answer from './Practice/Answer.vue'
 
 const props = defineProps({
   currentSubject: {
@@ -49,6 +68,10 @@ const elapsedSeconds = ref(0)
 const timerInterval = ref(null)
 
 const questionFrame = ref(null)
+const answerFrame = ref(null)
+
+const images = ['/images/1.jpg', '/images/2.jpg', '/images/3.jpg', '/images/4.jpg']
+const currentImage = ref(images[1])
 
 function startStopwatch() {
   timerInterval.value = setInterval(() => {
@@ -59,22 +82,6 @@ function startStopwatch() {
   }, 1000)
 }
 
-function adjustIframeHeight() {
-  const iframe = questionFrame.value
-  if (iframe && iframe.contentWindow && iframe.contentDocument) {
-    const img = iframe.contentDocument.querySelector('img')
-    if (img) {
-      if (img.complete) {
-        iframe.style.height = img.clientHeight + 'px'
-      } else {
-        img.onload = () => {
-          iframe.style.height = img.clientHeight + 'px'
-        }
-      }
-    }
-  }
-}
-
 function goBack() {
   const btn = document.querySelector('.return-btn')
   if (btn) {
@@ -83,6 +90,10 @@ function goBack() {
       emit('change-page', 'book', props.currentSubject)
     }, 300)
   }
+}
+
+function checkAnswer() {
+  alert('是否確認要對答案？確認後無法再更改答案')
 }
 
 const emit = defineEmits(['change-page'])

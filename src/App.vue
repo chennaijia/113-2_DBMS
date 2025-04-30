@@ -32,6 +32,7 @@ export default {
   components: {
     Sidebar,
     HomePage,
+    ViewQuestions,
     ViewBooks,
     Practice,
   },
