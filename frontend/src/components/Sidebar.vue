@@ -100,11 +100,6 @@
               </div>
             </div>
           </div>
-            <button
-              @click="$emit('change-page', 'test')"
-            >
-              後端測試用
-            </button>
         </div>
       </div>
 

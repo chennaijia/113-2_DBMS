@@ -17,10 +17,6 @@
     <div v-else-if="currentPage === 'practice'">
       <Practice :currentSubject="currentSubject" @change-page="handleChangePage" />
     </div>
-
-    <div v-else-if="currentPage === 'test'">
-      <BackendTest />
-    </div>
   </div>
 </template>
 
@@ -30,7 +26,6 @@ import HomePage from './components/HomePage.vue'
 import ViewBooks from './components/ViewBooks.vue'
 import ViewQuestions from './components/ViewQuestions.vue'
 import Practice from './components/Practice.vue'
-import BackendTest from './components/BackendTest.vue'
 
 export default {
   name: 'App',
@@ -40,7 +35,6 @@ export default {
     ViewQuestions,
     ViewBooks,
     Practice,
-    BackendTest
   },
   data() {
     return {

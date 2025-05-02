@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 
 const app = express();
-const PORT = 3000;
+const PORT = 5173;
 
 app.use(cors()); // 讓前端可以連線
 app.use(express.json()); // 讓後端可以讀 JSON
