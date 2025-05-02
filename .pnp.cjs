@@ -41,7 +41,7 @@ const RAW_RUNTIME_STATE =
           ["bootstrap", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:5.3.5"],\
           ["cors", "npm:2.8.5"],\
           ["express", "npm:5.1.0"],\
-          ["mysql2", "npm:3.14.0"],\
+          ["mysql2", "npm:3.14.1"],\
           ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"],\
           ["vite", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:6.3.2"],\
           ["vite-plugin-vue-devtools", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:7.7.5"],\
@@ -1627,7 +1627,7 @@ const RAW_RUNTIME_STATE =
           ["bootstrap", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:5.3.5"],\
           ["cors", "npm:2.8.5"],\
           ["express", "npm:5.1.0"],\
-          ["mysql2", "npm:3.14.0"],\
+          ["mysql2", "npm:3.14.1"],\
           ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"],\
           ["vite", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:6.3.2"],\
           ["vite-plugin-vue-devtools", "virtual:1a84f86e0df89d87de97c79cf975f9e1e43bee11d1ff48ad437d4c4b673caf9af5b657bc701a69dc948ffda0ff34310b407bb8bced9c55a6e2d6e1234f34f25e#npm:7.7.5"],\
@@ -3202,8 +3202,8 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["mysql2", [\
-      ["npm:3.14.0", {\
-        "packageLocation": "../../.yarn/berry/cache/mysql2-npm-3.14.0-de9fc2a650-10c0.zip/node_modules/mysql2/",\
+      ["npm:3.14.1", {\
+        "packageLocation": "../../.yarn/berry/cache/mysql2-npm-3.14.1-124419deea-10c0.zip/node_modules/mysql2/",\
         "packageDependencies": [\
           ["aws-ssl-profiles", "npm:1.1.2"],\
           ["denque", "npm:2.1.0"],\
@@ -3211,7 +3211,7 @@ const RAW_RUNTIME_STATE =
           ["iconv-lite", "npm:0.6.3"],\
           ["long", "npm:5.3.2"],\
           ["lru.min", "npm:1.1.2"],\
-          ["mysql2", "npm:3.14.0"],\
+          ["mysql2", "npm:3.14.1"],\
           ["named-placeholders", "npm:1.1.3"],\
           ["seq-queue", "npm:0.0.5"],\
           ["sqlstring", "npm:2.3.3"]\

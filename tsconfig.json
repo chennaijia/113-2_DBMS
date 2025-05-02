@@ -9,6 +9,8 @@
     }
   ],
   "compilerOptions": {
+    "esModuleInterop": true,
+    "moduleResolution": "node",
     "types": ["vue-router"]
   }
 }
