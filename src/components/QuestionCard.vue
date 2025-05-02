@@ -49,58 +49,65 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import { ref } from 'vue'
-const emit = defineEmits(['delete-card'])
-const props = defineProps({
-  index: Number,
-  card: Object,
-  showAnswers: Boolean,
-  editMode: Boolean,
-})
 
-const uploadingType = ref(null)
-function deleteThisCard() {
-  if (confirm('確定要刪除這張卡片嗎？')) {
-    emit('delete-card', card.id)
-  }
-}
-const fileInput = ref(null)
+export default {
+  props: {
+    index: Number,
+    card: Object,
+    showAnswers: Boolean,
+    editMode: Boolean
+  },
+  emits: ['delete-card'],
+  setup(props, { emit }) {
+    const uploadingType = ref(null)
+    const fileInput = ref(null)
 
-// 開啟上傳檔案視窗
-function uploadImage(type) {
-  uploadingType.value = type
-  fileInput.value.click()
-}
+    function deleteThisCard() {
+      if (confirm('確定要刪除這張卡片嗎？')) {
+        emit('delete-card', props.card.id)
+      }
+    }
 
-// 處理選取圖片
-function handleFileChange(event) {
-  const file = event.target.files[0]
-  if (!file) return
+    function uploadImage(type) {
+      uploadingType.value = type
+      fileInput.value.click()
+    }
 
-  if (file.size > 2 * 1024 * 1024) {
-    alert('圖片太大，請選擇小於 2MB 的檔案')
-    return
-  }
+    function handleFileChange(event) {
+      const file = event.target.files[0]
+      if (!file) return
+      if (file.size > 2 * 1024 * 1024) {
+        alert('圖片太大，請選擇小於 2MB 的檔案')
+        return
+      }
 
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    if (uploadingType.value === 'question') {
-      props.card.questionImage = e.target.result
-    } else if (uploadingType.value === 'answer') {
-      props.card.answerImage = e.target.result
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        if (uploadingType.value === 'question') props.card.questionImage = e.target.result
+        if (uploadingType.value === 'answer') props.card.answerImage = e.target.result
+      }
+      reader.readAsDataURL(file)
+    }
+
+    function removeImage(type) {
+      if (type === 'question') props.card.questionImage = null
+      if (type === 'answer') props.card.answerImage = null
+    }
+
+    return {
+      uploadingType,
+      fileInput,
+      deleteThisCard,
+      uploadImage,
+      handleFileChange,
+      removeImage
     }
   }
-  reader.readAsDataURL(file)
 }
-
-// 刪除圖片
-function removeImage(type) {
-  if (type === 'question') props.card.questionImage = null
-  if (type === 'answer') props.card.answerImage = null
-}
-
 </script>
+
 
 <style scoped>
 .card { background-color: #ffffff; border-radius: 12px; margin-bottom: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
