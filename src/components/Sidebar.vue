@@ -91,7 +91,7 @@
                         @click.prevent="$emit('change-page', 'practice', item)"
                         class="sidebar-link"
                       >
-                        隨機出題
+                        錯題練習
                       </a>
                     </div>
                   </div>

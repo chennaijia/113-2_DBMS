@@ -1,26 +1,33 @@
 <template>
-  <div class="vw-100 vh-100 gap-10 d-flex flex-column align-items-center transition-page">
-    <div>
-      <div class="backbtn translate-middle">
+  <div class="h-100 w-100 gap-10 d-flex flex-column transition-page ms-5">
+    <div class="d-flex justify-content-between mt-4">
+      <div class="d-flex flex-row gap-3">
         <button
-          class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
+          class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill return-btn"
           @click="goBack"
         >
           <i class="bi bi-caret-left"></i>
           <span class="ms-2">返回</span>
         </button>
+        <div class="text" style="font-weight: bold">{{ currentSubject }}-錯題練習</div>
       </div>
-      <div class="text" style="position: absolute; top: 1.35rem; left: 14rem; font-weight: bold">
-        {{ currentSubject }}-隨機出題
-      </div>
-      <div class="text" style="position: absolute; top: 1.35rem; right: 17rem">20/20</div>
-
-      <div class="text" style="position: absolute; top: 1.35rem; right: 7rem">
-        <i class="bi bi-clock"></i> {{ timer }}
+      <div class="d-flex flex-rol gap-3">
+        <div class="text">20/20</div>
+        <div class="text"><i class="bi bi-clock"></i> {{ timer }}</div>
       </div>
     </div>
 
-    <div class="img-position">
+    <div class="gap-5">
+      <div class="progress">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          style="width: 25%"
+          aria-valuenow="25"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
+      </div>
       <div
         class="d-flex justify-content-center flex-column gap-2"
         style="width: 70vw; max-width: 1200px"
@@ -31,23 +38,27 @@
           style="border: 1px solid #ccc; border-radius: 8px"
         />
         <Answer :questionType="'選擇題'" />
+        <div class="container text-center">
+          <div class="row justify-content-evenly btn-group" role="group">
+            <button
+              type="button"
+              class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
+              @click="checkAnswer"
+            >
+              <i class="bi bi-check"></i>
+              <span class="ms-2">對答案</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
+              @click="nextQuestion"
+            >
+              <i class="bi bi-caret-right"></i>
+              <span class="ms-2">下一題</span>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div>
-      <button
-        class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
-        @click="checkAnswer"
-      >
-        <i class="bi bi-caret-left"></i>
-        <span class="ms-2">對答案</span>
-      </button>
-      <button
-        class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
-        @click="nextQuestion"
-      >
-        <i class="bi bi-caret-left"></i>
-        <span class="ms-2">下一題</span>
-      </button>
     </div>
   </div>
 </template>
@@ -135,10 +146,5 @@ onBeforeUnmount(() => {
   color: #408ee7;
   font-size: 25px;
   cursor: pointer;
-}
-.img-position {
-  position: absolute;
-  top: 6rem;
-  left: 7rem;
 }
 </style>
