@@ -32,6 +32,7 @@ import ViewQuestions from './components/ViewQuestions.vue'
 import Practice from './components/Practice.vue'
 import BackendTest from './components/BackendTest.vue'
 
+
 export default {
   name: 'App',
   components: {
