@@ -16,8 +16,8 @@
       </div>
 
       <div v-else-if="currentPage === 'practice'">
-        <!--<<SelectQuestions />-->
-        <Practice :currentSubject="currentSubject" @change-page="handleChangePage" />
+        <SelectQuestions />
+        <!-- <Practice :currentSubject="currentSubject" @change-page="handleChangePage" /> -->
       </div>
     </div>
   </div>
@@ -30,7 +30,6 @@ import ViewBooks from './components/ViewBooks.vue'
 import ViewQuestions from './components/ViewQuestions.vue'
 import Practice from './components/Practice.vue'
 import SelectQuestions from './components/SelectQuestions.vue'
-
 
 export default {
   name: 'App',

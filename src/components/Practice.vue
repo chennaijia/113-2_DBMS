@@ -18,6 +18,7 @@
     </div>
 
     <div class="gap-5">
+      <!-- 進度條 -->
       <div class="progress">
         <div
           class="progress-bar"
@@ -28,6 +29,8 @@
           aria-valuemax="100"
         ></div>
       </div>
+
+      <!-- 題目 -->
       <div
         class="d-flex justify-content-center flex-column gap-2"
         style="width: 70vw; max-width: 1200px"
@@ -38,25 +41,27 @@
           style="border: 1px solid #ccc; border-radius: 8px"
         />
         <Answer :questionType="'選擇題'" />
-        <div class="container text-center">
-          <div class="row justify-content-evenly btn-group" role="group">
-            <button
-              type="button"
-              class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
-              @click="checkAnswer"
-            >
-              <i class="bi bi-check"></i>
-              <span class="ms-2">對答案</span>
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
-              @click="nextQuestion"
-            >
-              <i class="bi bi-caret-right"></i>
-              <span class="ms-2">下一題</span>
-            </button>
-          </div>
+      </div>
+
+      <!-- 按鈕 -->
+      <div class="container text-center">
+        <div class="row justify-content-evenly btn-group" role="group">
+          <button
+            type="button"
+            class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
+            @click="checkAnswer"
+          >
+            <i class="bi bi-check"></i>
+            <span class="ms-2">對答案</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill mt-5 return-btn"
+            @click="nextQuestion"
+          >
+            <i class="bi bi-caret-right"></i>
+            <span class="ms-2">下一題</span>
+          </button>
         </div>
       </div>
     </div>
