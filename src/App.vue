@@ -7,6 +7,7 @@
         <HomePage />
       </div>
 
+
       <div v-else-if="currentPage === 'book'">
         <ViewBooks />
       </div>
