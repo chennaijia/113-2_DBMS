@@ -8,7 +8,7 @@
         class="list-group-item d-flex align-items-center"
       >
         <input type="checkbox" class="form-check-input me-3" v-model="selected[index]" />
-        <span class="me-3">#{{ index + 1 }}</span>
+        <span class="me-3">{{ index + 1 }}</span>
         <span class="flex-grow-1">{{ question }}</span>
       </div>
     </div>

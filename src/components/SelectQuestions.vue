@@ -39,9 +39,9 @@ export default {
     return {
       selectedOption: '',
       content: {
-        option1: '您可以手動選擇要練習的題目。',
-        option2: '系統將隨機選擇二十題供您練習。',
-        option3: '系統將根據您的錯誤記錄挑選最需要加強的二十題。',
+        option1: '請在下方勾選要練習的題目',
+        option2: '系統將隨機選擇題目供您練習',
+        option3: '系統將根據您的錯誤記錄挑選最需要加強的二十題',
       },
     }
   },

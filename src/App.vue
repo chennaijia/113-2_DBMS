@@ -16,8 +16,13 @@
       </div>
 
       <div v-else-if="currentPage === 'practice'">
-        <SelectQuestions />
-        <!-- <Practice :currentSubject="currentSubject" @change-page="handleChangePage" /> -->
+        <Practice
+          v-if="startPractice"
+          :currentSubject="currentSubject"
+          @change-page="handleChangePage"
+          :goBack="goBack"
+        />
+        <SelectQuestions v-else @start="start" />
       </div>
     </div>
   </div>
@@ -46,12 +51,19 @@ export default {
       subjects: ['高三國文', '高二數學'],
       currentPage: 'home',
       currentSubject: '',
+      startPractice: false,
     }
   },
   methods: {
     handleChangePage(page, subject = '') {
       this.currentPage = page
       this.currentSubject = subject
+    },
+    start() {
+      this.startPractice = true
+    },
+    goBack() {
+      this.startPractice = false
     },
   },
 }
