@@ -4,7 +4,7 @@
       <div class="d-flex flex-row gap-3">
         <button
           class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill return-btn"
-          @emit="goBack"
+          @click="goBack"
         >
           <i class="bi bi-caret-left"></i>
           <span class="ms-2">返回</span>
