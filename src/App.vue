@@ -7,7 +7,6 @@
         <HomePage />
       </div>
 
-
       <div v-else-if="currentPage === 'book'">
         <ViewBooks />
       </div>
@@ -23,7 +22,7 @@
           @change-page="handleChangePage"
           :goBack="goBack"
         />
-        <SelectQuestions v-else @start="start" />
+        <SelectQuestions v-else @start="start" @start-practice="setQuestion" />
       </div>
     </div>
   </div>
@@ -53,6 +52,7 @@ export default {
       currentPage: 'home',
       currentSubject: '',
       startPractice: false,
+      selectedQuestions: [],
     }
   },
   methods: {
@@ -65,6 +65,9 @@ export default {
     },
     goBack() {
       this.startPractice = false
+    },
+    setQuestion(selectedQuestion) {
+      this.selectedQuestions = selectedQuestion
     },
   },
 }
