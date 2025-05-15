@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 export const env = {
@@ -9,3 +10,5 @@ export const env = {
   DB_PASS: process.env.DB_PASS || '',
   DB_NAME: process.env.DB_NAME || 'wrongbook',
 };
+
+console.log('✅ env.DB_PASS', env.DB_PASS);

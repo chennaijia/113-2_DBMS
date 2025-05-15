@@ -4,12 +4,19 @@ import { authRouter } from './routes/auth.routes';
 import { questionRouter } from './routes/question.routes';
 import { qbRouter } from './routes/qb.routes';
 
+
 const app = express();
 
 // 測試首頁
 app.get('/', (req, res) => {
   res.send('Hello from Express! 👋');
+
 });
+
+app.get('/ping', (req, res) => {
+  res.send('pong!');
+});
+
 
 export { app };
 
