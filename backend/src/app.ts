@@ -4,7 +4,15 @@ import { authRouter } from './routes/auth.routes';
 import { questionRouter } from './routes/question.routes';
 import { qbRouter } from './routes/qb.routes';
 
-export const app = express();
+const app = express();
+
+// 測試首頁
+app.get('/', (req, res) => {
+  res.send('Hello from Express! 👋');
+});
+
+export { app };
+
 
 app.use(cors());
 app.use(express.json());
