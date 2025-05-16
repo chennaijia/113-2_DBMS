@@ -24,6 +24,9 @@
         />
         <SelectQuestions v-else @start="start" @start-practice="setQuestion" />
       </div>
+      <div v-else-if="currentPage === 'test'">
+        <BackendTest />
+      </div>
     </div>
   </div>
 </template>
@@ -35,6 +38,7 @@ import ViewBooks from './components/ViewBooks.vue'
 import ViewQuestions from './components/ViewQuestions.vue'
 import Practice from './components/Practice.vue'
 import SelectQuestions from './components/SelectQuestions.vue'
+import BackendTest from './components/BackendTest.vue'
 
 export default {
   name: 'App',
@@ -45,6 +49,7 @@ export default {
     ViewBooks,
     Practice,
     SelectQuestions,
+    BackendTest
   },
   data() {
     return {
