@@ -17,7 +17,7 @@ interface QuestionInput {
 export const createQuestion = async (q: QuestionInput) => {
   const [r]: any = await pool.execute(
     `INSERT INTO question
-     (qtype,content,content_pic,answer,answer_pic,detail_ans,detail_ans_pic,qtype2,subject,level,creator_id)
+     (QType,Content,Content_pic,Answer,Answer_pic,DetailAns,DetailAns_pic,Subject,Level,Creator_ID)
      VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
     [
       q.qtype,
@@ -27,7 +27,6 @@ export const createQuestion = async (q: QuestionInput) => {
       q.answer_pic,
       q.detail_ans,
       q.detail_ans_pic,
-      q.qtype2,
       q.subject,
       q.level || 1,
       q.creator_id,

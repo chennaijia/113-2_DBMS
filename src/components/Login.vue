@@ -122,15 +122,7 @@ export default {
             localStorage.setItem('token', data.token);
             this.$emit('login', this.inputUserAccount.trim());
 
-            // ➕ 傳送登入狀態與 token 到後端 Terminal 顯示
-            /*await fetch('http://localhost:3000/api/log/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                status: 'success',
-                token: data.token
-              })
-            });*/
+
             this.$emit('showToast', '登入成功！🎉');
           } else {
             this.showError(data.message || '登入失敗😢', 'useraccount');

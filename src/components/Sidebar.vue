@@ -93,6 +93,8 @@
             </div>
           </div>
           <button @click="$emit('change-page', 'test')">後端測試用</button>
+          <button @click="$emit('change-page', 'testquestion')">後端測試用題目</button>
+
         </div>
       </div>
 

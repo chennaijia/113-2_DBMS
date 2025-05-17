@@ -32,6 +32,9 @@
       <div v-else-if="currentPage === 'test'">
         <BackendTest />
       </div>
+      <div v-else-if="currentPage === 'testquestion'">
+        <BackendTestQuestion />
+      </div>
     </div>
   </div>
 </template>
@@ -44,6 +47,7 @@ import ViewQuestions from './components/ViewQuestions.vue'
 import Practice from './components/Practice.vue'
 import SelectQuestions from './components/SelectQuestions.vue'
 import BackendTest from './components/BackendTest.vue'
+import BackendTestQuestion from './components/BackendTestQuestion.vue'
 
 export default {
   name: 'App',
@@ -55,6 +59,7 @@ export default {
     Practice,
     SelectQuestions,
     BackendTest,
+    BackendTestQuestion
   },
   data() {
     return {
