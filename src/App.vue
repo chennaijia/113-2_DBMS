@@ -1,6 +1,6 @@
 <template>
-  <div class="d-flex vh-100 w-100">
-    <Sidebar :subjects="subjects" @change-page="handleChangePage" />
+  <div class="vh-100 d-flex flex-column">
+    <Sidebar class="flex-shrink-0" :subjects="subjects" @change-page="handleChangePage" />
 
     <div class="ms-5 flex-grow-1">
       <div v-if="currentPage === 'home'">
@@ -45,11 +45,11 @@ export default {
   components: {
     Sidebar,
     HomePage,
-    ViewQuestions,
     ViewBooks,
+    ViewQuestions,
     Practice,
     SelectQuestions,
-    BackendTest
+    BackendTest,
   },
   data() {
     return {
@@ -65,14 +65,12 @@ export default {
       this.currentPage = page
       this.currentSubject = subject
     },
-    start() {
+    setQuestion(selectedQuestion) {
       this.startPractice = true
+      this.selectedQuestions = selectedQuestion
     },
     goBack() {
       this.startPractice = false
-    },
-    setQuestion(selectedQuestion) {
-      this.selectedQuestions = selectedQuestion
     },
   },
 }

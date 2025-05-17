@@ -1,6 +1,10 @@
 <template>
   <div class="question-container">
-    <div v-if="selectedOption === 'option1'">
+    <div v-if="selectedOption === 'option0'">
+      <p class="text-m">請在上方選擇練習方式</p>
+    </div>
+
+    <div v-else-if="selectedOption === 'option1'">
       <div class="text-end mb-3">
         <button class="btn btn-sm btn-outline-primary" @click="toggleSelectAll">
           <i :class="isAllSelected ? 'bi bi-x' : 'bi bi-check-all'"></i>
@@ -69,7 +73,7 @@
       </div>
     </div>
 
-    <div class="fixed-bottom-end mt-4">
+    <div v-if="!selectedOption === 'option0'" class="fixed-bottom-end mt-4">
       <button
         class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
         @click="confirmSelection"
@@ -82,18 +86,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   selectedOption: String,
   questions: Array,
   questionCount: Number,
+  currentSubject: String,
 })
 
 const emit = defineEmits(['update-selected'])
 
 const selectedQuestionIds = ref([])
 const localCount = ref(props.questionCount)
+
+watch(
+  () => props.questionCount,
+  (newCount) => {
+    localCount.value = newCount
+  }
+)
 
 const isAllSelected = computed(() => {
   return selectedQuestionIds.value.length === props.questions.length
@@ -125,13 +137,11 @@ const filteredQuestions = computed(() => {
   return props.questions
 })
 
-const confirmSelection = () => {
-  let selected = []
-  if (props.selectedOption === 'option1') {
-    selected = props.questions.filter((q) => selectedQuestionIds.value.includes(q.id))
-  } else {
-    selected = filteredQuestions.value
-  }
+function confirmSelection() {
+  let selected =
+    props.selectedOption === 'option1'
+      ? props.questions.filter((q) => selectedQuestionIds.value.includes(q.id))
+      : filteredQuestions.value
   emit('update-selected', selected)
 }
 </script>
@@ -142,7 +152,6 @@ const confirmSelection = () => {
   max-width: 1000px;
   margin: auto;
   padding: 1rem;
-  padding-bottom: 80px;
 }
 
 .text-m {
@@ -171,9 +180,10 @@ input[type='number'] {
 }
 
 .fixed-bottom-end {
-  position: fixed;
+  position: sticky;
   bottom: 20px;
-  right: 30px;
-  z-index: 1000;
+  z-index: 100;
+  text-align: center;
+  width: 100%;
 }
 </style>
