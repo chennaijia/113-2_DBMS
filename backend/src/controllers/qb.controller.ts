@@ -1,37 +1,39 @@
+// backend/src/controllers/qb.controller.ts
 import { Request, Response } from 'express';
-import * as QB from '../models/qb.model';
+import * as QB from '../models/qb.model';   // 確保 model 裡用的是 QUESTION_BOOK
 import { AuthReq } from '../middleware/auth';
 
-/* ========== CRUD ========== */
+/** POST /api/qb － 建立題本 */
+export const createQB = async (req: AuthReq, res: Response) => {
+  const { BName, Icon } = req.body;
+  if (!BName) return res.status(400).json({ message: 'BName 必填' });
 
-/** POST /api/books */
-export const createQB = async (req: AuthReq, res: Response): Promise<void> => {
-  const id = await QB.createQB({ ...req.body, creator_id: req.user!.id });
-  res.status(201).json({ id });
+  const id = await QB.createQB({ bname: BName, icon: Icon, creator_id: req.user!.id });
+  res.status(201).json({ QuestionBook_ID: id });
 };
 
-/** GET /api/books */
-export const listQB = async (_req: Request, res: Response): Promise<void> => {
-  res.json(await QB.listQB());
+
+/** GET /api/qb － 顯示所有題本 */
+export const listQB = async (_req: Request, res: Response) => {
+  const rows = await QB.listQB();
+  res.json(rows);
 };
 
-/** GET /api/books/:id */
-export const getQB = async (req: Request, res: Response): Promise<void> => {
+/** GET /api/qb/:id － 取得單一題本 */
+export const getQB = async (req, res) =>  {
   const row = await QB.getQB(+req.params.id);
-  if (!row) { res.sendStatus(404); return; }
+  if (!row) return res.sendStatus(404);
   res.json(row);
 };
 
-/** PUT /api/books/:id */
-export const updateQB = async (req: AuthReq, res: Response): Promise<void> => {
+/** PUT /api/qb/:id － 更新（僅限擁有者） */
+export const updateQB =  async (req, res)  => {
   const ok = await QB.updateQB(+req.params.id, req.body, req.user!.id);
-  if (!ok) { res.sendStatus(403); return; }
-  res.sendStatus(204);
+  return ok ? res.sendStatus(204) : res.sendStatus(403);
 };
 
-/** DELETE /api/books/:id */
-export const deleteQB = async (req: AuthReq, res: Response): Promise<void> => {
+/** DELETE /api/qb/:id － 刪除（僅限擁有者） */
+export const deleteQB = async (req, res) =>  {
   const ok = await QB.deleteQB(+req.params.id, req.user!.id);
-  if (!ok) { res.sendStatus(403); return; }
-  res.sendStatus(204);
+  return ok ? res.sendStatus(204) : res.sendStatus(403);
 };

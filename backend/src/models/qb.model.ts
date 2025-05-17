@@ -9,7 +9,7 @@ interface QBInput {
 
 export const createQB = async (qb: QBInput) => {
   const [r]: any = await pool.execute(
-    'INSERT INTO question_book (bname, question_count, icon, creator_id) VALUES (?,?,?,?)',
+    'INSERT INTO question_book (BName, Question_Count, Icon, Creator_ID) VALUES (?,?,?,?)',
     [qb.bname, qb.question_count || 0, qb.icon, qb.creator_id],
   );
   return r.insertId as number;
