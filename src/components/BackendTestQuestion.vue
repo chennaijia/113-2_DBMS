@@ -1,6 +1,9 @@
-<template>
+以下是BackendTestQuestion的內容:<template>
   <div class="container">
     <h1>題庫管理系統 📚</h1>
+
+    <button @click="testClick">點我測試</button>
+
 
     <!-- 題目新增區塊 -->
     <div class="card add-section">
@@ -22,12 +25,12 @@
         <input type="radio" value="✘" v-model="newQuestion.answer" />✘
       </div>
       <div v-else-if="newQuestion.type === 'multipleABC'">
-        <label v-for="opt in ['A','B','C','D','E']" :key="opt">
+        <label v-for="opt in ['A', 'B', 'C', 'D', 'E']" :key="opt">
           <input type="checkbox" :value="opt" v-model="newQuestion.answer" /> {{ opt }}
         </label>
       </div>
       <div v-else-if="newQuestion.type === 'multiple123'">
-        <label v-for="opt in ['1','2','3','4','5']" :key="opt">
+        <label v-for="opt in ['1', '2', '3', '4', '5']" :key="opt">
           <input type="checkbox" :value="opt" v-model="newQuestion.answer" /> {{ opt }}
         </label>
       </div>
@@ -44,11 +47,7 @@
     <!-- 題目列表 -->
     <div class="card-list">
       <h2>目前題目列表 ({{ questions.length }} 題)</h2>
-      <div
-        class="card"
-        v-for="q in questions"
-        :key="q.id"
-      >
+      <div class="card" v-for="q in questions" :key="q.id">
         <p><strong>題型：</strong>{{ q.type }}</p>
         <img :src="q.questionImage" class="preview" v-if="q.questionImage" />
         <p><strong>答案：</strong> {{ Array.isArray(q.answer) ? q.answer.join(', ') : q.answer }}</p>
@@ -56,62 +55,102 @@
         <button @click="deleteQuestion(q.id)">刪除</button>
       </div>
     </div>
+
+    <div v-for="q in questions" :key="q.question_id" class="card">
+  <p>題型：{{ q.QType }}</p>
+  <img :src="q.Content_pic" class="preview" v-if="q.Content_pic" />
+  <p>答案：{{ q.Answer }}</p>
+  <img :src="q.Answer_pic" class="preview" v-if="q.Answer_pic" />
+</div>
+
   </div>
 </template>
-
 <script setup>
+
+const testClick = () => {
+  console.log('✅ 測試按鈕有反應！');
+}
+
+
 import { reactive, ref } from 'vue'
+import axios from 'axios'
+import { onMounted } from 'vue'
+
 
 const questions = ref([])
 
 const newQuestion = reactive({
   type: 'truefalse',
-  questionImage: null,
-  answerImage: null,
   answer: '',
+  questionImageFile: null,
+  answerImageFile: null,
 })
 
 function handleImageUpload(event, type) {
   const file = event.target.files[0]
   if (!file) return
 
-  const reader = new FileReader()
-  reader.onload = () => {
-    if (type === 'question') newQuestion.questionImage = reader.result
-    else newQuestion.answerImage = reader.result
+  if (type === 'question') newQuestion.questionImageFile = file
+  else newQuestion.answerImageFile = file
+}
+
+const addQuestion = async () => {
+  console.log('🟢 開始新增題目');
+  const token = localStorage.getItem('token'); // ✅ 讀 token
+
+  const formData = new FormData();
+  formData.append('qtype', newQuestion.type);
+  formData.append('content_pic', newQuestion.questionImageFile);
+  formData.append('answer_pic', newQuestion.answerImageFile || '');
+
+  // 處理答案格式
+  let answer = '';
+  if (newQuestion.type === 'truefalse') {
+    answer = newQuestion.answer === '✔' ? 'yes' : 'no';
+  } else if (['multipleABC', 'multiple123'].includes(newQuestion.type)) {
+    answer = Array.isArray(newQuestion.answer)
+      ? newQuestion.answer.sort().join('')
+      : '';
+  } else {
+    answer = newQuestion.answer;
   }
-  reader.readAsDataURL(file)
-}
+  formData.append('answer', answer);
 
-function addQuestion() {
-  if (!newQuestion.questionImage) {
-    alert('請上傳題目圖片 📷')
-    return
+  try {
+    console.log('🚀 發送 axios 請求...');
+    const res = await axios.post('http://localhost:3000/api/question/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`, // ✅ 加這行
+      },
+    });
+
+    alert('✅ 新增成功！');
+    console.log('📥 成功回應：', res.data);
+  } catch (err) {
+    console.error('❌ 發生錯誤：', err);
+    alert('❌ 新增失敗，請查看主控台錯誤');
   }
+};
 
-  const id = Date.now()
-  const answer = ['multipleABC', 'multiple123'].includes(newQuestion.type)
-    ? [...newQuestion.answer].sort()
-    : newQuestion.answer
 
-  questions.value.push({
-    id,
-    type: newQuestion.type,
-    questionImage: newQuestion.questionImage,
-    answerImage: newQuestion.answerImage,
-    answer,
-  })
+onMounted(async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const res = await axios.get('http://localhost:3000/api/questions', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    questions.value = res.data;
+  } catch (err) {
+    console.error('❌ 取得題目失敗:', err);
+  }
+});
 
-  // Reset
-  newQuestion.questionImage = null
-  newQuestion.answerImage = null
-  newQuestion.answer = newQuestion.type === 'truefalse' ? '' : (['multipleABC', 'multiple123'].includes(newQuestion.type) ? [] : '')
-}
 
-function deleteQuestion(id) {
-  questions.value = questions.value.filter(q => q.id !== id)
-}
 </script>
+
 
 <style scoped>
 .container {
@@ -119,26 +158,31 @@ function deleteQuestion(id) {
   margin: auto;
   padding: 20px;
 }
+
 .card {
   background: #f9f9f9;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
 .card-list {
   margin-top: 30px;
 }
+
 .add-section input[type="text"],
 .add-section select {
   margin-bottom: 10px;
   display: block;
 }
+
 .preview {
   max-height: 150px;
   display: block;
   margin: 10px 0;
 }
+
 button {
   background-color: #42b983;
   color: white;
@@ -148,6 +192,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
+
 button:hover {
   background-color: #36996e;
 }

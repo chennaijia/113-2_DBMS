@@ -1,154 +1,222 @@
 <template>
-  <div class="container">
-    <h1>題庫管理系統 📚</h1>
+  <!-- 上方按鈕列 -->
+  <div class="toolbar">
+    <select @change="onFilterChange" v-model="filterOption" class="filter-select">
+      <option value="">全部</option>
+      <option value="starred">加星號</option>
+      <option value="noAnswer">錯誤超過五次</option>
+      <option value="truefalse">是非題</option>
+      <option value="multiple123">選擇題(數字選項)</option>
+      <option value="multipleABC">選擇題(字母選項)</option>
+      <option value="open">問答題</option>
+    </select>
 
-    <!-- 題目新增區塊 -->
-    <div class="card add-section">
-      <h2>新增題目</h2>
-      <label>題型：</label>
-      <select v-model="newQuestion.type">
-        <option value="truefalse">是非題</option>
-        <option value="multipleABC">選擇題(A~E)</option>
-        <option value="multiple123">選擇題(1~5)</option>
-        <option value="open">問答題</option>
-      </select>
+    <button class="btn primary" @click="toggleShowAnswers">
+      {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
+    </button>
+  </div>
 
-      <label>題目圖片：</label>
-      <input type="file" @change="e => handleImageUpload(e, 'question')" />
-
-      <label>答案：</label>
-      <div v-if="newQuestion.type === 'truefalse'">
-        <input type="radio" value="✔" v-model="newQuestion.answer" />✔
-        <input type="radio" value="✘" v-model="newQuestion.answer" />✘
-      </div>
-      <div v-else-if="newQuestion.type === 'multipleABC'">
-        <label v-for="opt in ['A','B','C','D','E']" :key="opt">
-          <input type="checkbox" :value="opt" v-model="newQuestion.answer" /> {{ opt }}
-        </label>
-      </div>
-      <div v-else-if="newQuestion.type === 'multiple123'">
-        <label v-for="opt in ['1','2','3','4','5']" :key="opt">
-          <input type="checkbox" :value="opt" v-model="newQuestion.answer" /> {{ opt }}
-        </label>
-      </div>
-      <div v-else>
-        <input v-model="newQuestion.answer" placeholder="請輸入答案" />
-      </div>
-
-      <label>詳解圖片：</label>
-      <input type="file" @change="e => handleImageUpload(e, 'answer')" />
-
-      <button @click="addQuestion">新增卡片</button>
+  <!-- 題目列表 -->
+  <div class="question-container">
+    <div v-for="(card, index) in filteredCards" :key="card.id">
+      <QuestionCard
+        :index="index + 1"
+        :card="card"
+        :editMode="editMode"
+        :showAnswers="showAnswers"
+        @toggle-star="toggleStar(card.id)"
+        @edit="openEditCardModal(card)"
+        @delete-card="deleteThisCard"
+      />
     </div>
 
-    <!-- 題目列表 -->
-    <div class="card-list">
-      <h2>目前題目列表 ({{ questions.length }} 題)</h2>
-      <div
-        class="card"
-        v-for="q in questions"
-        :key="q.id"
-      >
-        <p><strong>題型：</strong>{{ q.type }}</p>
-        <img :src="q.questionImage" class="preview" v-if="q.questionImage" />
-        <p><strong>答案：</strong> {{ Array.isArray(q.answer) ? q.answer.join(', ') : q.answer }}</p>
-        <img :src="q.answerImage" class="preview" v-if="q.answerImage" />
-        <button @click="deleteQuestion(q.id)">刪除</button>
-      </div>
+    <!-- 下方按鈕列 -->
+    <div class="button-row">
+      <button class="btn secondary" @click="toggleEditMode">
+        {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
+      </button>
+      <button class="btn success" @click="openAddCardModal">➕ 新增錯題</button>
     </div>
   </div>
+
+  <!-- Modal區域 -->
+  <AddCardModal v-if="showAddModal" @add-card="addCard" @close="closeModals" />
+  <EditCardModal v-if="showEditModal" :card="selectedCard" @close="closeModals" />
 </template>
 
-<script setup>
-import { reactive, ref } from 'vue'
 
-const questions = ref([])
+<script>
+import { ref, computed } from 'vue'
+import QuestionCard from './QuestionCard.vue'
+import AddCardModal from './AddCardModal.vue'
 
-const newQuestion = reactive({
-  type: 'truefalse',
-  questionImage: null,
-  answerImage: null,
-  answer: '',
+
+export default {
+  props: {
+    currentSubject: String
+  },
+  components: { QuestionCard, AddCardModal },
+  setup() {
+    const cards = ref([
+  {
+    id: Date.now(), // 第一張卡
+    questionType: 'open',
+    question: '功能介紹',
+    answer: '功能介紹', // 預設多選題答案需要排序
+    questionImage: new URL('@/assets/images/5.png', import.meta.url).href,
+    answerImage: new URL('@/assets/images/6.png', import.meta.url).href,
+    note: '兄弟，這個錯題還是刪了吧。我朋友有點破防了，我是沒差啦，這種題目我看多了，不會輕易破防的。但我有一個朋友，他看到這些錯題的時候，可能真的有點汗流浹背了，現在有點不太舒服，想睡覺。',
+    starred: false,
+    wrongCount: 8,
+    rightCount: 0,
+  },
+  {
+    id: Date.now() + 1, // 第二張卡（確保不重複）
+    questionType: 'open',
+    question: '題型介紹',
+    answer: '題型介紹',
+    questionImage: new URL('@/assets/images/7.png', import.meta.url).href,
+    answerImage: new URL('@/assets/images/8.png', import.meta.url).href,
+    note: '當然不是我啦，我一向都撐得住，都是用旁觀者的角度在看錯題，也不至於破防。只是想幫我朋友反映一下，他真的不會寫。所以還是建議這區要不要記一些筆記，或者…先收起來。當然啦，錯題筆記區要不要用還是看你，我是沒什麼感覺的，真的。',
+    starred: false,
+    wrongCount: 0,
+    rightCount: 0,
+  }
+])
+
+    const editMode = ref(false)
+    const showAddModal = ref(false)
+    const showEditModal = ref(false)
+    const selectedCard = ref(null)
+    const showAnswers = ref(true)
+    const filterOption = ref('')
+
+    const filteredCards = computed(() => {
+  if (filterOption.value === 'starred') {
+    return cards.value.filter(c => c.starred)
+  } else if (filterOption.value === 'noAnswer') {
+    return cards.value.filter(c => c.wrongCount > 5)
+  } else if (['truefalse', 'multiple123','multipleABC', 'open'].includes(filterOption.value)) {
+    return cards.value.filter(c => c.questionType === filterOption.value)
+  } else {
+    return cards.value
+  }
 })
+  function toggleEditMode() {
+  if (editMode.value) {
+    // 準備離開編輯模式，要驗證每張卡片
+    const invalidCard = cards.value.find((card) => {
+      const noQuestionImage = !card.questionImage
+      const noAnswer =
+        card.answer === null ||
+        card.answer === undefined ||
+        (Array.isArray(card.answer) && card.answer.length === 0) ||
+        (!Array.isArray(card.answer) && card.answer === '')
+      return noQuestionImage || noAnswer
+    })
 
-function handleImageUpload(event, type) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = () => {
-    if (type === 'question') newQuestion.questionImage = reader.result
-    else newQuestion.answerImage = reader.result
+    if (invalidCard) {
+      alert('請確保每張卡片都有「題目圖片」且「答案」不為空')
+      return
+    }
   }
-  reader.readAsDataURL(file)
+
+  // 通過檢查，才切換模式
+  editMode.value = !editMode.value
 }
 
-function addQuestion() {
-  if (!newQuestion.questionImage) {
-    alert('請上傳題目圖片 📷')
-    return
-  }
 
-  const id = Date.now()
-  const answer = ['multipleABC', 'multiple123'].includes(newQuestion.type)
-    ? [...newQuestion.answer].sort()
-    : newQuestion.answer
 
-  questions.value.push({
-    id,
-    type: newQuestion.type,
-    questionImage: newQuestion.questionImage,
-    answerImage: newQuestion.answerImage,
-    answer,
-  })
+    function onFilterChange(event) {
+      filterOption.value = event.target.value
+    }
 
-  // Reset
-  newQuestion.questionImage = null
-  newQuestion.answerImage = null
-  newQuestion.answer = newQuestion.type === 'truefalse' ? '' : (['multipleABC', 'multiple123'].includes(newQuestion.type) ? [] : '')
+    function openAddCardModal() {
+      showAddModal.value = true
+    }
+
+    function openEditCardModal(card) {
+      selectedCard.value = card
+      showEditModal.value = true
+    }
+
+    function closeModals() {
+      showAddModal.value = false
+      showEditModal.value = false
+    }
+
+    function toggleStar(cardId) {
+      const card = cards.value.find(c => c.id === cardId)
+      if (card) card.starred = !card.starred
+    }
+
+    function toggleShowAnswers() {
+      showAnswers.value = !showAnswers.value
+    }
+
+    function addCard(newCard) {
+      cards.value.push(newCard)
+    }
+    function deleteThisCard(id) {
+  cards.value = cards.value.filter(card => card.id !== id)
 }
 
-function deleteQuestion(id) {
-  questions.value = questions.value.filter(q => q.id !== id)
+
+
+    return {
+      cards,
+      editMode,
+      toggleEditMode,
+      showAddModal,
+      showEditModal,
+      selectedCard,
+      showAnswers,
+      toggleShowAnswers,
+      filterOption,
+      filteredCards,
+      onFilterChange,
+      openAddCardModal,
+      openEditCardModal,
+      closeModals,
+      toggleStar,
+      addCard,
+      deleteThisCard
+    }
+  }
 }
 </script>
 
-<style scoped>
-.container {
-  max-width: 800px;
-  margin: auto;
-  padding: 20px;
-}
-.card {
-  background: #f9f9f9;
-  border-radius: 8px;
-  padding: 15px;
+.button-row {
+  display: flex;
+  gap: 10px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  flex-wrap: wrap;
 }
-.card-list {
-  margin-top: 30px;
-}
-.add-section input[type="text"],
-.add-section select {
-  margin-bottom: 10px;
-  display: block;
-}
-.preview {
-  max-height: 150px;
-  display: block;
-  margin: 10px 0;
-}
+
 button {
-  background-color: #42b983;
-  color: white;
+  padding: 8px 16px;
   border: none;
-  padding: 8px 12px;
-  margin-top: 10px;
-  border-radius: 4px;
+  border-radius: 10px;
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold;
   cursor: pointer;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease;
 }
+
 button:hover {
-  background-color: #36996e;
+  background-color: #45a049;
 }
-</style>
+
+select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+div > .question-container {
+  width: 1280px;
+  margin: 0;
+}

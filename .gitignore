@@ -30,4 +30,3 @@ coverage
 *.tsbuildinfo
 
 backend/src/.env
-backend/src/.env.local
