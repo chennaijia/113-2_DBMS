@@ -5,14 +5,27 @@
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-      <div class="login-field" :class="{ shake: isShaking }">
-        <label for="username" class="login-label">帳號</label>
+      <div class="login-field" v-if="isRegisterMode" :class="{ shake: isShaking }">
+        <label for="username" class="login-label">使用者名稱</label>
         <input
           id="username"
           type="text"
           v-model="inputUserName"
           class="login-input"
           :class="{ 'input-error': errorField === 'username' }"
+          placeholder="請輸入帳號"
+          @focus="clearError"
+        />
+      </div>
+
+      <div class="login-field" :class="{ shake: isShaking }">
+        <label for="useraccount" class="login-label">帳號</label>
+        <input
+          id="useraccount"
+          type="text"
+          v-model="inputUserAccount"
+          class="login-input"
+          :class="{ 'input-error': errorField === 'useraccount' }"
           placeholder="請輸入帳號"
           @focus="clearError"
         />
@@ -67,6 +80,7 @@ export default {
     return {
       isRegisterMode: false,
       inputUserName: '',
+      inpurUserAccount: '',
       password: '',
       confirmPassword: '',
       errorMessage: '',
@@ -78,8 +92,8 @@ export default {
     submit() {
       this.clearError()
 
-      if (this.inputUserName.trim() === '') {
-        this.showError('請輸入帳號', 'username')
+      if (this.inputUserAccount.trim() === '') {
+        this.showError('請輸入帳號', 'useraccount')
         return
       }
       if (this.password.trim() === '') {
@@ -98,7 +112,7 @@ export default {
       }
 
       setTimeout(() => {
-        this.$emit('login', this.inputUserName.trim())
+        this.$emit('login', this.inputUserAccount.trim())
       }, 1500)
     },
     toggleMode() {
@@ -117,6 +131,7 @@ export default {
       this.isShaking = false
     },
     clearForm() {
+      this.inputUserAccount = ''
       this.inputUserName = ''
       this.password = ''
       this.confirmPassword = ''
@@ -127,7 +142,6 @@ export default {
 </script>
 
 <style scoped>
-/* 背景 */
 .login-modal {
   position: fixed;
   top: 0;
@@ -142,7 +156,6 @@ export default {
   z-index: 2000;
 }
 
-/* Modal主體 */
 .login-modal-content {
   background: linear-gradient(to bottom right, #ffffff, #f0f4f8);
   padding: 32px 28px;
@@ -152,7 +165,6 @@ export default {
   text-align: center;
 }
 
-/* 標題 */
 .login-title {
   font-size: 26px;
   font-weight: bold;
@@ -160,14 +172,12 @@ export default {
   color: #2d3748;
 }
 
-/* 錯誤訊息 */
 .error-message {
   color: #e53e3e;
   font-size: 14px;
   margin-bottom: 10px;
 }
 
-/* 欄位區 */
 .login-field {
   margin-bottom: 20px;
   text-align: left;
@@ -195,12 +205,10 @@ export default {
   background-color: #ffffff;
 }
 
-/* 有錯誤的input */
 .input-error {
   border-color: #e53e3e;
 }
 
-/* 按鈕 */
 .login-buttons {
   display: flex;
   justify-content: space-between;
@@ -236,7 +244,6 @@ export default {
   transform: translateY(-2px);
 }
 
-/* 切換註冊/登入 */
 .toggle-mode {
   margin-top: 16px;
   font-size: 14px;
@@ -249,7 +256,6 @@ export default {
   color: #2b6cb0;
 }
 
-/* 輸入錯誤時震動 */
 .shake {
   animation: shake 0.5s;
 }
@@ -270,7 +276,6 @@ export default {
   }
 }
 
-/* Toast */
 .toast {
   position: fixed;
   top: 50px;

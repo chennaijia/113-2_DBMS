@@ -7,10 +7,8 @@
     </div>
   </div>
 
-  <!-- 黑色半透明背景 -->
   <div v-if="isSidebarOpen" class="custom-backdrop" @click="backdropClick"></div>
 
-  <!-- 側邊欄本體 -->
   <div class="offcanvas-custom" :class="{ show: isSidebarOpen }">
     <div class="offcanvas-header mb-5 mt-3">
       <Icon
@@ -24,7 +22,6 @@
 
     <div class="offcanvas-body">
       <div class="accordion accordion-flush" id="accordionMain">
-        <!-- 主頁按鈕 -->
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button
@@ -36,7 +33,6 @@
           </h2>
         </div>
 
-        <!-- 我的錯題本按鈕 -->
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button
@@ -52,11 +48,9 @@
             </button>
           </h2>
 
-          <!-- 科目列表 -->
           <div id="collapseMistakeBooks" class="accordion-collapse collapse">
             <div class="accordion-body">
               <div class="accordion" id="accordionSubjects">
-                <!-- v-for 每個科目 -->
                 <div v-for="(item, index) in subjects" :key="index" class="accordion-item">
                   <h2 class="accordion-header" :id="'headingSubject' + index">
                     <button
@@ -71,7 +65,6 @@
                     </button>
                   </h2>
 
-                  <!-- 錯題瀏覽/隨機出題 -->
                   <div
                     :id="'collapseSubject' + index"
                     class="accordion-collapse collapse"
@@ -96,15 +89,10 @@
                     </div>
                   </div>
                 </div>
-                <!-- End v-for -->
               </div>
             </div>
           </div>
-            <button
-              @click="$emit('change-page', 'test')"
-            >
-              後端測試用
-            </button>
+          <button @click="$emit('change-page', 'test')">後端測試用</button>
         </div>
       </div>
 

@@ -1,30 +1,15 @@
 <template>
-  <div class="d-flex vh-100 w-100">
-    <Sidebar :subjects="subjects" @change-page="handleChangePage" />
+  <div class="vh-100 d-flex flex-column">
+    <Sidebar class="flex-shrink-0" :subjects="subjects" @change-page="handleChangePage" />
 
-    <div class="ms-5 flex-grow-1">
-      <div v-if="currentPage === 'home'">
-        <HomePage />
-      </div>
-
-      <div v-else-if="currentPage === 'book'">
-        <ViewBooks />
-      </div>
-
-      <div v-else-if="currentPage === 'question'">
-        <ViewQuestions :currentSubject="currentSubject" />
-      </div>
-
-      <div v-else-if="currentPage === 'practice'">
-        <Practice
-          v-if="startPractice"
-          :currentSubject="currentSubject"
-          @change-page="handleChangePage"
-          :goBack="goBack"
-        />
-        <SelectQuestions v-else @start="start" @start-practice="setQuestion" />
-      </div>
-    </div>
+    <component
+      :is="currentComponent"
+      v-bind="currentComponentProps"
+      @change-page="handleChangePage"
+      @start-practice="setQuestion"
+      @goBack="goBack"
+      class="h-100 w-100 flex-grow-1"
+    />
   </div>
 </template>
 
@@ -41,8 +26,8 @@ export default {
   components: {
     Sidebar,
     HomePage,
-    ViewQuestions,
     ViewBooks,
+    ViewQuestions,
     Practice,
     SelectQuestions,
   },
@@ -55,19 +40,49 @@ export default {
       selectedQuestions: [],
     }
   },
+  computed: {
+    currentComponent() {
+      switch (this.currentPage) {
+        case 'home':
+          return HomePage
+        case 'book':
+          return ViewBooks
+        case 'question':
+          return ViewQuestions
+        case 'practice':
+          return this.startPractice ? Practice : SelectQuestions
+        default:
+          return HomePage
+      }
+    },
+    currentComponentProps() {
+      switch (this.currentPage) {
+        case 'question':
+          return { currentSubject: this.currentSubject }
+        case 'practice':
+          if (this.startPractice) {
+            return {
+              currentSubject: this.currentSubject,
+              questions: this.selectedQuestions,
+            }
+          }
+          return { currentSubject: this.currentSubject }
+        default:
+          return {}
+      }
+    },
+  },
   methods: {
     handleChangePage(page, subject = '') {
       this.currentPage = page
       this.currentSubject = subject
     },
-    start() {
+    setQuestion(selectedQuestion) {
       this.startPractice = true
+      this.selectedQuestions = selectedQuestion
     },
     goBack() {
       this.startPractice = false
-    },
-    setQuestion(selectedQuestion) {
-      this.selectedQuestions = selectedQuestion
     },
   },
 }

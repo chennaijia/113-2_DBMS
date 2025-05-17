@@ -1,30 +1,40 @@
 <template>
-  <div class="container d-flex flex-column align-items-center mt-5 gap-3">
-    <!-- 下拉選單 -->
-    <div class="dropdown-container text-center">
-      <label for="dropdown" class="form-label fw-bold text-lg">選擇練習方式：</label>
-      <select
-        id="dropdown"
-        class="form-select custom-dropdown text-center"
-        v-model="selectedOption"
-        @change="handleSelection"
-      >
-        <option value="">選擇模式</option>
-        <option value="option1">自選題目</option>
-        <option value="option2">隨機出題</option>
-        <option value="option3">錯最多的題目</option>
-      </select>
+  <div class="w-100">
+    <div class="d-flex justify-content-between align-items-stretch mb-3 mt-3">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-primary rounded-pill return-btn" @click="goBack">
+          <i class="bi bi-caret-left"></i>
+          <span class="ms-2">返回</span>
+        </button>
+        <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題練習</div>
+      </div>
     </div>
 
-    <p class="text-s">{{ content[selectedOption] }}</p>
+    <div class="container d-flex flex-column align-items-center mt-5 gap-3">
+      <div class="dropdown-container text-center">
+        <select
+          id="dropdown"
+          class="form-select custom-dropdown text-center"
+          v-model="selectedOption"
+          @change="handleSelection"
+        >
+          <option value="option0">選擇模式</option>
+          <option value="option1">自選題目</option>
+          <option value="option2">隨機出題</option>
+          <option value="option3">錯最多的題目</option>
+        </select>
+      </div>
 
-    <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
-      <Questions
-        :selectedOption="selectedOption"
-        :questions="questions"
-        :questionCount="questionCount"
-        @update-selected="handleSelectedQuestion"
-      />
+      <p class="text-s">{{ content[selectedOption] }}</p>
+
+      <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
+        <Questions
+          :selectedOption="selectedOption"
+          :questions="questions"
+          :questionCount="questionCount"
+          @update-selected="handleSelectedQuestion"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -37,6 +47,15 @@ const selectedOption = ref('')
 const questionCount = ref(5)
 const selectedQuestions = ref([])
 
+const emit = defineEmits('start-practice', 'change-page')
+
+const props = defineProps({
+  currentSubject: {
+    type: String,
+    required: true,
+  },
+})
+
 const content = {
   option1: '請在下方勾選要練習的題目!',
   option2: '請在下方選取要練習的題目數!',
@@ -44,17 +63,45 @@ const content = {
 }
 
 const questions = ref([
-  { id: 1, question: '問題1', wrongCount: 8, image: '/images/1.jpg' },
-  { id: 2, question: '問題2', wrongCount: 0, image: '/images/2.jpg' },
-  { id: 3, question: '問題3', wrongCount: 3, image: '/images/3.jpg' },
-  { id: 4, question: '問題4', wrongCount: 5, image: '/images/4.jpg' },
+  {
+    id: 1,
+    question: '問題1',
+    wrongCount: 8,
+    image: '/images/1.jpg',
+    questionType: '選擇題',
+    correctAnswer: 'B',
+  },
+  {
+    id: 2,
+    question: '問題2',
+    wrongCount: 0,
+    image: '/images/2.jpg',
+    questionType: '選擇題',
+    correctAnswer: '是',
+  },
+  {
+    id: 3,
+    question: '問題3',
+    wrongCount: 3,
+    image: '/images/3.jpg',
+    questionType: '選擇題',
+    correctAnswer: '選項2',
+  },
+  {
+    id: 4,
+    question: '問題4',
+    wrongCount: 5,
+    image: '/images/4.jpg',
+    questionType: '選擇題',
+    correctAnswer: '丙',
+  },
 ])
 
 const handleSelection = () => {
   selectedQuestions.value = []
 }
 
-const handleSelectedQuestion = (questions) => {
+function handleSelectedQuestion(questions) {
   selectedQuestions.value = questions
   console.log('使用者選擇了:', selectedQuestions.value)
   emit('start-practice', selectedQuestions.value)
@@ -62,6 +109,10 @@ const handleSelectedQuestion = (questions) => {
 
 const startPractice = () => {
   console.log('進入練習模式，題目如下：', selectedQuestions.value)
+}
+
+function goBack() {
+  emit('change-page', 'book', props.currentSubject)
 }
 </script>
 
