@@ -22,7 +22,12 @@
           @change-page="handleChangePage"
           :goBack="goBack"
         />
-        <SelectQuestions v-else @start="start" @start-practice="setQuestion" />
+        <SelectQuestions
+          v-else
+          @start="start"
+          @start-practice="setQuestion"
+          :currentSubject="currentSubject"
+        />
       </div>
       <div v-else-if="currentPage === 'test'">
         <BackendTest />

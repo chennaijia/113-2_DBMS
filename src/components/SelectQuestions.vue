@@ -43,7 +43,7 @@
 import { ref } from 'vue'
 import Questions from './Practice/Questions.vue'
 
-const selectedOption = ref('')
+const selectedOption = ref('option0')
 const questionCount = ref(5)
 const selectedQuestions = ref([])
 
