@@ -3,10 +3,15 @@
 
   <div>
     <select @change="onFilterChange" v-model="filterOption">
-      <option value="">全部</option>
-      <option value="starred">加星號</option>
-      <option value="noAnswer">錯誤超過五次</option>
-    </select>
+  <option value="">全部</option>
+  <option value="starred">加星號</option>
+  <option value="noAnswer">錯誤超過五次</option>
+  <option value="truefalse">是非題</option>
+  <option value="multiple123">選擇題(數字選項)</option>
+  <option value="multipleABC">選擇題(字母選項)</option>
+  <option value="open">問答題</option>
+</select>
+
     <button @click="toggleShowAnswers">
       {{ showAnswers ? '隱藏答案' : '顯示答案' }}
     </button>
@@ -65,8 +70,8 @@ export default {
   components: { QuestionCard, AddCardModal },
   setup() {
     const cards = ref([
-      { id: 1, question: '問題1', answer: '答案1', starred: false, rightCount: 0, wrongCount: 8, note: '筆記區' },
-      { id: 2, question: '問題2', answer: '答案2', starred: false, rightCount: 0, wrongCount: 0, note: '筆記區' },
+      { id: 1, question: '問題1', answer: '答案1', starred: false, rightCount: 0, wrongCount: 8, note: '筆記區',questionType:'open' },
+      { id: 2, question: '問題2', answer: '答案2', starred: false, rightCount: 0, wrongCount: 0, note: '筆記區',questionType:'open' },
     ])
     const editMode = ref(false)
     const showAddModal = ref(false)
@@ -76,14 +81,17 @@ export default {
     const filterOption = ref('')
 
     const filteredCards = computed(() => {
-      if (filterOption.value === 'starred') {
-        return cards.value.filter(c => c.starred)
-      } else if (filterOption.value === 'noAnswer') {
-        return cards.value.filter(c => c.wrongCount > 5)
-      } else {
-        return cards.value
-      }
-    })
+  if (filterOption.value === 'starred') {
+    return cards.value.filter(c => c.starred)
+  } else if (filterOption.value === 'noAnswer') {
+    return cards.value.filter(c => c.wrongCount > 5)
+  } else if (['truefalse', 'multiple123','multipleABC', 'open'].includes(filterOption.value)) {
+    return cards.value.filter(c => c.questionType === filterOption.value)
+  } else {
+    return cards.value
+  }
+})
+
 
     function toggleEditMode() {
       editMode.value = !editMode.value

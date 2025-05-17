@@ -3,25 +3,90 @@
     <div class="modal-content">
       <h2>新增卡片</h2>
 
-      <label>問題文字:</label>
-      <input v-model="question" />
+      <label>選擇題型:</label>
+      <select v-model="questionType">
+        <option value="truefalse">是非題</option>
+        <option value="multipleABC">選擇題(字母選項)</option>
+        <option value="multiple123">選擇題(數字選項)</option>
+        <option value="open">問答題</option>
+      </select>
 
-      <label>問題圖片:</label>
+      <label>題目圖片:</label>
       <div v-if="questionImage">
-        <img :src="questionImage" alt="問題圖片" class="preview-image" />
+        <img :src="questionImage" alt="題目圖片" class="preview-image" />
         <button @click="removeImage('question')">移除圖片</button>
       </div>
       <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'question')" />
 
-      <label>答案文字:</label>
-      <input v-model="answer" />
+      <!-- 答案欄位：依據題型切換 -->
+      <template v-if="questionType === 'truefalse'">
+        <label>選擇正確答案:</label>
+        <label><input type="radio" value="✔" v-model="answer" />✔</label>
+        <label><input type="radio" value="✘" v-model="answer" />✘</label>
 
-      <label>答案圖片:</label>
-      <div v-if="answerImage">
-        <img :src="answerImage" alt="答案圖片" class="preview-image" />
-        <button @click="removeImage('answer')">移除圖片</button>
-      </div>
-      <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'answer')" />
+        <label>詳解圖片:</label>
+        <div v-if="answerImage">
+          <img :src="answerImage" class="preview-image" />
+          <button @click="removeImage('answer')">移除圖片</button>
+        </div>
+        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'answer')" />
+      </template>
+
+      <template v-else-if="questionType === 'multipleABC'">
+        <label>選擇正確答案:</label>
+        <div>
+
+    <p>字母選項:</p>
+    <label v-for="opt in ['A','B','C','D','E']" :key="opt">
+      <input
+        type="checkbox"
+        :value="opt"
+        v-model="answer"
+      />
+      {{ opt }}
+    </label>
+    <label>詳解圖片:</label>
+        <div v-if="answerImage">
+          <img :src="answerImage" class="preview-image" />
+          <button @click="removeImage('answer')">移除圖片</button>
+        </div>
+        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'answer')" />
+  </div>
+</template>
+ <template v-else-if="questionType === 'multiple123'">
+        <label>選擇正確答案:</label>
+        <div></div>
+  <div>
+    <p>數字選項:</p>
+    <label v-for="num in ['1','2','3','4','5']" :key="num">
+      <input
+        type="checkbox"
+        :value="num"
+        v-model="answer"
+      />
+      {{ num }}
+    </label>
+        </div>
+
+        <label>詳解圖片:</label>
+        <div v-if="answerImage">
+          <img :src="answerImage" class="preview-image" />
+          <button @click="removeImage('answer')">移除圖片</button>
+        </div>
+        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'answer')" />
+      </template>
+
+      <template v-else-if="questionType === 'open'">
+        <label>答案文字:</label>
+        <input v-model="answer" />
+
+        <label>詳解圖片:</label>
+        <div v-if="answerImage">
+          <img :src="answerImage" class="preview-image" />
+          <button @click="removeImage('answer')">移除圖片</button>
+        </div>
+        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'answer')" />
+      </template>
 
       <div class="button-group">
         <button @click="submitCard">送出</button>
@@ -30,22 +95,20 @@
     </div>
   </div>
 </template>
-
 <script>
 import { ref } from 'vue'
 
 export default {
   emits: ['add-card', 'close'],
   setup(_, { emit }) {
-    const question = ref('')
-    const answer = ref('')
     const questionImage = ref(null)
     const answerImage = ref(null)
+    const answer = ref([])
+    const questionType = ref('truefalse') // 預設題型
 
     function handleFileChange(event, type) {
       const file = event.target.files[0]
       if (!file) return
-
       if (file.size > 2 * 1024 * 1024) {
         alert('圖片太大，請選擇小於 2MB 的檔案')
         return
@@ -64,17 +127,24 @@ export default {
       if (type === 'answer') answerImage.value = null
     }
 
+
     function submitCard() {
-      if ((!question.value.trim() && !questionImage.value) &&
-          (!answer.value.trim() && !answerImage.value)) {
-        alert('請至少提供題目或答案的文字或圖片')
+      if (!questionImage.value) {
+        alert('請上傳題目圖片')
+        return
+      }
+      if(answer.value.length === 0){
+        alert('請輸入答案')
         return
       }
 
       const newCard = {
         id: Date.now(),
-        question: question.value.trim(),
-        answer: answer.value.trim(),
+        questionType: questionType.value,
+        question: '', // 改由圖片呈現
+        answer: (questionType.value === 'multipleABC' || questionType.value === 'multiple123')
+      ? [...answer.value].sort() // 這裡排序
+      : answer.value,
         questionImage: questionImage.value,
         answerImage: answerImage.value,
         note: '',
@@ -87,21 +157,19 @@ export default {
       emit('close')
 
       // Reset
-      question.value = ''
-      answer.value = ''
       questionImage.value = null
       answerImage.value = null
+      answer.value = ''
     }
 
     return {
-      question,
-      answer,
       questionImage,
       answerImage,
+      answer,
+      questionType,
       handleFileChange,
       removeImage,
       submitCard,
-
     }
   }
 }

@@ -30,6 +30,12 @@
     </div>
 
     <!-- 可擴充申論題 -->
+  <div>
+    <div>題目類型：{{ questionType }}</div>
+    <div v-if="questionType === 'open'"></div>
+    <div v-else-if="questionType === 'multipleABC'"></div>
+    <div v-else-if="questionType === 'multiple123'"></div>
+    <div v-else-if="questionType === 'truefalse'"></div>
   </div>
 </template>
 

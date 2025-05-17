@@ -24,13 +24,63 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 /** POST /api/auth/login */
 export const login = async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body;
-  const user = await getUserByEmail(email);
-  if (!user) { res.status(401).json({ message: 'Invalid credentials' }); return; }
+  try {
+    const { email, password } = req.body;
 
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) { res.status(401).json({ message: 'Invalid credentials' }); return; }
+    // ✅ 檢查欄位是否空值
+    if (!email || !password) {
+      res.status(400).json({ message: '請輸入 Email 和密碼！📝' });
+      return;
+    }
 
-  const token = jwt.sign({ id: user.user_id }, env.JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token });            // ← 也不要 return
+    // 🔍 嘗試取得使用者資料
+    const user = await getUserByEmail(email);
+    if (!user) {
+      res.status(401).json({ message: '找不到這個 Email，請確認是否註冊過 🧐' });
+      return;
+    }
+
+    // 🔐 驗證密碼（確保資料庫有正確存 User_Password）
+    const passwordMatch = await bcrypt.compare(password, user.User_Password);
+    if (!passwordMatch) {
+      res.status(401).json({ message: '密碼錯誤，請再試一次 🙁' });
+      return;
+    }
+
+    // 🪄 成功登入，產生 JWT token
+    const token = jwt.sign({ id: user.User_ID }, env.JWT_SECRET, { expiresIn: '7d' });
+
+    // ✅ 回傳成功訊息與 token
+    res.json({
+      message: '登入成功！🎉 歡迎回來～',
+      token
+    });
+
+  } catch (err) {
+    console.error('登入錯誤❗️:', err);
+    res.status(500).json({ message: '伺服器錯誤，請稍後再試 😢' });
+  }
 };
+
+/** GET /api/auth/me */
+export const getMe = (req: Request, res: Response): void => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.status(401).json({ message: '請附上授權 token 🙅‍♀️' });
+      return;
+    }
+
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+    const decoded = jwt.verify(token, env.JWT_SECRET);
+
+    res.json({
+      message: 'Token 驗證成功 🎉',
+      user: decoded // decoded 會長這樣 { id: 1, iat: ..., exp: ... }
+    });
+
+  } catch (err) {
+    res.status(401).json({ message: '無效的 token 🛑' });
+  }
+};
+

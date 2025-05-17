@@ -180,7 +180,7 @@ import * as bootstrap from 'bootstrap';
 const auth = inject('auth')
 
 function openLoginModal() {
-  showLoginModal.value = true
+  showLoginModal.value = true;
 }
 
 function closeLoginModal() {
@@ -262,6 +262,13 @@ export default {
       localStorage.setItem('userName', userName);
       this.closeLoginModal();
       this.showGuide = false; // 登入後關閉導覽
+    },
+        createBook() {
+      this.showAddBook = true;
+    },
+    handleAddBook(newBook) {
+      this.books.push({ ...newBook, selected: false, editing: false, hover: false });
+      this.showAddBook = false;
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
