@@ -12,7 +12,7 @@ export const createUser = async (name: string, email: string, pwd: string) => {
 
 export const getUserByEmail = async (email: string) => {
   const [rows]: any = await pool.execute(
-    'SELECT * FROM USER WHERE USER_email = ? LIMIT 1',
+    'SELECT User_ID, User_name, User_email, User_Password, SignUpDate FROM USER WHERE User_email = ? LIMIT 1',
     [email],
   );
   return rows[0];
