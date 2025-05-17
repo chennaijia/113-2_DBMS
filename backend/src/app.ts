@@ -35,6 +35,7 @@ app.get('/api', (req, res) => {
 });
 
 
+
 export { app };
 
 
@@ -43,5 +44,7 @@ app.use(express.json());
 
 // 註冊 authRouter
 app.use('/api/auth', authRouter);
+app.use('/api/log', authRouter);
 app.use('/api/questions', questionRouter);
 app.use('/api/books', qbRouter);
+
