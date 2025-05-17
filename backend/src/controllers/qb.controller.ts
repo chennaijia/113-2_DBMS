@@ -8,7 +8,7 @@ export const createQB = async (req: AuthReq, res: Response) => {
   const { BName, Icon } = req.body;
   if (!BName) return res.status(400).json({ message: 'BName 必填' });
 
-  const id = await QB.createQB({ bname: BName, icon: Icon, creator_id: req.user!.id });
+  const id = await QB.createQB({ BName, Icon, Creator_ID: req.user!.id });
   res.status(201).json({ QuestionBook_ID: id });
 };
 

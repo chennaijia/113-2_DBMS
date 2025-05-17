@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { authRouter } from './routes/auth.routes';
 import { questionRouter } from './routes/question.routes';
-import { qbRouter } from './routes/qb.routes';
+import {qbRouter}from './routes/qb.routes';
 import { pool } from './config/database';
 
 import * as dotenv from 'dotenv';
@@ -46,5 +46,4 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/log', authRouter);
 app.use('/api/questions', questionRouter);
-app.use('/api/books', qbRouter);
-
+app.use('/api/qb', qbRouter);
