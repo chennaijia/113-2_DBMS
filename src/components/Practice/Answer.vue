@@ -28,8 +28,9 @@
         }}
       </p>
     </div>
+  </div>
 
-    <!-- 可擴充申論題 -->
+  <!-- 可擴充申論題 -->
   <div>
     <div>題目類型：{{ questionType }}</div>
     <div v-if="questionType === 'open'"></div>
