@@ -80,7 +80,7 @@
 
       <!-- 編輯模式中也能修改筆記 -->
       <textarea v-model="card.note" rows="3" class="note" placeholder="輸入筆記..."></textarea>
-      <button class="delete-button" @click="deleteThisCard"></button>
+      <button class="delete-button" @click="deleteThisCard">刪了吧破防了💔</button>
     </div>
   </div>
 </template>
@@ -111,7 +111,16 @@ export default {
       uploadingType.value = type
       fileInput.value.click()
     }
-
+    function submitCard() {
+      if (!questionImage.value) {
+        alert('請上傳題目圖片')
+        return
+      }
+      if(answer.value.length === 0){
+        alert('請輸入答案')
+        return
+      }
+    }
     function handleFileChange(event, card, type) {
   const file = event.target.files[0]
   if (!file) return
@@ -140,7 +149,8 @@ export default {
       deleteThisCard,
       uploadImage,
       handleFileChange,
-      removeImage
+      removeImage,
+      submitCard
     }
   }
 }
@@ -148,23 +158,93 @@ export default {
 
 
 <style scoped>
-.card { background-color: #ffffff; border-radius: 12px; margin-bottom: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 10px; }
-.star { background: none; font-size: 20px; border: none; cursor: pointer; color: gold; }
-.card-content { display: flex; gap: 20px; position: relative; }
-.box { flex: 1; background-color: #e3f2fd; padding: 20px; border-radius: 8px; text-align: center; position: relative; }
-.preview-image { margin-top: 10px; max-width: 100%; height: auto; border-radius: 8px; }
-.hidden .overlay { display: block; }
-.answer-box .overlay { display: none; }
-.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgb(176, 190, 197); z-index: 10; border-radius: 8px; }
-.image-block { margin-bottom: 15px; }
-.delete-button { margin-top: 5px; background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-.note { margin-top: 10px; background-color: #fff8e1; padding: 10px; border-left: 4px solid #ffca28; font-size: 14px; border-radius: 4px; }
-.delete-card-button { margin-top: 10px; background-color: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-.edit-input { display: block; width: 100%; margin-bottom: 10px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+.card {
+  width: 100%;
+  margin: 20px auto;
+  background-color: #f5f9fd; /* 淡藍灰背景 */
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cfd8dc;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #0d47a1; /* 深藍字 */
+}
+
+.type-label {
+  color: #1976d2;
+}
+
+.star {
+  background: none;
+  font-size: 22px;
+  border: none;
+  cursor: pointer;
+  color: #ffca28;
+}
+
+.card-content {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.box {
+  flex: 1;
+  background-color: #e3f2fd; /* 藍色區塊 */
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+  color: #263238;
+}
+
+.preview-image {
+  margin-top: 10px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #b0bec5;
+}
+
+.hidden .overlay {
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(195, 203, 206);
+  z-index: 10;
+  border-radius: 8px;
+}
+
+.note {
+  width: 100%;
+  margin-top: 10px;
+  background-color: #f0f4c3;
+  padding: 10px;
+  border-left: 4px solid #ffca28;
+  font-size: 14px;
+  border-radius: 4px;
+  color: #37474f;
+  box-sizing: border-box;
+}
+
+
 .delete-button {
-  background-color: #e74c3c; /* 紅色 */
-  color: white;
+  background-color: #f6d7d4;
+  color: rgb(171, 4, 4);
   border: none;
   padding: 8px 12px;
   border-radius: 6px;
@@ -173,7 +253,30 @@ export default {
 }
 
 .delete-button:hover {
-  background-color: #c0392b; /* 深紅色 */
+  background-color: #d76154;
 }
 
+input[type="file"] {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+label {
+  margin-right: 10px;
+  color: #37474f;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  margin-right: 4px;
+}
+
+.edit-input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #90a4ae;
+}
 </style>
