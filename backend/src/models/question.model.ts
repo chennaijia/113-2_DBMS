@@ -38,12 +38,10 @@ export const createQuestion = async (q: QuestionInput): Promise<number> => {
   return (result as ResultSetHeader).insertId;
 };
 
-export const listQuestions = async () => {
+export const listQuestions = async (creatorId: number) => {
   const [rows]: any = await pool.query(`
-    SELECT
-      Question_ID, QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar
-    FROM QUESTION
-    ORDER BY Question_ID DESC
-  `);
+    SELECT * FROM question WHERE Creator_id = ? ORDER BY question_id DESC
+  `, [creatorId]);
   return rows;
 };
+

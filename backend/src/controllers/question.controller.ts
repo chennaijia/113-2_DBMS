@@ -40,10 +40,10 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
       answer_pic: answerPicUrl,
       detail_ans: '',
       detail_ans_pic: '',
-      qtype2: '',
       subject: '',
       level: 1,
       creator_id: req.user!.id,
+      isStar: 0,
     };
 
     console.log('📤 準備存入資料庫的題目：', newQuestion);
@@ -56,10 +56,10 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
   }
 };
 
-export const listQuestions = async (req: Request, res: Response) => {
+export const listQuestions = async (req: AuthReq, res: Response) => {
   try {
-    const questions = await Question.listQuestions();
-    res.json(questions);
+    const questions = await Question.listQuestions(req.user!.id); // ⬅️ 拿使用者 ID
+    res.status(200).json(questions); // ⬅️ status 改成 200
   } catch (err) {
     console.error('❌ 抓題目列表錯誤:', err);
     res.status(500).json({ message: '讀取失敗' });

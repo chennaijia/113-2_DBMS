@@ -8,10 +8,7 @@ import { upload } from '../middleware/upload';
 
 export const questionRouter = Router();
 
-questionRouter.get('/', listQuestions);
 questionRouter.post('/upload', auth, upload, uploadQuestion);
+questionRouter.get('/questions', auth, listQuestions); // ⬅️ 要有 auth 才能取得 user.id
 
 
-// 其他題目路由
-//questionRouter.post('/', auth, createQuestion);
-//questionRouter.get('/', listQuestions);

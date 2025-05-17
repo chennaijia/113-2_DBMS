@@ -56,12 +56,13 @@
       </div>
     </div>
 
+    <!-- 歷史題目列表 -->
     <div v-for="q in questions" :key="q.question_id" class="card">
-  <p>題型：{{ q.QType }}</p>
-  <img :src="q.Content_pic" class="preview" v-if="q.Content_pic" />
-  <p>答案：{{ q.Answer }}</p>
-  <img :src="q.Answer_pic" class="preview" v-if="q.Answer_pic" />
-</div>
+      <p>題型：{{ q.QType }}</p>
+      <img :src="q.Content_pic" class="preview" v-if="q.Content_pic" />
+      <p>答案：{{ q.Answer }}</p>
+      <img :src="q.Answer_pic" class="preview" v-if="q.Answer_pic" />
+    </div>
 
   </div>
 </template>
@@ -127,6 +128,17 @@ const addQuestion = async () => {
 
     alert('✅ 新增成功！');
     console.log('📥 成功回應：', res.data);
+
+    questions.value.unshift({
+      question_id: res.data.id,
+      QType: newQuestion.type,
+      Content_pic: res.data.contentPicUrl,  // 後端要有這些值
+      Answer: answer,
+      Answer_pic: res.data.answerPicUrl,
+    });
+
+    console.log('📥 成功顯示');
+
   } catch (err) {
     console.error('❌ 發生錯誤：', err);
     alert('❌ 新增失敗，請查看主控台錯誤');
@@ -136,15 +148,28 @@ const addQuestion = async () => {
 
 onMounted(async () => {
   const token = localStorage.getItem('token');
-  try {
-    const res = await axios.get('http://localhost:3000/api/questions', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    questions.value = res.data;
-  } catch (err) {
-    console.error('❌ 取得題目失敗:', err);
+
+  if (!token) {
+
+    alert('⛔請先登入');
+    console.warn('⛔ 尚未登入，略過題目讀取');
+    return;
+
+  }
+
+  else {
+
+    try {
+      console.log('🟢 開始取得題目');
+      const res = await axios.get('http://localhost:3000/api/question/questions', {
+        headers: {
+          Authorization: `Bearer ${token}`, // ⬅️ 傳 JWT token
+        },
+      });
+      questions.value = res.data; // ✅ 更新畫面上的題目
+    } catch (err) {
+      console.error('❌ 取得題目失敗:', err);
+    }
   }
 });
 
