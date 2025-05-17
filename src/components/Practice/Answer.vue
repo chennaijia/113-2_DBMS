@@ -1,9 +1,10 @@
 <template>
   <div>
     <div>題目類型：{{ questionType }}</div>
-    <div v-if="questionType === '選擇題'"></div>
-    <div v-else-if="questionType === '填空題'"></div>
-    <div v-else-if="questionType === '簡答題'"></div>
+    <div v-if="questionType === 'open'"></div>
+    <div v-else-if="questionType === 'multipleABC'"></div>
+    <div v-else-if="questionType === 'multiple123'"></div>
+    <div v-else-if="questionType === 'truefalse'"></div>
   </div>
 </template>
 <script setup>
