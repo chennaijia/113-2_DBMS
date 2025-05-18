@@ -1,23 +1,23 @@
 <template>
   <!-- 上方按鈕列 -->
+  <div class="toolbar">
+    <select @change="onFilterChange" v-model="filterOption" class="filter-select">
+      <option value="">全部</option>
+      <option value="starred">加星號</option>
+      <option value="noAnswer">錯誤超過五次</option>
+      <option value="truefalse">是非題</option>
+      <option value="multiple123">選擇題(數字選項)</option>
+      <option value="multipleABC">選擇題(字母選項)</option>
+      <option value="open">問答題</option>
+    </select>
 
-  <div>
-    <select @change="onFilterChange" v-model="filterOption">
-  <option value="">全部</option>
-  <option value="starred">加星號</option>
-  <option value="noAnswer">錯誤超過五次</option>
-  <option value="truefalse">是非題</option>
-  <option value="multiple123">選擇題(數字選項)</option>
-  <option value="multipleABC">選擇題(字母選項)</option>
-  <option value="open">問答題</option>
-</select>
-
-    <button @click="toggleShowAnswers">
-      {{ showAnswers ? '隱藏答案' : '顯示答案' }}
+    <button class="btn primary" @click="toggleShowAnswers">
+      {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
     </button>
   </div>
-  <div>
-    <!-- 題目列表 -->
+
+  <!-- 題目列表 -->
+  <div class="question-container">
     <div v-for="(card, index) in filteredCards" :key="card.id">
       <QuestionCard
         :index="index + 1"
@@ -29,33 +29,21 @@
         @delete-card="deleteThisCard"
       />
     </div>
+
     <!-- 下方按鈕列 -->
     <div class="button-row">
-      <button @click="toggleEditMode">
-        {{ editMode ? '離開編輯模式' : '進入編輯模式' }}
+      <button class="btn secondary" @click="toggleEditMode">
+        {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
       </button>
-      <button @click="openAddCardModal">➕ 新增錯題</button>
+      <button class="btn success" @click="openAddCardModal">➕ 新增錯題</button>
     </div>
-    <div>
-
-  <AddCardModal
-    v-if="showAddModal"
-    @add-card="handleAddCard"
-    @close="showAddModal = false"
-  />
-</div>
-
-
-    <!-- Modal區域 -->
-    <AddCardModal
-      v-if="showAddModal"
-      @add-card="addCard"
-      @close="closeModals"
-    />
-
-    <EditCardModal v-if="showEditModal" :card="selectedCard" @close="closeModals" />
   </div>
+
+  <!-- Modal區域 -->
+  <AddCardModal v-if="showAddModal" @add-card="addCard" @close="closeModals" />
+  <EditCardModal v-if="showEditModal" :card="selectedCard" @close="closeModals" />
 </template>
+
 
 <script>
 import { ref, computed } from 'vue'
@@ -70,9 +58,32 @@ export default {
   components: { QuestionCard, AddCardModal },
   setup() {
     const cards = ref([
-      { id: 1, question: '問題1', answer: '答案1', starred: false, rightCount: 0, wrongCount: 8, note: '筆記區',questionType:'open' },
-      { id: 2, question: '問題2', answer: '答案2', starred: false, rightCount: 0, wrongCount: 0, note: '筆記區',questionType:'open' },
-    ])
+  {
+    id: Date.now(), // 第一張卡
+    questionType: 'open',
+    question: '功能介紹',
+    answer: '功能介紹', // 預設多選題答案需要排序
+    questionImage: new URL('@/assets/images/5.png', import.meta.url).href,
+    answerImage: new URL('@/assets/images/6.png', import.meta.url).href,
+    note: '兄弟，這個錯題還是刪了吧。我朋友有點破防了，我是沒差啦，這種題目我看多了，不會輕易破防的。但我有一個朋友，他看到這些錯題的時候，可能真的有點汗流浹背了，現在有點不太舒服，想睡覺。',
+    starred: false,
+    wrongCount: 8,
+    rightCount: 0,
+  },
+  {
+    id: Date.now() + 1, // 第二張卡（確保不重複）
+    questionType: 'open',
+    question: '題型介紹',
+    answer: '題型介紹',
+    questionImage: new URL('@/assets/images/7.png', import.meta.url).href,
+    answerImage: new URL('@/assets/images/8.png', import.meta.url).href,
+    note: '當然不是我啦，我一向都撐得住，都是用旁觀者的角度在看錯題，也不至於破防。只是想幫我朋友反映一下，他真的不會寫。所以還是建議這區要不要記一些筆記，或者…先收起來。當然啦，錯題筆記區要不要用還是看你，我是沒什麼感覺的，真的。',
+    starred: false,
+    wrongCount: 0,
+    rightCount: 0,
+  }
+])
+
     const editMode = ref(false)
     const showAddModal = ref(false)
     const showEditModal = ref(false)
@@ -91,11 +102,30 @@ export default {
     return cards.value
   }
 })
+  function toggleEditMode() {
+  if (editMode.value) {
+    // 準備離開編輯模式，要驗證每張卡片
+    const invalidCard = cards.value.find((card) => {
+      const noQuestionImage = !card.questionImage
+      const noAnswer =
+        card.answer === null ||
+        card.answer === undefined ||
+        (Array.isArray(card.answer) && card.answer.length === 0) ||
+        (!Array.isArray(card.answer) && card.answer === '')
+      return noQuestionImage || noAnswer
+    })
 
-
-    function toggleEditMode() {
-      editMode.value = !editMode.value
+    if (invalidCard) {
+      alert('請確保每張卡片都有「題目圖片」且「答案」不為空')
+      return
     }
+  }
+
+  // 通過檢查，才切換模式
+  editMode.value = !editMode.value
+}
+
+
 
     function onFilterChange(event) {
       filterOption.value = event.target.value
@@ -156,11 +186,37 @@ export default {
 }
 </script>
 
-
-<style scoped>
 .button-row {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
-</style>
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+div > .question-container {
+  width: 1280px;
+  margin: 0;
+}

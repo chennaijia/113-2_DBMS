@@ -50,6 +50,9 @@
       <div v-else-if="currentPage === 'test'">
         <BackendTest />
       </div>
+      <div v-else-if="currentPage === 'testquestion'">
+        <BackendTestQuestion />
+      </div>
     </div>
   </div>
 </template>
@@ -65,6 +68,7 @@ import Practice from './components/Practice.vue'
 import PracticeResult from './components/Practice/PracticeResult.vue'
 import SelectQuestions from './components/SelectQuestions.vue'
 import BackendTest from './components/BackendTest.vue'
+import BackendTestQuestion from './components/BackendTestQuestion.vue'
 
 const subjects = ref(['高三國文', '高二數學'])
 const currentPage = ref('home')

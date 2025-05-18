@@ -10,9 +10,15 @@ import { auth } from '../middleware/auth';
 
 export const qbRouter = Router();
 
+function asyncHandler(fn: any) {
+  return function (req: any, res: any, next: any) {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
+
 /* ---------- CRUD routes ---------- */
-qbRouter.post('/',      auth, createQB);   // 需要登入
-qbRouter.get('/',              listQB);   // 公開列出
-qbRouter.get('/:id',           getQB);    // 公開單一題本
-qbRouter.put('/:id',    auth,  updateQB); // 需要登入+擁有者
-qbRouter.delete('/:id', auth,  deleteQB); // 需要登入+擁有者
+qbRouter.post('/',      auth, asyncHandler(createQB));   // 需要登入
+qbRouter.get('/',              asyncHandler(listQB));   // 公開列出
+qbRouter.get('/:id', asyncHandler(getQB));    // 公開單一題本
+qbRouter.put('/:id',    auth,  asyncHandler(updateQB)); // 需要登入+擁有者
+qbRouter.delete('/:id', auth,  asyncHandler(deleteQB)); // 需要登入+擁有者

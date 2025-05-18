@@ -84,3 +84,10 @@ export const getMe = (req: Request, res: Response): void => {
   }
 };
 
+/** GET /api/auth/logVerify */
+export const logVerify = (req, res) => {
+  const { status, token } = req.body;
+  console.log('✅ 登入狀態：', status);
+  console.log('🔐 Token：', token);
+  res.json({ message: '後端已收到登入資訊' });
+};

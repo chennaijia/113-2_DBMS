@@ -7,54 +7,26 @@
 
       <div class="login-field" v-if="isRegisterMode" :class="{ shake: isShaking }">
         <label for="username" class="login-label">使用者名稱</label>
-        <input
-          id="username"
-          type="text"
-          v-model="inputUserName"
-          class="login-input"
-          :class="{ 'input-error': errorField === 'username' }"
-          placeholder="請輸入帳號"
-          @focus="clearError"
-        />
+        <input id="username" type="text" v-model="inputUserName" class="login-input"
+          :class="{ 'input-error': errorField === 'username' }" placeholder="請輸入帳號" @focus="clearError" />
       </div>
 
       <div class="login-field" :class="{ shake: isShaking }">
         <label for="useraccount" class="login-label">帳號</label>
-        <input
-          id="useraccount"
-          type="text"
-          v-model="inputUserAccount"
-          class="login-input"
-          :class="{ 'input-error': errorField === 'useraccount' }"
-          placeholder="請輸入帳號"
-          @focus="clearError"
-        />
+        <input id="useraccount" type="text" v-model="inputUserAccount" class="login-input"
+          :class="{ 'input-error': errorField === 'useraccount' }" placeholder="請輸入帳號" @focus="clearError" />
       </div>
 
       <div class="login-field" :class="{ shake: isShaking }">
         <label for="password" class="login-label">密碼</label>
-        <input
-          id="password"
-          type="password"
-          v-model="password"
-          class="login-input"
-          :class="{ 'input-error': errorField === 'password' }"
-          placeholder="請輸入密碼"
-          @focus="clearError"
-        />
+        <input id="password" type="password" v-model="password" class="login-input"
+          :class="{ 'input-error': errorField === 'password' }" placeholder="請輸入密碼" @focus="clearError" />
       </div>
 
       <div class="login-field" v-if="isRegisterMode" :class="{ shake: isShaking }">
         <label for="confirmPassword" class="login-label">確認密碼</label>
-        <input
-          id="confirmPassword"
-          type="password"
-          v-model="confirmPassword"
-          class="login-input"
-          :class="{ 'input-error': errorField === 'confirmPassword' }"
-          placeholder="請再次輸入密碼"
-          @focus="clearError"
-        />
+        <input id="confirmPassword" type="password" v-model="confirmPassword" class="login-input"
+          :class="{ 'input-error': errorField === 'confirmPassword' }" placeholder="請再次輸入密碼" @focus="clearError" />
       </div>
 
       <div class="toggle-mode">
@@ -89,31 +61,91 @@ export default {
     }
   },
   methods: {
-    submit() {
-      this.clearError()
+    async submit() {
+      this.clearError();
 
       if (this.inputUserAccount.trim() === '') {
-        this.showError('請輸入帳號', 'useraccount')
-        return
+        this.showError('請輸入帳號', 'useraccount');
+        return;
       }
       if (this.password.trim() === '') {
-        this.showError('請輸入密碼', 'password')
-        return
+        this.showError('請輸入密碼', 'password');
+        return;
       }
 
       if (this.isRegisterMode) {
         if (this.password !== this.confirmPassword) {
-          this.showError('兩次密碼不一致', 'confirmPassword')
-          return
+          this.showError('兩次密碼不一致', 'confirmPassword');
+          return;
         }
-        // 待辦：聯註冊的API
-      } else {
-        // 待辦：聯登入的API
-      }
 
-      setTimeout(() => {
-        this.$emit('login', this.inputUserAccount.trim())
-      }, 1500)
+        // 👤 註冊 API 請求
+        try {
+          const res = await fetch('http://localhost:3000/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: this.inputUserName.trim(),
+              email: this.inputUserAccount.trim(),
+              password: this.password
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            localStorage.setItem('token', data.token);
+            this.message = data.message || `註冊成功！🎉 使用者 ID：${data.id}`;
+            this.$emit('login', this.inputUserAccount.trim());
+          } else {
+            this.showError(data.message || '註冊失敗😢', 'useraccount');
+          }
+        } catch (err) {
+          this.showError('連線失敗，請稍後再試 🛠️', 'useraccount');
+        }
+
+      } else {
+        // 🔐 登入 API 請求
+        try {
+          const res = await fetch('http://localhost:3000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: this.inputUserAccount.trim(),
+              password: this.password
+            })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            this.message = `登入成功！🎉 Token：${data.token}`;
+            localStorage.setItem('token', data.token);
+            this.$emit('login', this.inputUserAccount.trim());
+
+
+            this.$emit('showToast', '登入成功！🎉');
+          } else {
+            this.showError(data.message || '登入失敗😢', 'useraccount');
+          }
+
+          try {
+            await fetch('http://localhost:3000/api/log/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                status: 'success',
+                token: data.token
+              })
+            });
+          } catch (logErr) {
+            console.warn('⚠ 傳送 token 到後端失敗：', logErr);
+          }
+
+        } catch (err) {
+          this.showError('連線錯誤，請稍後再試 🔌', 'useraccount');
+        }
+
+      }
     },
     toggleMode() {
       this.isRegisterMode = !this.isRegisterMode
@@ -261,16 +293,20 @@ export default {
 }
 
 @keyframes shake {
+
   0%,
   100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-5px);
   }
+
   50% {
     transform: translateX(5px);
   }
+
   75% {
     transform: translateX(-5px);
   }
@@ -292,6 +328,7 @@ export default {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
