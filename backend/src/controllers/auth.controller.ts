@@ -36,6 +36,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // 🔍 嘗試取得使用者資料
     const user = await getUserByEmail(email);
+    console.log('🧪 找到的 user:', user);
     if (!user) {
       res.status(401).json({ message: '找不到這個 Email，請確認是否註冊過 🧐' });
       return;
@@ -49,13 +50,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // 🪄 成功登入，產生 JWT token
-    const token = jwt.sign({
-      id: user.user_id,  // ✅ 這行是重點！！
-      name: user.name,
-    }, env.JWT_SECRET, {
-      expiresIn: '7d',
-    });
-
+    const token = jwt.sign(
+      {
+        id: user.User_ID,
+        name: user.name,
+        email: user.email,
+      },
+      env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     console.log('🔑 登入成功，產生的 token：', token);
 
     // ✅ 回傳成功訊息與 token
