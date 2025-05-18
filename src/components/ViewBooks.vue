@@ -91,11 +91,85 @@
     </div>
   </div>
 
-  <!-- 導覽遮罩與輪播（原樣保留） -->
+  <!-- 導覽遮罩與輪播 -->
   <div v-if="showGuide" class="guide-overlay">
-    <!-- ... (此處省略，你提供的導覽區塊原樣貼回) ... -->
+    <div class="carousel slide guide-carousel">
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <div class="guide-content">
+            <img src="/fav.PNG" alt="logo" style="width:50px; height:50px; margin-bottom: 10px;" /><br>
+            歡迎來到錯題本系統！以下是功能導覽(◍•ᴗ•◍)
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="guide-content">
+            <strong style="color: #7eaee4">側邊欄</strong>
+            <div>
+              點一下收合<br>
+              可瀏覽&編輯錯題/隨機出題<br>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="guide-content">
+            <strong style="color: #7eaee4">建立新的錯題本</strong>
+            <div>
+              輸入名稱/年級/科目<br>
+              來創建新的錯題本
+            </div>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="guide-content">
+            <strong style="color: #7eaee4">編輯</strong>
+            <div>
+              刪除&修改錯題本資訊<br>
+              可複製或重新命名錯題本<br>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 左右控制箭頭 -->
+      <button class="carousel-control-prev" type="button" data-bs-target=".guide-carousel" data-bs-slide="prev">
+        <Icon icon="ic:round-chevron-left" width="48" height="48" style="color: #7EAEE4;" />
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target=".guide-carousel" data-bs-slide="next">
+        <Icon icon="ic:round-chevron-right" width="48" height="48" style="color: #7EAEE4;" />
+        <span class="visually-hidden">Next</span>
+      </button>
+
+
+      <!-- 頁面指示器 -->
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target=".guide-carousel" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target=".guide-carousel" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target=".guide-carousel" data-bs-slide-to="2"></button>
+        <button type="button" data-bs-target=".guide-carousel" data-bs-slide-to="3"></button>
+      </div>
+
+
+      <!-- 直接登入按鈕（未登入才顯示） -->
+      <button
+        v-if="!isLoggedIn"
+        class="btn btn-primary mt-3"
+        @click="openLoginModal"
+        style="z-index: 10; background-color:#7EAEE4 ;border:none;"
+      >
+        直接登入
+      </button>
+      <Login
+        v-if="showLoginModal"
+        @login="handleLogin"
+        @close="closeLoginModal"
+        style="z-index: 2000;"
+      />
+    </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 /* ------------ import ------------ */
@@ -134,8 +208,8 @@ const books = ref<BookUI[]>([]);
 
 /* ------------ 生命週期 ------------ */
 onMounted(async () => {
-  await loadBooks();
-  showGuide.value = !isLoggedIn.value;        // 未登入才顯示導覽
+  if (isLoggedIn.value) await loadBooks();   // 只有 token 已存在才先抓
+  showGuide.value = !isLoggedIn.value;
 
   // 建 carousel 事件（保留你的原 JS）
   const carouselEl = document.querySelector('.guide-carousel');
@@ -158,7 +232,9 @@ async function loadBooks() {
     title:         row.BName,
     icon:          row.Icon || 'raphael:book',
     mistakeCount:  row.Question_Count ?? 0,
-    date:          new Date(row.CreatedDate).toISOString().slice(0, 10),
+   date: new Date(row.CreateDate ?? row.CreatedDate ?? Date.now())
+        .toISOString()
+        .slice(0, 10),
     selected: false, editing: false, hover: false, expanded: true,
   })) as BookUI[];
 }
@@ -180,12 +256,27 @@ async function handleAddBook(input: { title: string; icon: string }) {
 /* ------------ 更新 (完成編輯) ------------ */
 async function finishEditing() {
   editMode.value = false;
+
   for (const b of books.value) {
-    if (b.editing) {
-      await updateQB(b.id, { BName: b.title, Icon: b.icon });
-      b.editing = false;
+    const changedTitle = (b as any).originalTitle !== undefined && b.title !== (b as any).originalTitle;
+    const changedIcon  = (b as any).originalIcon  !== undefined && b.icon  !== (b as any).originalIcon;
+
+    if (changedTitle || changedIcon) {
+      try {
+        await updateQB(b.id, { BName: b.title, Icon: b.icon });
+        // 更新成功後把 baseline 同步
+        (b as any).originalTitle = b.title;
+        (b as any).originalIcon  = b.icon;
+      } catch (err) {
+        console.error('更新失敗', err);
+        alert(`題本「${b.title}」更新失敗`);
+      }
     }
-    b.selected = b.hover = false;
+
+    // 清理 UI 狀態
+    b.editing  = false;
+    b.hover    = false;
+    b.selected = false;
   }
 }
 
@@ -196,36 +287,64 @@ async function deleteBook(idx: number) {
   books.value.splice(idx, 1);
 }
 
-/* ------------ 複製 ------------ */
+/* -------- copyBook（修正版） -------- */
 async function copyBook(idx: number) {
-  const original = books.value[idx];
-  const { data } = await copyQB(original.id);
-  books.value.splice(idx + 1, 0, {
-    ...structuredClone(original),
-    id:    data.QuestionBook_ID,
-    title: original.title + ' 複製',
-    selected: false, editing: false, hover: false,
-  });
+  const src = books.value[idx];
+
+  try {
+    /* 1️⃣ 先呼叫後端，拿到新 ID */
+    const { data } = await copyQB(src.id);  // { QuestionBook_ID: 123 }
+
+    /* 2️⃣ 只挑純資料欄位，組成新的平面物件 */
+    const cloned = {
+      id:            data.QuestionBook_ID,
+      title:         src.title + ' 複製',
+      icon:          src.icon,
+      mistakeCount:  src.mistakeCount,
+      date:          src.date,
+      /* view-state */
+      selected: false,
+      editing:  false,
+      hover:    false,
+      expanded: true,
+    };
+
+    /* 3️⃣ 插到原書後面 */
+    books.value.splice(idx + 1, 0, cloned);
+  } catch (err) {
+    console.error('複製失敗', err);
+    alert(`題本「${src.title}」複製失敗`);
+  }
 }
+
 
 /* ------------ 純前端 UI 動作 ------------ */
 function createBook() { showAddBook.value = true; }
 
 function openLoginModal() { showLoginModal.value = true; }
 function closeLoginModal() { showLoginModal.value = false; }
-function handleLogin(userName: string) {
+async function handleLogin(userName: string) {
   console.log('登入成功，帳號：', userName);
   isLoggedIn.value = true;
   localStorage.setItem('userName', userName);
   closeLoginModal();
   showGuide.value = false;
+
+  await loadBooks();
 }
 
 function toggleEditMode() {
   editMode.value = !editMode.value;
   if (!editMode.value) books.value.forEach(b => (b.selected = false));
 }
-function startEditingTitle(book: BookUI) { book.editing = true; }
+function startEditingTitle(book: BookUI) {
+  if (!('originalTitle' in book)) {
+    // 首次編輯才存一份，避免之後一直覆蓋
+    (book as any).originalTitle = book.title;
+    (book as any).originalIcon  = book.icon;
+  }
+  book.editing = true;
+}
 
 function handleSlide(event: any) {
   currentSlideIndex.value = event.to;
@@ -241,7 +360,7 @@ function endGuide() { showGuide.value = false; }
 </script>
 
 <style scoped>
-/* === (原樣保留 - 你提供的 style 全貼回) === */
+
   .guide-overlay {
   position: fixed;
   z-index: 1050;
