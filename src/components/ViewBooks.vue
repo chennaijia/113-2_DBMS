@@ -178,7 +178,7 @@ import { Icon }           from '@iconify/vue';
 import AddBook            from './AddBook.vue';
 import Login              from './Login.vue';
 import {
-  fetchQBs, createQB, updateQB, deleteQB, copyQB
+  fetchQBs, createQB, updateQB, deleteQB, copyQB, listQB
 } from '@/api/qb';                 // 你前面建立的 API 包裝
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';

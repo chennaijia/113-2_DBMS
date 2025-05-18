@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
+import streamifier from 'streamifier';
 dotenv.config();
 
 console.log('🔍 Cloudinary 環境變數：');
@@ -21,4 +22,22 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 
+const uploadToCloudinary = (file: Express.Multer.File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'questions' },
+      (error, result) => {
+        if (error || !result) {
+          return reject(error);
+        }
+        resolve(result.secure_url);
+      }
+    );
+    streamifier.createReadStream(file.buffer).pipe(uploadStream);
+  });
+};
+
+export { uploadToCloudinary };
 export default cloudinary;
+
+

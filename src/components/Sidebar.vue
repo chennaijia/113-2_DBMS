@@ -11,23 +11,14 @@
 
   <div class="offcanvas-custom" :class="{ show: isSidebarOpen }">
     <div class="offcanvas-header mb-5 mt-3">
-      <Icon
-        icon="material-symbols:menu-rounded"
-        width="40"
-        height="40"
-        class="close-icon"
-        @click="closeSidebar"
-      />
+      <Icon icon="material-symbols:menu-rounded" width="40" height="40" class="close-icon" @click="closeSidebar" />
     </div>
 
     <div class="offcanvas-body">
       <div class="accordion accordion-flush" id="accordionMain">
         <div class="accordion-item">
           <h2 class="accordion-header">
-            <button
-              class="sidebar_accordion accordion-button collapsed"
-              @click="$emit('change-page', 'home')"
-            >
+            <button class="sidebar_accordion accordion-button collapsed" @click="$emit('change-page', 'home')">
               主頁
             </button>
           </h2>
@@ -42,7 +33,6 @@
               data-bs-target="#collapseMistakeBooks"
               aria-expanded="false"
               aria-controls="collapseMistakeBooks"
-              @click.prevent="$emit('change-page', 'book', item)"
             >
               我的錯題本
             </button>
@@ -51,37 +41,37 @@
           <div id="collapseMistakeBooks" class="accordion-collapse collapse">
             <div class="accordion-body">
               <div class="accordion" id="accordionSubjects">
-                <div v-for="(item, index) in subjects" :key="index" class="accordion-item">
-                  <h2 class="accordion-header" :id="'headingSubject' + index">
+                <!-- 🔹 顯示每一本書 -->
+                <div v-for="(book, index) in books" :key="book.QuestionBook_ID" class="accordion-item">
+                  <h2 class="accordion-header" :id="'headingBook' + index">
                     <button
                       class="sidebar_subject_button accordion-button collapsed"
                       type="button"
                       data-bs-toggle="collapse"
-                      :data-bs-target="'#collapseSubject' + index"
+                      :data-bs-target="'#collapseBook' + index"
                       aria-expanded="false"
-                      :aria-controls="'collapseSubject' + index"
+                      :aria-controls="'collapseBook' + index"
                     >
-                      {{ item }}
+                      {{ book.BName }}
                     </button>
                   </h2>
-
                   <div
-                    :id="'collapseSubject' + index"
+                    :id="'collapseBook' + index"
                     class="accordion-collapse collapse"
-                    :aria-labelledby="'headingSubject' + index"
+                    :aria-labelledby="'headingBook' + index"
                     data-bs-parent="#accordionSubjects"
                   >
                     <div class="accordion-body link-group">
                       <a
-                        href="pages/Book.html"
-                        @click.prevent="$emit('change-page', 'question', item)"
+                        href="#"
+                        @click.prevent="$emit('change-page', 'question', book)"
                         class="sidebar-link"
                       >
                         錯題瀏覽
                       </a>
                       <a
-                        href="pages/RandomPractice.html"
-                        @click.prevent="$emit('change-page', 'practice', item)"
+                        href="#"
+                        @click.prevent="$emit('change-page', 'practice', book)"
                         class="sidebar-link"
                       >
                         錯題練習
@@ -93,10 +83,11 @@
               </div>
             </div>
           </div>
-          <button @click="$emit('change-page', 'test')">後端測試用</button>
-          <button @click="$emit('change-page', 'testquestion')">後端測試用題目</button>
-
         </div>
+
+        <!-- 額外測試用 -->
+        <button @click="$emit('change-page', 'test')">後端測試用</button>
+        <button @click="$emit('change-page', 'testquestion')">後端測試用題目</button>
       </div>
 
       <!-- 登入 Footer -->
@@ -107,52 +98,57 @@
         </div>
         <h2 v-else>登入</h2>
       </div>
+
       <Login v-if="showLoginModal" @login="handleLogin" @close="closeLoginModal" />
     </div>
   </div>
 </template>
 
+
+
 <script setup>
 import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import { Icon } from '@iconify/vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import Login from './Login.vue'
-
-const props = defineProps({
-  subjects: {
-    type: Array,
-    required: true,
-  },
-})
 
 const isSidebarOpen = ref(false)
 const isLoggedIn = ref(false)
 const userName = ref('')
 const showLoginModal = ref(false)
-
-onMounted(() => {
-  const savedUser = localStorage.getItem('userName')
-  if (savedUser) {
-    isLoggedIn.value = true
-    userName.value = savedUser
-  }
-})
+const books = ref([]) // 🔹 題本清單
 
 function openSidebar() {
   isSidebarOpen.value = true
   document.body.style.overflow = 'hidden'
 }
-
 function closeSidebar() {
   isSidebarOpen.value = false
   document.body.style.overflow = ''
 }
-
 function backdropClick() {
   closeSidebar()
 }
-
+function openLoginModal() {
+  showLoginModal.value = true
+}
+function closeLoginModal() {
+  showLoginModal.value = false
+}
+function handleLogin(newUserName) {
+  isLoggedIn.value = true
+  userName.value = newUserName
+  localStorage.setItem('userName', newUserName)
+  fetchBooks() // ✅ 登入後抓題本
+  closeLoginModal()
+  closeSidebar()
+}
+function logout() {
+  isLoggedIn.value = false
+  userName.value = ''
+  localStorage.removeItem('userName')
+  closeSidebar()
+}
 function handleLoginClick() {
   if (isLoggedIn.value) {
     logout()
@@ -161,29 +157,32 @@ function handleLoginClick() {
   }
 }
 
-function openLoginModal() {
-  showLoginModal.value = true
+// ✅ 從後端抓題本
+async function fetchBooks() {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await axios.get('http://localhost:3000/api/books', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    books.value = res.data
+  } catch (err) {
+    console.error('❌ Sidebar 拉題本失敗:', err)
+  }
 }
 
-function closeLoginModal() {
-  showLoginModal.value = false
-}
-
-function handleLogin(newUserName) {
-  isLoggedIn.value = true
-  userName.value = newUserName
-  localStorage.setItem('userName', newUserName)
-  closeLoginModal()
-  closeSidebar()
-}
-
-function logout() {
-  isLoggedIn.value = false
-  userName.value = ''
-  localStorage.removeItem('userName')
-  closeSidebar()
-}
+// ✅ 載入時處理登入狀態 & 抓題本
+onMounted(() => {
+  const savedUser = localStorage.getItem('userName')
+  if (savedUser) {
+    isLoggedIn.value = true
+    userName.value = savedUser
+    fetchBooks()
+  }
+})
 </script>
+
+
+
 
 <style scoped>
 .offcanvas-custom {

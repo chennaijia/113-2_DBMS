@@ -22,10 +22,22 @@ export async function createQB(input: QBInput) {
   return (result as ResultSetHeader).insertId;
 }
 
+/*
 export const listQB = async () => {
   const [rows] = await pool.query('SELECT * FROM Question_Book');
   return rows;
 };
+*/
+
+export const listQBByUser = async (userId: number) => {
+  console.log('🎒userId:', userId);
+  const [rows] = await pool.query(
+    'SELECT * FROM Question_Book WHERE Creator_ID = ?',
+    [userId] // ✅ 傳入參數
+  );
+  return rows;
+};
+
 
 export const getQB = async (id: number) => {
   const [rows]: any = await pool.query('SELECT * FROM Question_Book WHERE Questionbook_ID = ?', [id]);
@@ -50,7 +62,7 @@ export const updateQB = async (
 
   // 3. 動態組 SET
   const setClause = keys.map(k => `${k} = ?`).join(', ');
-  const params    = keys.map(k => data[k]);
+  const params = keys.map(k => data[k]);
   params.push(id);                     // WHERE ... = ?
 
   await pool.execute(

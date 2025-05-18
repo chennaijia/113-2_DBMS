@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import * as QB from '../models/qb.model';   // 確保 model 裡用的是 QUESTION_BOOK
 import { AuthReq } from '../middleware/auth';
+import { pool } from '../config/database'; // 請根據你的專案實際資料庫連線檔案路徑調整
 
 /** POST /api/qb － 建立題本 */
 export const createQB = async (req: AuthReq, res: Response) => {
@@ -25,10 +26,12 @@ export const createQB = async (req: AuthReq, res: Response) => {
 
 
 /** GET /api/qb － 顯示所有題本 */
+/*
 export const listQB = async (_req: Request, res: Response) => {
   const rows = await QB.listQB();
   res.json(rows);
 };
+*/
 
 /** GET /api/qb/:id － 取得單一題本 */
 export const getQB = async (req, res) =>  {
@@ -54,3 +57,12 @@ export const copyQB = async (req: AuthReq, res: Response) => {
   if (!newId) return res.sendStatus(404);           // 找不到或沒權限
   res.status(201).json({ QuestionBook_ID: newId }); // 201 Created
 };
+
+export const listQB = async (req: AuthReq, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: '未登入' });
+
+  const rows = await QB.listQBByUser(userId);
+  res.json(rows);
+};
+
