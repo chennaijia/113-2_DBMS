@@ -5,12 +5,23 @@ import { AuthReq } from '../middleware/auth';
 
 /** POST /api/qb － 建立題本 */
 export const createQB = async (req: AuthReq, res: Response) => {
-  const { BName, Icon } = req.body;
-  if (!BName) return res.status(400).json({ message: 'BName 必填' });
+  try {
+    const { BName, Icon } = req.body;
+    if (!BName) return res.status(400).json({ message: 'BName 必填' });
 
-  const id = await QB.createQB({ BName, Icon, Creator_ID: req.user!.id });
-  res.status(201).json({ QuestionBook_ID: id });
+    if (!req.user) {
+      console.error('❌ req.user is undefined!');
+      return res.status(401).json({ message: '未登入或 Token 失效' });
+    }
+
+    const id = await QB.createQB({ BName, Icon, Creator_ID: req.user.id });
+    res.status(201).json({ QuestionBook_ID: id });
+  } catch (err) {
+    console.error('❌ createQB 發生錯誤：', err);
+    res.status(500).json({ message: '伺服器錯誤' });
+  }
 };
+
 
 
 /** GET /api/qb － 顯示所有題本 */
