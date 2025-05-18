@@ -9,6 +9,7 @@
             <button type="button" class="btn-close shadow-sm" @click="closeModal" style="background-color: white; border-radius: 50%;"></button>
           </div>
 
+
           <div class="modal-body" style="background-color: #f8fcff; padding: 1.5rem;">
             <!-- 名稱 -->
             <div class="mb-4 d-flex align-items-center">
@@ -21,6 +22,7 @@
                 style="background-color: white; padding: 0.6rem 1rem;"
               />
             </div>
+
 
             <!-- Icon 選擇 -->
             <div class="mb-3 d-flex align-items-center">
@@ -37,6 +39,7 @@
             </div>
           </div>
 
+
           <!-- Footer -->
           <div class="modal-footer border-0 justify-content-center" style="background-color: #f8fcff; border-radius: 0 0 16px 16px; padding: 1rem 1.5rem 1.5rem;">
             <button class="btn px-4 py-2 rounded-pill fw-semibold shadow-sm" style="background-color: #2c7bb6; color: white;" @click="confirm">確認</button>
@@ -46,10 +49,10 @@
     </div>
   </div>
 </template>
-  
+
   <script>
   import { Icon } from '@iconify/vue';
-  
+
   export default {
     components: { Icon },
     data() {
@@ -85,4 +88,5 @@
     },
   };
   </script>
-  
+
+

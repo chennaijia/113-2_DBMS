@@ -37,3 +37,9 @@ export const deleteQB = async (req, res) =>  {
   const ok = await QB.deleteQB(+req.params.id, req.user!.id);
   return ok ? res.sendStatus(204) : res.sendStatus(403);
 };
+
+export const copyQB = async (req: AuthReq, res: Response) => {
+  const newId = await QB.copyQB(+req.params.id, req.user!.id);
+  if (!newId) return res.sendStatus(404);           // 找不到或沒權限
+  res.status(201).json({ QuestionBook_ID: newId }); // 201 Created
+};

@@ -15,7 +15,7 @@ export async function createQB(input: QBInput) {
      VALUES (?, ?, ?)`,
     [
       input.BName,
-      input.Icon ?? null,          // ← 保險再轉一次
+      input.Icon ?? null,
       input.Creator_ID            // ← 這裡一定是 number，不可 undefined
     ],
   );
@@ -66,4 +66,35 @@ export const deleteQB = async (id: number, owner: number) => {
     [id, owner],
   );
   return r.affectedRows === 1;
+};
+
+export const copyQB = async (id: number, owner: number) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1️⃣  取原始資料（只能複製自己的）
+    const [rows]: any = await conn.query(
+      'SELECT BName, Icon FROM QUESTION_BOOK WHERE QuestionBook_ID = ? AND Creator_ID = ?',
+      [id, owner],
+    );
+    if (!rows.length) { await conn.rollback(); return null; }
+
+    // 2️⃣  插入新紀錄（名稱自動加「複製」）
+    const [r] = await conn.execute<ResultSetHeader>(
+      `INSERT INTO QUESTION_BOOK (BName, Icon, Creator_ID)
+       VALUES (?, ?, ?)`,
+      [`${rows[0].BName} 複製`, rows[0].Icon, owner],
+    );
+    const newId = (r as ResultSetHeader).insertId;
+
+    // 3️⃣  若之後要連同題目一起複製，可在這裡再 INSERT … SELECT
+    await conn.commit();
+    return newId;
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
 };
