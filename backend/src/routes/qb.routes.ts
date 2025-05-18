@@ -18,7 +18,7 @@ function asyncHandler(fn: any) {
 }
 
 /* ---------- CRUD routes ---------- */
-qbRouter.post('/',      auth, asyncHandler(createQB));   // 需要登入
+qbRouter.post('/', auth, asyncHandler(createQB)); // 需要登入
 qbRouter.get('/',              asyncHandler(listQB));   // 公開列出
 qbRouter.get('/:id', asyncHandler(getQB));    // 公開單一題本
 qbRouter.put('/:id',    auth,  asyncHandler(updateQB)); // 需要登入+擁有者
