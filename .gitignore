@@ -29,4 +29,8 @@ coverage
 
 *.tsbuildinfo
 
+<<<<<<< HEAD
+.gitignore
+=======
 backend/src/.env
+>>>>>>> b4085f5dbc46d5276376520c9a315f7278017d57
