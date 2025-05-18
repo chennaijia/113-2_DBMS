@@ -17,6 +17,7 @@ export const auth = (req: AuthReq, res: Response, next: NextFunction): void => {
   try {
     const payload = jwt.verify(token, env.JWT_SECRET) as { id: number };
     req.user = { id: payload.id };
+    console.log('✅ middleware 解出使用者 ID:', payload.id);
     next();             // ← 正常通過
   } catch {
     res.status(401).json({ message: 'Invalid token' });

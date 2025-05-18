@@ -128,6 +128,7 @@ const addQuestion = async () => {
 
     alert('✅ 新增成功！');
     console.log('📥 成功回應：', res.data);
+    console.log('📌 後端有抓到的使用者 ID？（後端需回傳）:', res.data.creator_id); // 新增這行
 
     questions.value.unshift({
       question_id: res.data.id,
@@ -157,6 +158,7 @@ onMounted(async () => {
 
   }
 
+
   else {
 
     try {
@@ -166,6 +168,15 @@ onMounted(async () => {
           Authorization: `Bearer ${token}`, // ⬅️ 傳 JWT token
         },
       });
+      console.log('📥 題目資料：', res.data);
+      if (res.data.length > 0) {
+        console.log('📌 題目第一筆的 creator_id:', res.data[0].Creator_id);
+      }
+      else{
+        alert('⛔沒有題目資料');
+      }
+
+
       questions.value = res.data; // ✅ 更新畫面上的題目
     } catch (err) {
       console.error('❌ 取得題目失敗:', err);
