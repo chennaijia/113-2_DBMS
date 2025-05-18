@@ -53,6 +53,13 @@
       <button type="submit">刪除</button>
     </form>
 
+    <!-- 複製 -->
+     <h3>複製題本</h3>
+  <form @submit.prevent="copyQB">
+     <input v-model.number="copyId" type="number" placeholder="題本 ID" />
+    <button type="submit">複製</button>
+  </form>
+
     <!-- 統一訊息 -->
     <p style="white-space: pre-wrap; margin-top: 24px">{{ message }}</p>
   </div>
@@ -80,6 +87,9 @@ export default {
 
       /* === QB 刪除 === */
       deleteId: null,
+
+      /* === QB 複製 === */
+      copyId: null,
 
       /* === 共用 === */
       message: ''
@@ -160,6 +170,20 @@ export default {
         this.message = res.ok ? '刪除成功' : '刪除失敗 (可能權限不足)';
         if (res.ok) this.listQB();
       } catch { this.message = '刪除失敗'; }
+    },
+    async copyQB() {
+      if (!this.copyId) return (this.message = '請輸入 ID');
+      try {
+        const res  = await fetch(`${API_BASE}/qb/${this.copyId}/copy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...this.authHeader() }
+        });
+        const data = await res.json();
+        this.message = res.ok
+          ? `複製成功！新 QuestionBook_ID: ${data.QuestionBook_ID}`
+          : data.message || '複製失敗 (可能權限不足)';
+        if (res.ok) this.listQB();
+      } catch { this.message = '複製失敗權限不足'; }
     }
   },
   mounted() { this.listQB(); } // 進頁自動拉一次列表

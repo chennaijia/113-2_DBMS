@@ -14,16 +14,18 @@
         display: flex;
         align-items: center;
         cursor: pointer;
-      " 
-      :disabled="showGuide" 
+      "
+      :disabled="showGuide"
       @click="createBook">
         <Icon icon="material-symbols:add-rounded" width="40" height="40" style="color: black;" />
         <div>創建新的錯題本</div>
       </button>
     </div>
 
+
     <!-- 彈出 AddBook.vue -->
     <AddBook v-if="showAddBook" @close="showAddBook = false" @confirm="handleAddBook" />
+
 
     <!-- 錯題本排列 -->
     <div style="position: absolute; left:10%; padding: 50px; top: 15%;">
@@ -39,13 +41,16 @@
             <Icon icon="mdi:trash-can" width="24" height="24" style="color: #FF6B6B;" />
           </button>
 
+
           <!-- 書本 icon -->
           <Icon :icon="book.icon" width="190px" height="190px" style="color: #FFBF69;" />
+
 
           <!-- 複製按鈕 -->
           <button v-if="editMode && book.hover" @click="copyBook(index)" style="position: absolute; right: 5px; top: 5px; border: none; background: transparent; cursor: pointer;">
             <Icon icon="material-symbols:content-copy" width="24" height="24" />
           </button>
+
 
           <!-- 書本資訊 -->
           <div style="width: 210px; border: 1px solid #ddd; border-radius: 8px;">
@@ -61,22 +66,25 @@
                 <input v-model="book.title" @blur="book.editing = false" @keyup.enter="book.editing = false" />
               </template>
 
-              <Icon 
-                :icon="book.expanded ? 'material-symbols:expand-less-rounded' : 'material-symbols:expand-more-rounded'" 
-                width="33" height="33" 
-                style="color: lightslategray;" 
+
+              <Icon
+                :icon="book.expanded ? 'material-symbols:expand-less-rounded' : 'material-symbols:expand-more-rounded'"
+                width="33" height="33"
+                style="color: lightslategray;"
               />
             </button>
+
 
             <div v-show="book.expanded" style="padding: 8px 16px; background-color: #f9f9f9;">
               <div>錯題數：{{ book.mistakeCount }}</div>
               <div>創建日期：{{ book.date }}</div>
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>
+
 
     <!-- 編輯/刪除按鈕 -->
     <div class="guide-highlight-edit" style="position: absolute; bottom: 70px; right: 3%; transform: translateX(-50%); cursor: pointer;">
@@ -89,6 +97,7 @@
       </button>
     </div>
   </div>
+
 
   <!-- 導覽遮罩與輪播 -->
   <div v-if="showGuide" class="guide-overlay">
@@ -129,6 +138,7 @@
         </div>
       </div>
 
+
       <!-- 左右控制箭頭 -->
       <button class="carousel-control-prev" type="button" data-bs-target=".guide-carousel" data-bs-slide="prev">
         <Icon icon="ic:round-chevron-left" width="48" height="48" style="color: #7EAEE4;" />
@@ -139,6 +149,7 @@
         <span class="visually-hidden">Next</span>
       </button>
 
+
       <!-- 頁面指示器 -->
       <div class="carousel-indicators">
         <button type="button" data-bs-target=".guide-carousel" data-bs-slide-to="0" class="active"></button>
@@ -146,6 +157,7 @@
         <button type="button" data-bs-target=".guide-carousel" data-bs-slide-to="2"></button>
         <button type="button" data-bs-target=".guide-carousel" data-bs-slide-to="3"></button>
       </div>
+
 
       <!-- 直接登入按鈕（未登入才顯示） -->
       <button
@@ -160,11 +172,13 @@
         v-if="showLoginModal"
         @login="handleLogin"
         @close="closeLoginModal"
-        style="z-index: 2000;" 
+        style="z-index: 2000;"
       />
     </div>
   </div>
 </template>
+
+
 
 
 <script>
@@ -173,19 +187,24 @@ import { Icon } from '@iconify/vue';
 import AddBook from './AddBook.vue';
 import Login from './Login.vue'
 
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import * as bootstrap from 'bootstrap';
 
+
 const auth = inject('auth')
+
 
 function openLoginModal() {
   showLoginModal.value = true;
 }
 
+
 function closeLoginModal() {
   showLoginModal.value = false
 }
+
 
 function handleLogin(userName) {
   console.log('登入成功，帳號是：', userName)
@@ -194,7 +213,7 @@ function handleLogin(userName) {
   // currentUser.value = userName
   closeLoginModal()
 }
- 
+
 export default {
   name: 'ViewBooks',
   components: { Icon, AddBook, Login },
@@ -207,10 +226,12 @@ export default {
       showLoginModal: false,
       isLoggedIn: false,
 
+
       books: [
         { title: "高三英文", mistakeCount: 1, date: "2023/10/01", icon: "raphael:book", selected: false, editing: false, hover: false, expanded: true },
         { title: "高二國文", mistakeCount: 2, date: "2025/04/19", icon: "raphael:book", selected: false, editing: false, hover: false, expanded: true },
       ],
+
 
     };
   },
@@ -226,11 +247,12 @@ export default {
     this.$nextTick(() => {
       const carouselEl = document.querySelector('.guide-carousel');
       if (carouselEl) {
-        
+
         const carousel = new bootstrap.Carousel(carouselEl, {
           interval: false,
           wrap: false,
         });
+
 
       carouselEl.addEventListener('slide.bs.carousel', (event) => {
         // 阻止無限輪播
@@ -242,6 +264,7 @@ export default {
           event.preventDefault();
           return;
         }
+
 
         this.currentSlideIndex = event.to;
       });
@@ -307,8 +330,10 @@ export default {
       const editBtn = document.querySelector('.guide-highlight-edit');
       const sidebar = document.querySelector('.guide-highlight-sidebar');
 
+
       // 清除所有陰影
       [addBtn, editBtn, sidebar].forEach(el => el?.classList.remove('highlight-shadow'));
+
 
       if (event.to === 1 && sidebar) sidebar.classList.add('highlight-shadow');
       if (event.to === 2 && addBtn) addBtn.classList.add('highlight-shadow');
@@ -320,6 +345,9 @@ export default {
   },
 };
 </script>
+
+
+
 
 
 
@@ -337,6 +365,7 @@ export default {
   justify-content: center;
 }
 
+
 .guide-carousel {
   background-color: white;
   padding: 40px;
@@ -346,10 +375,12 @@ export default {
   text-align: center;
 }
 
+
 .guide-content {
   font-size: 20px;
   padding: 20px;
 }
+
 
 .highlight-shadow {
   box-shadow: 0 0 0 5px #4DA3FF !important;
@@ -359,9 +390,11 @@ export default {
   position: relative;
 }
 
+
 /* 禁用按鈕點擊 */
 button[disabled] {
   pointer-events: none;
   opacity: 0.5;
 }
 </style>
+
