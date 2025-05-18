@@ -13,4 +13,5 @@
     "moduleResolution": "node",
     "types": ["vue-router"]
   }
+  
 }

@@ -1,20 +1,28 @@
 import express from 'express';
 import cors from 'cors';
+import { auth }     from './middleware/auth';
 import { authRouter } from './routes/auth.routes';
 import { questionRouter } from './routes/question.routes';
 import { qbRouter }from './routes/qb.routes';
 import { pool } from './config/database';
 
+
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+
 const app = express();
+
+
+
 
 // 測試首頁
 app.get('/', (req, res) => {
   res.send('Hello from Express! 👋');
 
+
 });
+
 
 app.get('/test', async (req, res) => {
   try {
@@ -26,9 +34,11 @@ app.get('/test', async (req, res) => {
   }
 });
 
+
 app.get('/ping', (req, res) => {
   res.send('pong!');
 });
+
 
 app.get('/api', (req, res) => {
   res.send('API is running!');
@@ -36,16 +46,30 @@ app.get('/api', (req, res) => {
 
 
 
+
 export { app };
+
+
 
 
 app.use(cors());
 app.use(express.json());
 
+
 // 註冊 authRouter
+
+
 app.use('/api/auth', authRouter);
 app.use('/api/log', authRouter);
 
+
 app.use('/api/question', questionRouter);
-app.use('/api/qb', qbRouter);
+app.use('/api/books', qbRouter); // ✅ 對應你的路由定義
+
+
+app.listen(3000, () => console.log('API on http://localhost:3000'));
+
+
+
+
 
