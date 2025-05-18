@@ -58,6 +58,8 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
 
 export const listQuestions = async (req: AuthReq, res: Response) => {
   try {
+    console.log('✅ 抓資料使用者 ID:', req.user?.id);
+
     const questions = await Question.listQuestions(req.user!.id); // ⬅️ 拿使用者 ID
     res.status(200).json(questions); // ⬅️ status 改成 200
   } catch (err) {
