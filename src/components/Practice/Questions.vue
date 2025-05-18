@@ -73,7 +73,7 @@
       </div>
     </div>
 
-    <div v-if="!selectedOption === 'option0'" class="fixed-bottom-end mt-4">
+    <div v-if="selectedOption !== 'option0'" class="fixed-bottom-end mt-4">
       <button
         class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
         @click="confirmSelection"
@@ -95,7 +95,7 @@ const props = defineProps({
   currentSubject: String,
 })
 
-const emit = defineEmits(['update-selected'])
+const emit = defineEmits('update-selected')
 
 const selectedQuestionIds = ref([])
 const localCount = ref(props.questionCount)
@@ -148,7 +148,7 @@ function confirmSelection() {
 
 <style scoped>
 .question-container {
-  width: 70vw;
+  width: 80vw;
   max-width: 1000px;
   margin: auto;
   padding: 1rem;

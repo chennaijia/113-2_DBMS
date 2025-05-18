@@ -1,7 +1,7 @@
 <template>
   <div class="w-100">
-    <div class="d-flex justify-content-between align-items-stretch mb-3 mt-3">
-      <div class="d-flex align-items-center gap-3">
+    <div class="d-flex mt-3 flex-grow-1 align-text-start">
+      <div class="d-flex align-items-center gap-3 ms-5">
         <button class="btn btn-outline-primary rounded-pill return-btn" @click="goBack">
           <i class="bi bi-caret-left"></i>
           <span class="ms-2">返回</span>
@@ -44,7 +44,7 @@ import { ref } from 'vue'
 import Questions from './Practice/Questions.vue'
 
 const selectedOption = ref('option0')
-const questionCount = ref(5)
+const questionCount = ref(1)
 const selectedQuestions = ref([])
 
 const emit = defineEmits('start-practice', 'change-page')
@@ -68,7 +68,7 @@ const questions = ref([
     question: '問題1',
     wrongCount: 8,
     image: '/images/1.jpg',
-    questionType: '選擇題',
+    questionType: 'open',
     correctAnswer: 'B',
   },
   {
@@ -76,7 +76,7 @@ const questions = ref([
     question: '問題2',
     wrongCount: 0,
     image: '/images/2.jpg',
-    questionType: '選擇題',
+    questionType: 'multiple123',
     correctAnswer: '是',
   },
   {
@@ -84,7 +84,7 @@ const questions = ref([
     question: '問題3',
     wrongCount: 3,
     image: '/images/3.jpg',
-    questionType: '選擇題',
+    questionType: 'open',
     correctAnswer: '選項2',
   },
   {
@@ -92,7 +92,7 @@ const questions = ref([
     question: '問題4',
     wrongCount: 5,
     image: '/images/4.jpg',
-    questionType: '選擇題',
+    questionType: 'open',
     correctAnswer: '丙',
   },
 ])
@@ -103,12 +103,11 @@ const handleSelection = () => {
 
 function handleSelectedQuestion(questions) {
   selectedQuestions.value = questions
-  console.log('使用者選擇了:', selectedQuestions.value)
-  emit('start-practice', selectedQuestions.value)
-}
-
-const startPractice = () => {
-  console.log('進入練習模式，題目如下：', selectedQuestions.value)
+  if (selectedQuestions.value.length === 0) {
+    alert('尚未選擇題目！')
+    return
+  }
+  emit('start-practice', selectedQuestions)
 }
 
 function goBack() {
@@ -128,7 +127,7 @@ function goBack() {
 }
 
 .content-box {
-  width: 75vw;
+  width: 85vw;
   background: #f9fcff;
   border-radius: 10px;
   padding: 20px;

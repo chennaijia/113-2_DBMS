@@ -89,6 +89,7 @@
                     </div>
                   </div>
                 </div>
+                <!-- End v-for -->
               </div>
             </div>
           </div>
@@ -212,18 +213,17 @@ function logout() {
   z-index: 1040;
 }
 .side-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 80px;
-  height: 100%;
+  height: 100vh;
   background-color: #d8e9f5;
-  padding: 16px 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0; /* 這個非常重要！ */
+  position: relative; /* 不再使用 fixed */
 }
+
 .menu-icon {
   color: #7eaee4;
   cursor: pointer;

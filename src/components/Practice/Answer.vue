@@ -1,42 +1,37 @@
 <template>
-  <div class="answer-container">
-    <div v-if="questionType === '選擇題'" class="d-flex flex-column gap-3">
-      <div class="d-flex flex-row gap-3">
-        <label for="answerInput" class="form-label">答案</label>
-        <input
-          id="answerInput"
-          type="text"
-          class="form-control"
-          v-model="userAnswer"
-          :disabled="locked"
-          ref="answerInputRef"
-        />
+  <div class="gap-5">
+    <div class="answer-container">
+      <div v-if="questionType === 'open'" class="d-flex flex-column gap-3">
+        <div class="gap-3">
+          <label class="form-label text-m">答案</label>
+          <input
+            id="answerInput"
+            type="text"
+            class="form-control form-control-lg"
+            v-model="userAnswer"
+            :disabled="locked"
+            ref="answerInputRef"
+          />
+        </div>
       </div>
-      <button
-        class="btn btn-outline-success rounded-pill col-auto"
-        @click="lockAndSubmit"
-        :disabled="!userAnswer || locked"
-      >
-        <i class="bi bi-check2"></i> 對答案
-      </button>
-
-      <p v-if="answered" class="mt-3 fw-bold" :class="isCorrect ? 'text-success' : 'text-danger'">
-        {{
-          isCorrect
-            ? '✅ 恭喜你答對了！'
-            : `❌ 答錯了，正確答案是：「${props.question.correctAnswer}」`
-        }}
-      </p>
+      <div v-else class="d-flex flex-column gap-3">
+        <div class="gap-3">
+          <label class="form-label text-m">答案</label>
+          <input
+            id="answerInput"
+            type="text"
+            class="form-control form-control-lg"
+            v-model="userAnswer"
+            :disabled="locked"
+            ref="answerInputRef"
+          />
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- 可擴充申論題 -->
-  <div>
-    <div>題目類型：{{ questionType }}</div>
-    <div v-if="questionType === 'open'"></div>
-    <div v-else-if="questionType === 'multipleABC'"></div>
-    <div v-else-if="questionType === 'multiple123'"></div>
-    <div v-else-if="questionType === 'truefalse'"></div>
+    <div class="text-s">
+      <div>題目類型：{{ questionType }}</div>
+    </div>
   </div>
 </template>
 
@@ -48,12 +43,11 @@ const props = defineProps({
   questionType: String,
 })
 
-const emit = defineEmits(['answered']) // 告知父層
+const emit = defineEmits('answered')
 
 const userAnswer = ref('')
 const isCorrect = ref(null)
 const answered = ref(false)
-const locked = ref(false) // 🔐 判斷是否鎖定輸入
 const answerInputRef = ref(null)
 
 watch(
@@ -70,13 +64,6 @@ watch(
   }
 )
 
-// 🔒 使用者主動點「對答案」才會鎖定
-function lockAndSubmit() {
-  locked.value = true
-  submitAnswer()
-}
-
-// 🧠 父層或內部都可以呼叫
 function submitAnswer() {
   answered.value = true
   const normalizedInput = normalize(userAnswer.value)
@@ -111,5 +98,14 @@ defineExpose({
   background-color: #fdfdfd;
   border-radius: 10px;
   border: 1px solid #ddd;
+}
+
+.text-m {
+  color: #578bc7;
+  font-size: 20px;
+}
+.text-s {
+  color: #578bc7;
+  font-size: 15px;
 }
 </style>
