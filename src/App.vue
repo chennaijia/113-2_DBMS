@@ -83,7 +83,6 @@ const practiceResult = ref({
   timeSpent: '00:00',
 })
 
-
 // ✅ 接收 Sidebar 傳來的頁面與 book 資訊
 function handleChangePage(page, payload = '') {
   currentPage.value = page
@@ -132,6 +131,7 @@ function handleFinishPractice(result) {
   height: 100%;
   overflow-y: auto;
   flex-grow: 1;
+  min-width: 0;
   overflow-x: hidden;
 }
 </style>
