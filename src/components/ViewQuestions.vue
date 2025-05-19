@@ -41,7 +41,7 @@
   :bookId="book.QuestionBook_ID"
   v-if="showAddModal"
   @close="showAddModal = false"
-  @add-card="loadCards"
+  @add-card="addCard"
 />
 </template>
 
@@ -54,9 +54,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import QuestionCard from './QuestionCard.vue'
 import AddCardModal from './AddCardModal.vue'
 import { fetchQuestionsByBook } from '../api/questions'
-
-
-
+import { deleteQuestionById } from '../api/questions'
+import { updateStarStatus } from '../api/questions'
+import { debounce } from 'lodash-es'
 
 export default {
  props: {
@@ -97,25 +97,55 @@ export default {
      }
    ]
    const loadCards = async () => {
-      try {
-        if (!props.book?.QuestionBook_ID) return
-        const { data } = await fetchQuestionsByBook(props.book.QuestionBook_ID)
-        cards.value = (data.length ? data : defaultCards()).map((q) => ({
-            ...q,
-            questionImage: q.content_pic,
-            answerImage: q.answer_pic,
-}))
-      } catch (err) {
-        console.error('❌ 讀題目失敗：', err)
-        cards.value = defaultCards()
-      }
+  try {
+    if (!props.book?.QuestionBook_ID) return
+
+    const { data } = await fetchQuestionsByBook(props.book.QuestionBook_ID)
+
+    if (!Array.isArray(data)) {
+      console.warn('⚠️ 回傳格式錯誤：', data)
+      cards.value = defaultCards()
+      return
     }
 
+    if (data.length === 0) {
+      console.log('📭 該題本還沒有題目，載入預設介紹卡')
+      cards.value = defaultCards()
+      return
+    }
+
+    cards.value = data.map((q) => ({
+      id: q.Question_ID || q.id,
+      questionType: q.QType || '',                        // ✅ 題型轉換
+      question: q.Content || '',                          // ✅ 題目文字（目前可能是空）
+      answer: q.Answer || '',                             // ✅ 答案內容
+      questionImage: q.Content_pic || '',                 // ✅ 題目圖片
+      answerImage: q.Answer_pic || '',                    // ✅ 解答圖片
+      note: q.note || '',                                 // ✅ 筆記（如有）
+      starred: q.isStar === 1,                            // ✅ 加星欄位轉換
+      wrongCount: q.wrong_count || 0,                     // ✅ 錯誤次數（如有統計）
+      rightCount: q.right_count || 0                      // ✅ 正確次數（如有統計）
+    }))
+
+    console.log('✅ 題目卡載入完成：', cards.value)
+  } catch (err) {
+    console.error('❌ 讀題目失敗：', err)
+    cards.value = defaultCards()
+  }
+}
+
+
+
+
     onMounted(loadCards)
+
     // 切換到別本書時自動重新抓+
     watch(
       () => props.book?.QuestionBook_ID,
       () => loadCards()
+
+
+
     )
 
 
@@ -190,10 +220,20 @@ export default {
    }
 
 
-   function toggleStar(cardId) {
-     const card = cards.value.find(c => c.id === cardId)
-     if (card) card.starred = !card.starred
-   }
+   async function toggleStar(cardId) {
+  const card = cards.value.find(c => c.id === cardId)
+  if (!card) return
+
+  try {
+    const newStatus = !card.starred
+    await updateStarStatus(cardId, newStatus)
+    card.starred = newStatus
+    console.log(`✅ 星號狀態已更新為 ${newStatus ? '加星' : '取消'}`)
+  } catch (err) {
+    console.error('❌ 加星失敗:', err)
+    alert('更新星號失敗，請稍後再試')
+  }
+}
 
 
    function toggleShowAnswers() {
@@ -204,10 +244,43 @@ export default {
    function addCard(newCard) {
      cards.value.push(newCard)
    }
-   function deleteThisCard(id) {
-     cards.value = cards.value.filter(card => card.id !== id)
-   }
 
+   async function deleteThisCard(id) {
+  if (!confirm('確定要刪除這張題目卡嗎？')) return
+
+  try {
+    await deleteQuestionById(id)
+    cards.value = cards.value.filter(card => card.id !== id)
+    console.log('✅ 題目已從資料庫刪除')
+  } catch (err) {
+    console.error('❌ 刪除失敗:', err)
+    alert('刪除題目失敗，請稍後再試')
+  }
+}
+
+
+const saveNoteDebounced = debounce((id , note ) => {
+  console.log('🚀 發送更新筆記請求：', id, note)
+
+  updateNote(id, note)
+    .then(() => console.log('✅ 筆記儲存成功'))
+    .catch((err) => console.error('❌ 筆記儲存失敗:', err))
+}, 1000)
+
+watch(
+  () => props.card,
+  (card) => {
+    if (card?.id) {
+      watch(
+        () => card.note,
+        (newNote) => {
+          saveNoteDebounced(card.id, newNote)
+        }
+      )
+    }
+  },
+  { immediate: true }
+)
 
 
 
@@ -230,7 +303,8 @@ export default {
      closeModals,
      toggleStar,
      addCard,
-     deleteThisCard
+     deleteThisCard,
+     saveNoteDebounced
    }
   }
 }

@@ -7,13 +7,15 @@
         <span class="type-label">
           【
           {{ card.questionType === 'truefalse'
-              ? '是非題'
-              : card.questionType === 'multipleABC'
-              ? '選擇題（字母選項）'
-              : card.questionType === 'multiple123'
-              ? '選擇題（數字選項）'
-              : '問答題'
-          }}
+          ? '是非題'
+          : card.questionType === 'multipleABC'
+          ? '選擇題（字母選項）'
+          : card.questionType === 'multiple123'
+          ? '選擇題（數字選項）'
+          : card.questionType === 'open'
+          ? '問答題'
+          : '未知題型'
+        }}
           】
         </span>
 

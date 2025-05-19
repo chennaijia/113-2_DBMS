@@ -65,6 +65,8 @@ app.use('/api/log', authRouter);
 
 app.use('/api/question', questionRouter);
 app.use('/api/books', qbRouter); // ✅ 對應你的路由定義
+app.use('/api/questions', questionRouter)
+
 
 
 app.listen(3000, () => console.log('API on http://localhost:3000'));

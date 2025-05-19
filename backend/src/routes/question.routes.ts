@@ -5,26 +5,21 @@ import {
 import { auth } from '../middleware/auth';
 import { listQuestionsByBook } from '../controllers/question.controller'
 import { Request, Response, NextFunction } from 'express';
-import { uploadQuestion } from '../controllers/question.controller';
+import { uploadQuestion, toggleStar ,updateNote} from '../controllers/question.controller';
 import { upload } from '../middleware/upload';
-
+import { deleteQuestion } from '../controllers/question.controller';
 export const questionRouter = Router();
 
 questionRouter.post('/upload', auth, upload, uploadQuestion);
-questionRouter.get(
-  '/by-book/:bookId',
-  auth,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const bookId = Number(req.params.bookId);
-      // @ts-ignore
-      const userId = req.user?.id;
-      const result = await listQuestionsByBook(bookId, userId);
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  },
-)
+questionRouter.get('/by-book/:bookId', auth, listQuestionsByBook)
+questionRouter.delete('/:id', auth, deleteQuestion)
+questionRouter.patch('/:id/star', auth, toggleStar)
+questionRouter.patch('/:id/note', auth, updateNote)
+
+
+
+
+
+
 
 
