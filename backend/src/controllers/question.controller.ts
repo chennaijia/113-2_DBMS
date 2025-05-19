@@ -203,3 +203,28 @@ export const updateNote = async (req: AuthReq, res: Response): Promise<void> => 
   }
 }
 
+export const getRandomQuestion = async (req: AuthReq, res: Response): Promise<void> => {
+  const userId = req.user!.id
+
+  try {
+    const [rows]: any = await pool.query(
+      `SELECT q.*
+       FROM QUESTION q
+       JOIN QUESTION_COLLECTION qc ON q.Question_ID = qc.Question_ID
+       WHERE qc.User_ID = ?
+       ORDER BY RAND()
+       LIMIT 1`,
+      [userId]
+    )
+
+    if (rows.length === 0) {
+      res.status(404).json({ message: '找不到任何題目' }) // ✅ 一定要 res 結束
+      return
+    }
+
+    res.status(200).json(rows[0]) // ✅ 明確 res 回應
+  } catch (err) {
+    console.error('❌ 抽題失敗:', err)
+    res.status(500).json({ message: '伺服器錯誤' }) // ✅ 捕捉錯誤並回應
+  }
+}

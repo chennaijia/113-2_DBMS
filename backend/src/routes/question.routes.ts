@@ -5,7 +5,7 @@ import {
 import { auth } from '../middleware/auth';
 import { listQuestionsByBook } from '../controllers/question.controller'
 import { Request, Response, NextFunction } from 'express';
-import { uploadQuestion, toggleStar ,updateNote} from '../controllers/question.controller';
+import { uploadQuestion, toggleStar ,updateNote ,getRandomQuestion} from '../controllers/question.controller';
 import { upload } from '../middleware/upload';
 import { deleteQuestion } from '../controllers/question.controller';
 export const questionRouter = Router();
@@ -15,6 +15,7 @@ questionRouter.get('/by-book/:bookId', auth, listQuestionsByBook)
 questionRouter.delete('/:id', auth, deleteQuestion)
 questionRouter.patch('/:id/star', auth, toggleStar)
 questionRouter.patch('/:id/note', auth, updateNote)
+questionRouter.get('/random', auth, getRandomQuestion)
 
 
 
