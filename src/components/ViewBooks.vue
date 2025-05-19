@@ -72,38 +72,13 @@
           <Icon :icon="book.icon" width="190px" height="190px" style="color: #ffbf69" />
 
           <!-- 複製按鈕 -->
-          <button
-            v-if="editMode && book.hover"
-            @click="copyBook(index)"
-            style="
-              position: absolute;
-              right: 5px;
-              top: 5px;
-              border: none;
-              background: transparent;
-              cursor: pointer;
-            "
-          >
+          <button v-if="editMode && book.hover" @click="copyBook(index)" class="copy-btn">
             <Icon icon="material-symbols:content-copy" width="24" height="24" />
           </button>
 
           <!-- 書本資訊 -->
           <div style="width: 210px; border: 1px solid #ddd; border-radius: 8px">
-            <button
-              @click="book.expanded = !book.expanded"
-              style="
-                color: black;
-                background-color: white;
-                border: none;
-                width: 100%;
-                text-align: left;
-                padding: 8px 16px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-              "
-            >
+            <button @click="book.expanded = !book.expanded" class="bookInfo-btn">
               <template v-if="!book.editing">
                 <h5 v-if="editMode" @click.stop="startEditingTitle(book)">{{ book.title }}</h5>
                 <h5 v-else>{{ book.title }}</h5>
@@ -168,21 +143,7 @@
         <Icon icon="bx:edit-alt" width="40" height="40" style="color: black" />
         <div>編輯</div>
       </button>
-      <button
-        v-if="editMode"
-        @click="finishEditing"
-        style="
-          background-color: #cfe5ff;
-          color: black;
-          padding: 12px 24px;
-          border: none;
-          border-radius: 8px;
-          font-size: 30px;
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-        "
-      >
+      <button v-if="editMode" @click="finishEditing" class="editing-btn">
         <div>完成編輯</div>
       </button>
     </div>
@@ -528,5 +489,39 @@ function handleSlide(event: any) {
 button[disabled] {
   pointer-events: none;
   opacity: 0.5;
+}
+
+.editing-btn {
+  background-color: #cfe5ff;
+  color: black;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.bookInfo-btn {
+  color: black;
+  background-color: white;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.copy-btn {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 </style>

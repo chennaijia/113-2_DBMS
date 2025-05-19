@@ -37,29 +37,40 @@
 
 
  <!-- Modal區域 -->
- <AddCardModal v-if="showAddModal" :bookId="currentBookId" @add-card="addCard" @close="closeModals" />
- <!--AddCardModal v-if="showAddModal" @add-card="addCard" @close="closeModals" /-->
- <EditCardModal v-if="showEditModal" :card="selectedCard" @close="closeModals" />
+<AddCardModal
+  :bookId="book.QuestionBook_ID"
+  v-if="showAddModal"
+  @close="showAddModal = false"
+  @add-card="loadCards"
+/>
 </template>
 
 
 
 
 <script>
-import { ref, computed } from 'vue'
+//import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import QuestionCard from './QuestionCard.vue'
 import AddCardModal from './AddCardModal.vue'
+import { fetchQuestionsByBook } from '../api/questions'
 
 
 
 
 export default {
  props: {
-   currentSubject: String
+   currentSubject: String,
+    book: {
+      type: Object,
+      required: true,
+    },
  },
  components: { QuestionCard, AddCardModal },
- setup() {
-   const cards = ref([
+ setup(props) {
+    const cards = ref([])
+
+    const defaultCards = () => [
      {
        id: Date.now(), // 第一張卡
        questionType: 'open',
@@ -84,7 +95,28 @@ export default {
        wrongCount: 0,
        rightCount: 0,
      }
-   ])
+   ]
+   const loadCards = async () => {
+      try {
+        if (!props.book?.QuestionBook_ID) return
+        const { data } = await fetchQuestionsByBook(props.book.QuestionBook_ID)
+        cards.value = (data.length ? data : defaultCards()).map((q) => ({
+            ...q,
+            questionImage: q.content_pic,
+            answerImage: q.answer_pic,
+}))
+      } catch (err) {
+        console.error('❌ 讀題目失敗：', err)
+        cards.value = defaultCards()
+      }
+    }
+
+    onMounted(loadCards)
+    // 切換到別本書時自動重新抓+
+    watch(
+      () => props.book?.QuestionBook_ID,
+      () => loadCards()
+    )
 
 
    const editMode = ref(false)
@@ -200,8 +232,9 @@ export default {
      addCard,
      deleteThisCard
    }
- }
+  }
 }
+
 </script>
 
 
