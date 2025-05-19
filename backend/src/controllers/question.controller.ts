@@ -6,7 +6,7 @@ import { upload } from '../middleware/upload';
 import cloudinary  from '../config/cloudinary';
 import streamifier from 'streamifier';
 import { pool } from '../config/database'; // 確保這裡的 pool 是正確的
-
+import { listQuestionsByBook as getByBook } from '../models/question.model'
 
 export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   try {
@@ -150,4 +150,16 @@ export const listQuestions = async (req: AuthReq, res: Response) => {
   }
 };
 
+
+export const listQuestionsByBook = async (bookId: number, userId: number) => {
+  const [rows]: any = await pool.query(
+    `SELECT q.*
+     FROM QUESTION q
+     JOIN QUESTION_COLLECTION qc ON q.Question_ID = qc.Question_ID
+     WHERE qc.QuestionBook_ID = ? AND qc.User_ID = ?
+     ORDER BY q.Question_ID DESC`,
+    [bookId, userId],
+  )
+  return rows
+}
 

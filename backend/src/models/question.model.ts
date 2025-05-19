@@ -90,6 +90,19 @@ export const listQuestions = async (creatorId: number) => {
   return rows;
 };
 
+export const listQuestionsByBook = async (bookId: number, userId: number) => {
+  const [rows]: any = await pool.query(
+    `SELECT q.*
+       FROM QUESTION q
+       JOIN QUESTION_COLLECTION qc ON q.Question_ID = qc.Question_ID
+      WHERE qc.QuestionBook_ID = ? AND qc.User_ID = ?
+      ORDER BY q.Question_ID DESC`,
+    [bookId, userId],
+  )
+  return rows
+}
+
+
 
 
 

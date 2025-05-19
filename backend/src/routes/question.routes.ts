@@ -5,10 +5,27 @@ import {
 } from '../controllers/question.controller';
 import { auth } from '../middleware/auth';
 import { upload } from '../middleware/upload';
+import { listQuestionsByBook } from '../controllers/question.controller'
+import { Request, Response, NextFunction } from 'express';
+
 
 export const questionRouter = Router();
 
 questionRouter.post('/upload', auth, upload, uploadQuestion);
-questionRouter.get('/questions', auth, listQuestions); // ⬅️ 要有 auth 才能取得 user.id
+questionRouter.get(
+  '/by-book/:bookId',
+  auth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const bookId = Number(req.params.bookId);
+      // @ts-ignore
+      const userId = req.user?.id;
+      const result = await listQuestionsByBook(bookId, userId);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+)
 
 
