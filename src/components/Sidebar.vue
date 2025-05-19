@@ -77,7 +77,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { Icon } from '@iconify/vue'
 import Login from './Login.vue'
@@ -148,10 +148,16 @@ onMounted(() => {
     userName.value = savedUser
     fetchBooks()
   }
+
+  window.addEventListener('refresh-books', fetchBooks)
 })
+
+// ✅ 監聽登入狀態變化
+onUnmounted(() => {
+  window.removeEventListener('refresh-books', fetchBooks)
+})
+
 </script>
-
-
 
 
 
