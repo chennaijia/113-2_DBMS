@@ -11,7 +11,7 @@
       </div>
 
       <div v-else-if="currentPage === 'question'">
-        <ViewQuestions :currentSubject="currentSubject" />
+        <ViewQuestions :currentSubject="currentSubject" :book="currentBook" />
       </div>
 
       <div v-else-if="currentPage === 'practice'">
@@ -73,6 +73,7 @@ import BackendTestQuestion from './components/BackendTestQuestion.vue'
 const subjects = ref(['高三國文', '高二數學'])
 const currentPage = ref('home')
 const currentSubject = ref('')
+const currentBook = ref(null) // ✅ 現在增加一個 book 狀態
 const startPractice = ref(false)
 const selectedQuestions = ref([])
 const isFinished = ref(false)
@@ -82,10 +83,26 @@ const practiceResult = ref({
   timeSpent: '00:00',
 })
 
+
+// ✅ 接收 Sidebar 傳來的頁面與 book 資訊
+function handleChangePage(page, payload = '') {
+  currentPage.value = page
+
+  // 如果 payload 是物件（代表是 book），記錄它
+  if (typeof payload === 'object') {
+    currentBook.value = payload
+    currentSubject.value = payload.BName // 如果你想用名稱當 subject
+  } else {
+    currentSubject.value = payload
+  }
+}
+
+/*
 function handleChangePage(page, subject = '') {
   currentPage.value = page
   currentSubject.value = subject
 }
+*/
 
 function setQuestion(selected) {
   startPractice.value = true

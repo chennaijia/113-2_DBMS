@@ -15,13 +15,8 @@
       <!-- 題目圖片 -->
       <label>題目圖片:</label>
       <div>
-        <input
-          type="file"
-          accept="image/*"
-          @change="(e) => handleFileChange(e, 'question')"
-          ref="questionInput"
-          style="display: none"
-        />
+        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'question')" ref="questionInput"
+          style="display: none" />
         <button type="button" @click="triggerInput('question')">
           {{ questionImage ? '更換圖片' : '上傳圖片' }}
         </button>
@@ -41,7 +36,7 @@
       <template v-else-if="questionType === 'multipleABC'">
         <label>選擇正確答案 (字母):</label>
         <div class="options">
-          <label v-for="opt in ['A','B','C','D','E']" :key="opt">
+          <label v-for="opt in ['A', 'B', 'C', 'D', 'E']" :key="opt">
             <input type="checkbox" :value="opt" v-model="answer" /> {{ opt }}
           </label>
         </div>
@@ -50,7 +45,7 @@
       <template v-else-if="questionType === 'multiple123'">
         <label>選擇正確答案 (數字):</label>
         <div class="options">
-          <label v-for="num in ['1','2','3','4','5']" :key="num">
+          <label v-for="num in ['1', '2', '3', '4', '5']" :key="num">
             <input type="checkbox" :value="num" v-model="answer" /> {{ num }}
           </label>
         </div>
@@ -64,13 +59,8 @@
       <!-- 詳解圖片 -->
       <label>詳解圖片:</label>
       <div>
-        <input
-          type="file"
-          accept="image/*"
-          @change="(e) => handleFileChange(e, 'answer')"
-          ref="answerInput"
-          style="display: none"
-        />
+        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'answer')" ref="answerInput"
+          style="display: none" />
         <button type="button" @click="triggerInput('answer')">
           {{ answerImage ? '更換圖片' : '上傳圖片' }}
         </button>
@@ -91,8 +81,15 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import axios from 'axios'
 
 const emit = defineEmits(['add-card', 'close'])
+
+
+const props = defineProps<{
+  bookId: number
+}>();
+
 
 const questionType = ref('truefalse')
 const questionImage = ref<string | null>(null)
@@ -102,6 +99,10 @@ const answerText = ref('')
 
 const questionInput = ref<HTMLInputElement | null>(null)
 const answerInput = ref<HTMLInputElement | null>(null)
+
+const questionImageFile = ref(null)
+const answerImageFile = ref(null)
+
 
 function triggerInput(type: 'question' | 'answer') {
   if (type === 'question') {
@@ -120,64 +121,104 @@ watch(questionType, (newType) => {
   }
 })
 
-function handleFileChange(event: Event, type: 'question' | 'answer') {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const result = e.target?.result as string
-      if (type === 'question') {
-        questionImage.value = result
-      } else {
-        answerImage.value = result
-      }
-    }
-    reader.readAsDataURL(file)
+const handleFileChange = (event, type) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const imageURL = URL.createObjectURL(file)
+  if (type === 'question') {
+    questionImage.value = imageURL
+    questionImageFile.value = file
+  } else if (type === 'answer') {
+    answerImage.value = imageURL
+    answerImageFile.value = file
   }
 }
 
-function submitCard() {
-  if (!questionImage.value) {
+
+const submitCard = async () => {
+  console.log('🚀 開始送出卡片')
+
+  if (!questionImageFile.value) {
     alert('請上傳題目圖片')
+    console.log('⚠️ 未選擇題目圖片，停止送出')
     return
   }
 
   const resolvedAnswer =
     questionType.value === 'open' ? answerText.value :
-    (questionType.value === 'multipleABC' || questionType.value === 'multiple123')
-      ? [...answer.value].sort()
-      : answer.value
+      (questionType.value === 'multipleABC' || questionType.value === 'multiple123')
+        ? [...answer.value].sort()
+        : answer.value
 
   if (
     (questionType.value === 'open' && !answerText.value) ||
     (questionType.value !== 'open' && (!resolvedAnswer || resolvedAnswer.length === 0))
   ) {
     alert('請輸入答案')
+    console.log('⚠️ 答案未填寫，停止送出')
     return
   }
 
-  const newCard = {
-    id: Date.now(),
-    questionType: questionType.value,
-    question: '',
-    answer: resolvedAnswer,
-    questionImage: questionImage.value,
-    answerImage: answerImage.value,
-    note: '',
-    starred: false,
-    wrongCount: 0,
-    rightCount: 0,
+  const formData = new FormData()
+  formData.append('qtype', questionType.value)
+  formData.append('content', '') // 可加入題目文字
+  formData.append('answer', Array.isArray(resolvedAnswer) ? resolvedAnswer.join(',') : resolvedAnswer)
+  formData.append('level', '1') // 難度
+  formData.append('subject', '') // 暫時空，之後可加上科目分類
+
+  formData.append('content_pic', questionImageFile.value)
+  if (answerImageFile.value) {
+    formData.append('answer_pic', answerImageFile.value)
   }
 
-  emit('add-card', newCard)
-  emit('close')
+  // 👈 取得當前本子ID
+  //formData.append('questionBookId', 1);
+  formData.append('questionBookId', props.bookId);
 
-  // Reset
-  questionImage.value = null
-  answerImage.value = null
-  answer.value = []
-  answerText.value = ''
+
+  console.log('📦 準備送出的表單資料：', {
+    qtype: questionType.value,
+    answer: resolvedAnswer,
+    content_pic: questionImageFile.value,
+    answer_pic: answerImageFile.value,
+  })
+
+  try {
+    const token = localStorage.getItem('token')
+    console.log('🔐 使用的 JWT token:', token)
+
+    const res = await axios.post('http://localhost:3000/api/question/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    console.log('✅ 後端回傳成功：', res.data)
+
+    emit('card-added', res.data)
+    emit('close')
+
+    // Reset
+    questionImage.value = null
+    answerImage.value = null
+    answer.value = []
+    answerText.value = ''
+    questionImageFile.value = null
+    answerImageFile.value = null
+    alert('✅ 新增成功！')
+    console.log('🔄 資料已重置，流程完成')
+  } catch (error: any) {
+  console.error('❌ 新增題目失敗:', error);
+
+  const message = error.response?.data?.message || '新增題目失敗，請稍後再試';
+  alert(`❌ 錯誤：${message}`);
 }
+}
+
+
+
 </script>
 
 
@@ -188,7 +229,8 @@ function submitCard() {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(13, 71, 161, 0.3); /* 半透明藍底 */
+  background-color: rgba(13, 71, 161, 0.3);
+  /* 半透明藍底 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -196,7 +238,8 @@ function submitCard() {
 }
 
 .modal-content {
-  background-color: #f5f9fd; /* 卡片同背景 */
+  background-color: #f5f9fd;
+  /* 卡片同背景 */
   padding: 24px;
   border-radius: 12px;
   width: 90%;
@@ -282,9 +325,12 @@ button[type="submit"],
 .button-group button:last-child:hover {
   background-color: #d76154;
 }
+
 .options {
   display: flex;
-  gap: 1rem; /* 可自行調整間距 */
-  flex-wrap: wrap; /* 如果畫面太窄可以自動換行，若不要換行可刪除這行 */
+  gap: 1rem;
+  /* 可自行調整間距 */
+  flex-wrap: wrap;
+  /* 如果畫面太窄可以自動換行，若不要換行可刪除這行 */
 }
 </style>
