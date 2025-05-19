@@ -285,36 +285,38 @@
 
 <script setup lang="ts">
 /* ------------ import ------------ */
-import { ref, onMounted } from 'vue'
-import { Icon } from '@iconify/vue'
-import AddBook from './AddBook.vue'
-import Login from './Login.vue'
-import { fetchQBs, createQB, updateQB, deleteQB, copyQB, listQB } from '@/api/qb' // 你前面建立的 API 包裝
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
-import * as bootstrap from 'bootstrap'
+import { ref, onMounted } from 'vue';
+import { Icon } from '@iconify/vue';
+import AddBook from './AddBook.vue';
+import Login from './Login.vue';
+import {
+  fetchQBs, createQB, updateQB, deleteQB, copyQB
+} from '@/api/qb';                 // 你前面建立的 API 包裝
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import * as bootstrap from 'bootstrap';
 
 /* ------------ 型別 ------------ */
 interface BookUI {
-  id: number
-  title: string
-  icon: string
-  mistakeCount: number
-  date: string
-  selected: boolean
-  editing: boolean
-  hover: boolean
-  expanded: boolean
+  id: number;
+  title: string;
+  icon: string;
+  mistakeCount: number;
+  date: string;
+  selected: boolean;
+  editing: boolean;
+  hover: boolean;
+  expanded: boolean;
 }
 
 /* ------------ reactive 狀態 ------------ */
-const showAddBook = ref(false)
-const editMode = ref(false)
-const showGuide = ref(false)
-const showLoginModal = ref(false)
-const isLoggedIn = ref(!!localStorage.getItem('userName'))
-const currentSlideIndex = ref(0)
-const books = ref<BookUI[]>([])
+const showAddBook = ref(false);
+const editMode = ref(false);
+const showGuide = ref(false);
+const showLoginModal = ref(false);
+const isLoggedIn = ref(!!localStorage.getItem('userName'));
+const currentSlideIndex = ref(0);
+const books = ref<BookUI[]>([]);
 
 /* ------------ 生命週期 ------------ */
 onMounted(async () => {
@@ -326,11 +328,11 @@ onMounted(async () => {
   if (carouselEl) {
     const carousel = new bootstrap.Carousel(carouselEl, { interval: false, wrap: false })
     carouselEl.addEventListener('slide.bs.carousel', (event: any) => {
-      if (currentSlideIndex.value === 0 && event.direction === 'right') event.preventDefault()
-      if (currentSlideIndex.value === 3 && event.direction === 'left') event.preventDefault()
-      currentSlideIndex.value = event.to
-    })
-    carouselEl.addEventListener('slid.bs.carousel', handleSlide)
+      if (currentSlideIndex.value === 0 && event.direction === 'right') event.preventDefault();
+      if (currentSlideIndex.value === 3 && event.direction === 'left') event.preventDefault();
+      currentSlideIndex.value = event.to;
+    });
+    carouselEl.addEventListener('slid.bs.carousel', handleSlide);
   }
 })
 
@@ -342,12 +344,11 @@ async function loadBooks() {
     title: row.BName,
     icon: row.Icon || 'raphael:book',
     mistakeCount: row.Question_Count ?? 0,
-    date: new Date(row.CreateDate ?? row.CreatedDate ?? Date.now()).toISOString().slice(0, 10),
-    selected: false,
-    editing: false,
-    hover: false,
-    expanded: true,
-  })) as BookUI[]
+    date: new Date(row.CreateDate ?? row.CreatedDate ?? Date.now())
+      .toISOString()
+      .slice(0, 10),
+    selected: false, editing: false, hover: false, expanded: true,
+  })) as BookUI[];
 }
 
 /* ------------ 新增 ------------ */
@@ -359,12 +360,12 @@ async function handleAddBook(input: { title: string; icon: string }) {
     icon: input.icon,
     mistakeCount: 0,
     date: new Date().toISOString().slice(0, 10),
-    selected: false,
-    editing: false,
-    hover: false,
-    expanded: true,
-  })
-  showAddBook.value = false
+    selected: false, editing: false, hover: false, expanded: true,
+  });
+  showAddBook.value = false;
+  // 通知其他元件更新
+  window.dispatchEvent(new Event('refresh-books'))
+
 }
 
 /* ------------ 更新 (完成編輯) ------------ */
@@ -372,16 +373,18 @@ async function finishEditing() {
   editMode.value = false
 
   for (const b of books.value) {
-    const changedTitle =
-      (b as any).originalTitle !== undefined && b.title !== (b as any).originalTitle
-    const changedIcon = (b as any).originalIcon !== undefined && b.icon !== (b as any).originalIcon
+    const changedTitle = (b as any).originalTitle !== undefined && b.title !== (b as any).originalTitle;
+    const changedIcon = (b as any).originalIcon !== undefined && b.icon !== (b as any).originalIcon;
 
     if (changedTitle || changedIcon) {
       try {
         await updateQB(b.id, { BName: b.title, Icon: b.icon })
         // 更新成功後把 baseline 同步
-        ;(b as any).originalTitle = b.title
-        ;(b as any).originalIcon = b.icon
+        (b as any).originalTitle = b.title;
+        (b as any).originalIcon = b.icon;
+        // 通知其他元件更新
+        window.dispatchEvent(new Event('refresh-books'))
+
       } catch (err) {
         console.error('更新失敗', err)
         alert(`題本「${b.title}」更新失敗`)
@@ -389,17 +392,20 @@ async function finishEditing() {
     }
 
     // 清理 UI 狀態
-    b.editing = false
-    b.hover = false
-    b.selected = false
+    b.editing = false;
+    b.hover = false;
+    b.selected = false;
   }
 }
 
 /* ------------ 刪除 ------------ */
 async function deleteBook(idx: number) {
-  const target = books.value[idx]
-  await deleteQB(target.id)
-  books.value.splice(idx, 1)
+  const target = books.value[idx];
+  await deleteQB(target.id);
+  books.value.splice(idx, 1);
+  // 通知其他元件更新
+  window.dispatchEvent(new Event('refresh-books'))
+
 }
 
 /* -------- copyBook（修正版） -------- */
@@ -408,12 +414,13 @@ async function copyBook(idx: number) {
 
   try {
     /* 1️⃣ 先呼叫後端，拿到新 ID */
-    const { data } = await copyQB(src.id) // { QuestionBook_ID: 123 }
+    const { data } = await copyQB(src.id);  // { QuestionBook_ID: 123 }
+    console.log('啊啊啊啊 ID：', data.QuestionBook_ID);
 
     /* 2️⃣ 只挑純資料欄位，組成新的平面物件 */
     const cloned = {
       id: data.QuestionBook_ID,
-      title: src.title + ' 複製',
+      title: src.title + ' 的副本',
       icon: src.icon,
       mistakeCount: src.mistakeCount,
       date: src.date,
@@ -425,7 +432,10 @@ async function copyBook(idx: number) {
     }
 
     /* 3️⃣ 插到原書後面 */
-    books.value.splice(idx + 1, 0, cloned)
+    books.value.splice(idx + 1, 0, cloned);
+    // 通知其他元件更新
+    window.dispatchEvent(new Event('refresh-books'))
+
   } catch (err) {
     console.error('複製失敗', err)
     alert(`題本「${src.title}」複製失敗`)
@@ -460,24 +470,21 @@ function toggleEditMode() {
 function startEditingTitle(book: BookUI) {
   if (!('originalTitle' in book)) {
     // 首次編輯才存一份，避免之後一直覆蓋
-    ;(book as any).originalTitle = book.title
-    ;(book as any).originalIcon = book.icon
+    (book as any).originalTitle = book.title;
+    (book as any).originalIcon = book.icon;
   }
   book.editing = true
 }
 
 function handleSlide(event: any) {
-  currentSlideIndex.value = event.to
-  const addBtn = document.querySelector('.guide-highlight-add')
-  const editBtn = document.querySelector('.guide-highlight-edit')
-  const sidebar = document.querySelector('.guide-highlight-sidebar')
-  ;[addBtn, editBtn, sidebar].forEach((el) => el?.classList.remove('highlight-shadow'))
-  if (event.to === 1 && sidebar) sidebar.classList.add('highlight-shadow')
-  if (event.to === 2 && addBtn) addBtn.classList.add('highlight-shadow')
-  if (event.to === 3 && editBtn) editBtn.classList.add('highlight-shadow')
-}
-function endGuide() {
-  showGuide.value = false
+  currentSlideIndex.value = event.to;
+  const addBtn = document.querySelector('.guide-highlight-add');
+  const editBtn = document.querySelector('.guide-highlight-edit');
+  const sidebar = document.querySelector('.guide-highlight-sidebar');
+  [addBtn, editBtn, sidebar].forEach(el => el?.classList.remove('highlight-shadow'));
+  if (event.to === 1 && sidebar) sidebar.classList.add('highlight-shadow');
+  if (event.to === 2 && addBtn) addBtn.classList.add('highlight-shadow');
+  if (event.to === 3 && editBtn) editBtn.classList.add('highlight-shadow');
 }
 </script>
 
