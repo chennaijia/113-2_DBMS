@@ -1,196 +1,194 @@
 <template>
-  <div  class="main-container">
+  <div class="main-container">
     <div class="flip-card-container">
-    <div class="flip-card" :class="{ 'is-flipped': isFlipped }">
-      <!-- 卡片正面 -->
-      <div class="flip-card-front">
-        <div class="card-content">
-          <h2 class="card-title">題目</h2>
-          
-          <!-- 題目顯示區 (文字或圖片) -->
-          <div class="question-area">
-            <div v-if="currentQuestion.type === 'text'" class="text-question">
-              {{ currentQuestion.content }}
+      <div class="flip-card" :class="{ 'is-flipped': isFlipped }">
+        <!-- 卡片正面 -->
+        <div class="flip-card-front">
+          <div class="card-content">
+            <h2 class="card-title">題目</h2>
+
+            <!-- 題目顯示區 (文字或圖片) -->
+            <div class="question-area">
+              <div class="image-question">
+                <img :src="currentQuestion.content" alt="題目圖片" class="question-image" />
+              </div>
             </div>
-            <div v-else-if="currentQuestion.type === 'image'" class="image-question">
-              <img :src="currentQuestion.content" alt="題目圖片" class="question-image" />
+
+            <!-- 答案輸入區 -->
+            <div class="answer-input-area">
+              <input
+                v-model="userAnswer"
+                class="answer-input"
+                placeholder="輸入答案範例：ACDE（多選題答案中間不用有空格）"
+                :readonly="isAnswerSubmitted"
+                :class="{ 'input-disabled': isAnswerSubmitted }"
+              />
             </div>
-          </div>
-          
-          <!-- 答案輸入區 -->
-          <div class="answer-input-area">
-            <input 
-              v-model="userAnswer" 
-              class="answer-input" 
-              placeholder="請輸入您的答案..."
-              :readonly="isAnswerSubmitted"
-              :class="{ 'input-disabled': isAnswerSubmitted }"
-            />
-          </div>
-          
-          <!-- 按鈕區 -->
-          <div class="button-container">
-            <button class="submit-button" @click="submitAnswer">提交答案</button>
+
+            <!-- 按鈕區 -->
+            <div class="button-container">
+              <button class="submit-button" @click="submitAnswer">提交答案</button>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <!-- 卡片背面 -->
-      <div class="flip-card-back">
-        <div class="card-content">
-          <!-- 上方結果區域 -->
-          <div class="result-area">
-            <div v-if="currentQuestion.type === 'text'" class="feedback-icon">
-              <div v-if="isAnswerCorrect === true">
-                <Icon icon="mdi:check-circle" class="correct-icon" />
-              </div>
-              <div v-else-if="isAnswerCorrect === false">
-                <Icon icon="mdi:close-circle" class="incorrect-icon" />
-              </div>
-            </div>
-            <div v-else-if="currentQuestion.type === 'image'" class="manual-check">
-              <img :src="currentQuestion.answer" alt="答案圖片" class="answer-image" />
-              <div class="manual-check-buttons">
-                <button @click="markAsCorrect" class="correct-button">
-                  <Icon icon="mdi:check-circle" />
-                  正確
-                </button>
-                <button @click="markAsIncorrect" class="incorrect-button">
-                  <Icon icon="mdi:close-circle" />
-                  錯誤
-                </button>
-              </div>
-              <div v-if="manualFeedback !== null" class="feedback-icon">
-                <Icon 
-                  :icon="manualFeedback ? 'mdi:check-circle' : 'mdi:close-circle'" 
-                  :class="manualFeedback ? 'correct-icon' : 'incorrect-icon'" 
-                />
-              </div>
-            </div>
-          </div>
-          
-          <!-- 下方答案與筆記區域 -->
-          <div class="bottom-area">
-            <!-- 左下答案顯示 -->
-            <div class="answer-area">
-              <h3>正確答案：</h3>
-              <div v-if="currentQuestion.type === 'text'" class="text-answer">
-                {{ currentQuestion.answer }}
-              </div>
-              <div v-else-if="currentQuestion.type === 'image'" class="image-answer">
-                <span class="image-answer-text">請查看上方圖片</span>
-              </div>
-            </div>
-            
-            <!-- 右下筆記區域 -->
-            <div class="notes-area" @click="toggleNotes">
-              <h3>筆記</h3>
 
-              <div v-if="showNotes" class="notes-content">
-                <div v-if="currentQuestion.notesType === 'text'" class="text-note">
-                  {{ currentQuestion.notes || '尚無筆記' }}
+        <!-- 卡片背面 -->
+        <div class="flip-card-back">
+          <div class="card-content">
+            <!-- 上方結果區域 -->
+            <div class="result-area">
+              <div v-if="currentQuestion.type === 'text'" class="feedback-icon">
+                <div v-if="isAnswerCorrect === true">
+                  <Icon icon="mdi:check-circle" class="correct-icon" />
                 </div>
-                <div v-else-if="currentQuestion.notesType === 'image'" class="image-note">
-                  <img :src="currentQuestion.notes" alt="筆記圖片" class="note-image" />
+                <div v-else-if="isAnswerCorrect === false">
+                  <Icon icon="mdi:close-circle" class="incorrect-icon" />
                 </div>
               </div>
-              <div v-else class="notes-hidden">
-                <span>（點擊查看筆記）</span>
+              <div v-else-if="currentQuestion.type === 'image'" class="manual-check">
+                <div class="answer-image-container">
+                  <div v-if="manualFeedback !== null">
+                    <Icon
+                      :icon="manualFeedback ? 'mdi:check-circle' : 'mdi:close-circle'"
+                      :class="manualFeedback ? 'correct-icon' : 'incorrect-icon'"
+                    />
+                  </div>
+                </div>
+                <div class="manual-check-buttons">
+                  <button @click="markAsCorrect" class="correct-button">
+                    <Icon icon="mdi:check-circle" />
+                    正確
+                  </button>
+                  <button @click="markAsIncorrect" class="incorrect-button">
+                    <Icon icon="mdi:close-circle" />
+                    錯誤
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <!-- 返回按鈕 -->
-          <div class="button-container">
-            <button class="return-button" @click="resetCard">回到題目</button>
+
+            <!-- 下方答案與筆記區域 -->
+            <div class="bottom-area">
+              <!-- 左下答案顯示 -->
+              <div class="answer-area">
+                <h3>正確答案：</h3>
+                <div v-if="currentQuestion.type === 'text'" class="text-answer">
+                  {{ currentQuestion.answer }}
+                </div>
+                <div v-else-if="currentQuestion.type === 'image'" class="image-answer">
+                  <img :src="currentQuestion.answer" alt="答案圖片" class="answer-area-image" />
+                </div>
+              </div>
+
+              <!-- 右下筆記區域 -->
+              <div class="notes-area" @click="toggleNotes">
+                <h3>筆記</h3>
+
+                <div v-if="showNotes">
+                  <div class="image-note">
+                    <img :src="currentQuestion.notes" alt="筆記圖片" class="note-image" />
+                  </div>
+                </div>
+                <div v-else class="notes-hidden">
+                  <span>（點擊查看筆記）</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 返回按鈕 -->
+            <div class="button-container">
+              <button class="return-button" @click="resetCard">回到題目</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
+    <div class="calendar-container-wrapper">
+      <div class="container">
+        <div class="calendar-header">
+          <h2 class="text-center mb-4 fw-bold calendar-title">每日打卡系統</h2>
+        </div>
 
-  <div class="container mt-5">
-    <div class="calendar-header">
-      <h2 class="text-center mb-4 fw-bold calendar-title">每日打卡系統</h2>
-    </div>
-    
-    <div class="d-flex justify-content-between align-items-center mb-3 month-navigator">
-      <button class="btn btn-month" @click="prevMonth">
-        <i class="bi bi-chevron-left"></i> 
-      </button>
-      <h4 class="month-title">{{ currentYear }} 年 {{ currentMonth + 1 }} 月</h4>
-      <button class="btn btn-month" @click="nextMonth">
-        <i class="bi bi-chevron-right"></i>
-      </button>
-    </div>
-    
-    <div class="calendar-container shadow rounded">
-      <table class="table table-bordered text-center align-middle calendar-table">
-        <thead>
-          <tr>
-            <th v-for="(day, index) in weekDays" :key="index" class="week-day">
-              {{ day }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(week, weekIndex) in calendar" :key="weekIndex">
-            <td 
-              v-for="(day, dayIndex) in week" 
-              :key="dayIndex" 
-              :class="cellClass(day)"
-              @click="handleCheckIn(day)"
-              style="cursor: pointer; position: relative;">
-              <div v-if="day" class="day-content">
-                <span class="day-number">{{ day }}</span>
-                <div v-if="isCheckedIn(day)" class="check-mark">
-                </div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+        <div class="d-flex justify-content-between align-items-center mb-3 month-navigator">
+          <button class="btn btn-month" @click="prevMonth">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <h4 class="month-title">{{ currentYear }} 年 {{ currentMonth + 1 }} 月</h4>
+          <button class="btn btn-month" @click="nextMonth">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
 
-    <div class="mt-4 text-center stats-container">
-      <div class="streak-info p-3 rounded">
-        <h5 class="mb-0">本月已打卡：<span class="streak-count">{{ currentMonthCheckInCount }} 天</span></h5>
-      </div>
+        <div class="calendar-container shadow rounded">
+          <table class="table table-bordered text-center align-middle calendar-table">
+            <thead>
+              <tr>
+                <th v-for="(day, index) in weekDays" :key="index" class="week-day">
+                  {{ day }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(week, weekIndex) in calendar" :key="weekIndex">
+                <td
+                  v-for="(day, dayIndex) in week"
+                  :key="dayIndex"
+                  :class="cellClass(day)"
+                  @click="handleCheckIn(day)"
+                  style="cursor: pointer; position: relative;">
+                  <div v-if="day" class="day-content">
+                    <span class="day-number">{{ day }}</span>
+                    <div v-if="isCheckedIn(day)" class="check-mark">
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <!-- 今日打卡按鈕 -->
-      <button 
-        @click="checkInToday" 
-        class="btn btn-checkin mt-3"
-        :disabled="isTodayCheckedIn">
-        {{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}
-      </button>
-    </div>
-    
-    <!-- 打卡成功提示 -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-      <div 
-        class="toast align-items-center text-white bg-success border-0" 
-        ref="toastEl" 
-        role="alert" 
-        aria-live="assertive" 
-        aria-atomic="true">
-        <div class="d-flex" style="background-color: #3d7dcf">
-          <div class="toast-body">
-            <i class="bi bi-check-circle me-2"></i> 打卡成功！繼續保持！
+        <div class="mt-4 text-center stats-container">
+          <div class="streak-info p-3 rounded">
+            <h5 class="mb-0">本月已打卡：<span class="streak-count">{{ currentMonthCheckInCount }} 天</span></h5>
           </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+
+          <!-- 今日打卡按鈕 -->
+          <button
+            @click="checkInToday"
+            class="btn btn-checkin mt-3"
+            :disabled="isTodayCheckedIn">
+            {{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}
+          </button>
+        </div>
+
+        <!-- 打卡成功提示 -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+          <div
+            class="toast align-items-center text-white bg-success border-0"
+            ref="toastEl"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex" style="background-color: #3d7dcf">
+              <div class="toast-body">
+                <i class="bi bi-check-circle me-2"></i> 打卡成功！繼續保持！
+              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
 import { Icon } from '@iconify/vue';
 import * as bootstrap from 'bootstrap';
 import { ref } from 'vue'
+import { fetchRandomQuestion } from '../api/questions';
+
 
 export default {
   name: 'HomePage',
@@ -217,27 +215,24 @@ export default {
         // 範例題目 (可以從API獲取或由父組件傳入)
         {
           id: 1,
-          type: 'text', 
-          content: "25. 下列各組「」內的詞，意義前後相同的是：\n(A)刑仁講讓，示民有「常」／自後余多在外，不「常」居\n(B)人煙「猶」是，而蕭條矣／同居一府，「猶」同室之兄弟至親也\n(C)由此觀之，客何「負」於秦哉／師略授小技，此來為不「負」也\n(D)當獎「率」三軍，北定中原／竟「率」意而鴉塗，莫自知其鳩拙云爾\n(E)新沐者必彈「冠」，新浴者必振衣／巾箱妝奩「冠」鏡首飾之盛，非人間之物",
-          answer: 'CE',
-          notesType: 'text', 
-          notes: '啊啊不要再錯了！'
+          type: 'text',
+          content: '/images/c.png',
+          answer: 'AE',
+          notes: '/images/c_note.png',
         },
         {
           id: 2,
           type: 'image',
           content: '/images/a.png',
           answer: '/images/a_sol.png',
-          notesType: 'text', 
-          notes: '精神狀態良好～～(o_o)'
+          notes: '/images/a_note.png'
         },
         {
           id: 3,
-          type: 'text',
-          content: '1+1=?',
-          answer: '/images/answer1.jpg',
-          notesType: 'images', 
-          notes: '/images/note1.jpg'
+          type: 'image',
+          content: '/images/b.png',
+          answer: '/images/b_note.png',
+          notes: '/images/b_note.png'
         }
       ],
 
@@ -277,11 +272,30 @@ export default {
 
 
     currentQuestion() {
-      return this.questions[this.currentQuestionIndex];
-    }
+  return this.questions[this.currentQuestionIndex] || {};
+}
 
   },
   methods: {
+    submitAnswer() {
+  const type = this.currentQuestion.qtype;
+  const userAns = this.userAnswer.trim().toUpperCase();
+  const correctAns = this.currentQuestion.answer;
+
+  if (type === 'truefalse') {
+    this.isAnswerCorrect = userAns === correctAns;
+  } else if (type === 'multipleABC' || type === 'multiple123') {
+    const sortStr = str => str.split('').sort().join('');
+    this.isAnswerCorrect = sortStr(userAns) === sortStr(correctAns);
+  } else if (type === 'open') {
+    this.isAnswerCorrect = userAns === correctAns.trim();
+  } else {
+    this.isAnswerCorrect = null; // 無法判斷
+  }
+
+  this.isFlipped = true;
+  this.isAnswerSubmitted = true;
+},
     cellClass(day) {
       if (!day) return 'bg-light empty-cell';
       const dateStr = this.formatDate(day);
@@ -308,45 +322,50 @@ export default {
     handleCheckIn(day) {
       if (!day) return;
       const dateStr = this.formatDate(day);
-      
+
       // 檢查是否未來日期或已打卡
       const selectedDate = new Date(dateStr);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (selectedDate != today) {
         // 未來日期不能打卡
         return;
       }
-      
+
       if (!this.checkInDays.includes(dateStr)) {
         // 模擬 API POST 請求
         this.performCheckIn(dateStr);
       }
     },
     checkInToday() {
-      if (!this.isTodayCheckedIn) {
-        this.performCheckIn(this.todayDateStr);
-      }
+  if (!this.isTodayCheckedIn) {
+    this.performCheckIn(this.todayDateStr);
+  }
+},
+
+performCheckIn(dateStr) {
+  fetch('/api/checkin', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
-    performCheckIn(dateStr) {
-      // 模擬 API 請求
-      fetch('/api/checkin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: dateStr })
-      })
-        .then(res => res.json())
-        .then(() => {
-          this.checkInDays.push(dateStr);
-          this.showToast();
-        })
-        .catch(err => console.error('打卡失敗:', err));
-        
-      // 模擬成功（實際使用時可移除這行）
+    body: JSON.stringify({ date: dateStr }),
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('打卡失敗');
+      return res.json();
+    })
+    .then(() => {
       this.checkInDays.push(dateStr);
       this.showToast();
-    },
+    })
+    .catch(err => {
+      console.error('打卡失敗:', err);
+      alert('打卡失敗，請稍後再試');
+    });
+},
     formatDate(day) {
       return `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     },
@@ -359,7 +378,7 @@ export default {
           this.checkInDays = data;
         })
         .catch(err => console.error('獲取打卡紀錄失敗:', err));
-        
+
       // 模擬數據（實際使用時可移除）
       const dummyData = [];
       const today = new Date();
@@ -407,19 +426,19 @@ export default {
       this.isFlipped = true;
       this.isAnswerSubmitted = true; // 標記答案已提交
     },
-    
+
     markAsCorrect() {
       this.manualFeedback = true;
     },
-    
+
     markAsIncorrect() {
       this.manualFeedback = false;
     },
-    
+
     toggleNotes() {
       this.showNotes = !this.showNotes;
     },
-    
+
     resetCard() {
       // 只重置卡片狀態，保持當前題目和用戶答案不變
       this.isFlipped = false;
@@ -427,34 +446,42 @@ export default {
       this.manualFeedback = null;
       this.showNotes = false;
     },
-    
+
     // 每日選擇新題目的方法
     selectDailyQuestion() {
       // 使用日期作為種子來確保同一天內顯示相同題目
       const today = new Date();
       const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-      
+
       // 簡單的偽隨機數生成器（使用日期字串作為種子）
       const generateSeededRandom = (seed) => {
         const seedNum = Array.from(seed).reduce((acc, char) => acc + char.charCodeAt(0), 0);
         return ((seedNum * 9301 + 49297) % 233280) / 233280;
       };
-      
+
       // 根據今天的日期選擇題目
       const randomValue = generateSeededRandom(dateString);
-      this.currentQuestionIndex = Math.floor(randomValue * this.questions.length);
-      
+      this.currentQuestionIndex = Math.floor(randomValue * this.questions.length)+2;
+
       console.log(`今天的題目索引: ${this.currentQuestionIndex}, 日期: ${dateString}`);
     },
-    
+
     // 在實際使用中可新增從API獲取題目的方法
-    fetchQuestions() {
-      // 這裡可實作API呼叫獲取所有可能的題目
-      // this.questions = 從API獲取的數據
-      
-      // 獲取題目後，選擇今日題目
-      this.selectDailyQuestion();
-    },
+    async fetchQuestions() {
+  try {
+    const { data } = await fetchRandomQuestion()
+    this.questions = [{
+      id: data.Question_ID,
+      type: 'image',
+      content: data.Content_pic,
+      answer: data.Answer_pic || data.Answer,
+      notes: data.note || '/images/default_note.png'
+    }]
+    // this.selectDailyQuestion()
+  } catch (err) {
+    console.error('❌ 無法載入隨機題目:', err)
+  }
+},
 
   },
   mounted() {
@@ -464,33 +491,43 @@ export default {
 
 
     // 加載所有可能的題目
-    // this.fetchQuestions(); // 如果從API獲取題目，則使用此行
-    
+    this.fetchQuestions(); // 如果從API獲取題目，則使用此行
+
     // 在本地數據的情況下直接選擇今日題目
-    this.selectDailyQuestion();
-  
+    // this.selectDailyQuestion();
+
   }
 };
 </script>
 
 <style scoped>
+
 .main-container {
-  display: grid;
-  grid-template-columns: 1fr 0.5fr; /* 創建兩個等寬的列 */
+  display: flex;
+  justify-content: space-between;
   width: 100%;
-  height: 100%; 
+  padding: 0 50px;
+  gap: 5%;
+  margin-top: 50px;
+  align-items: flex-start;
+  overflow: auto;
 }
 
 
+/* 日曆樣式 */
 .calendar-title {
   color: #5d9cec;
   font-size: 2rem;
+  min-width: 345px;
+  max-width: 470px;
 }
 
 .month-navigator {
   background-color: #f0f7ff;
   padding: 12px 15px;
   border-radius: 10px;
+  min-width: 345px;
+  max-width: 470px;
 }
 
 .month-title {
@@ -520,9 +557,16 @@ export default {
 
 .calendar-container {
   border-radius: 15px;
-  overflow: hidden;
+  overflow: auto;
   background-color: white;
   border: 1px solid #e6f2ff;
+  min-width: 345px;
+  max-width: 470px;
+}
+
+.calendar-container-wrapper {
+  flex: 1;
+  width: 80%;
 }
 
 .calendar-table {
@@ -595,7 +639,6 @@ export default {
   margin-top: 3px;
   background-color: #5d9cec;
   color: white;
-  
 }
 
 .stats-container {
@@ -664,14 +707,12 @@ export default {
   }
 }
 
-
-
+/* 翻轉卡片 */
 .flip-card-container {
-  width: 100%;
-  width: 550px;
+  width: 500px;
   height: 550px;
   perspective: 1000px;
-  margin: 0 auto;
+  flex-shrink: 0;
 }
 
 .flip-card {
@@ -700,7 +741,6 @@ export default {
   overflow: hidden;
 }
 
-/* 淺藍色主題 */
 .flip-card-front {
   background-color: #e6f3ff;
   color: #1a5276;
@@ -728,30 +768,34 @@ export default {
   margin-bottom: 15px;
 }
 
-/* 問題區域 */
+/* 問題區域 - 修復滾動問題 */
 .question-area {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 15px;
+  padding: 10px;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 10px;
   margin-bottom: 15px;
-  min-height: auto; /* 移除 min-height，讓內容決定高度 */
-  overflow: hidden; /* 確保縮放內容不超出邊界 */
+  overflow: auto; /* 確保垂直滾動條可用 */
+  height: 300px; /* 最大高度限制 */
+  position: relative;
+  flex-direction: column;
+
 }
 
-.text-question {
-  font-size: 1.3rem;
-  text-align: center;
-  transform: scale(1);
-  transition: transform 0.3s ease-in-out;
+.image-question {
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .question-image {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: auto;
   object-fit: contain;
 }
 
@@ -813,13 +857,16 @@ button:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 結果區域 */
+/* 結果區域 - 修復批改圖標與筆記區域重疊問題 */
 .result-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 15px;
   min-height: 100px;
+  max-height: 180px; /* 減小高度避免擠壓底部空間 */
+  overflow: auto;
+  position: relative;
 }
 
 .feedback-icon {
@@ -837,17 +884,35 @@ button:hover {
   font-size: 4rem;
 }
 
-.answer-image {
+/* 修復：手動批改後的圖標位置 */
+.manual-feedback-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  z-index: 10;
+  font-size: 2.5rem; /* 適當調整大小 */
+}
+
+.answer-image-container {
   max-width: 100%;
   max-height: 120px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.answer-image {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  margin-bottom: 10px;
 }
 
 .manual-check {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .manual-check-buttons {
@@ -872,85 +937,90 @@ button:hover {
   gap: 5px;
 }
 
-/* 底部區域 */
+/* 底部區域 - 修復答案圖片顯示問題 */
 .bottom-area {
   display: flex;
   margin-bottom: 15px;
-  flex: 0 0 auto; /* 讓底部區域根據內容自動調整高度 */
+  max-height: 170px;
+  min-height: 170px;
+  gap: 10px;
 }
 
+/* 答案區域 - 修復圖片答案顯示 */
 .answer-area {
   flex: 1;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 10px;
   padding: 10px;
-  margin-right: 10px;
-  overflow: auto; /* 如果答案太長可以滾動 */
+  overflow: auto; /* 確保可以滾動 */
+  display: flex;
+  flex-direction: column;
+  height:270px;
+}
+
+.answer-area h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
 }
 
 .text-answer {
-  /* 根據需要調整縮放 */
-  transform: scale(1);
-  transform-origin: center left; /* 縮放中心點 */
-  transition: transform 0.3s ease-in-out;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
+.image-answer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.answer-area-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 筆記區域 */
 .notes-area {
   flex: 1;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 10px;
   padding: 10px;
+  overflow: auto;
   cursor: pointer;
-  transition: background-color 0.3s;
-  overflow: hidden; /* 確保筆記內容不超出邊界 */
+  display: flex;
+  flex-direction: column;
+  height:270px;
 }
 
-.notes-area:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-h3 {
+.notes-area h3 {
   margin-top: 0;
   margin-bottom: 10px;
-  color: #2980b9;
-  font-size: 1rem;
-}
-
-.notes-hidden {
-  color: #95a5a6;
-  font-style: italic;
-  text-align: center;
-}
-
-.notes-content {
-  max-height: none; /* 移除 max-height，讓內容自動調整高度 */
-  overflow: auto; /* 如果筆記內容太長可以滾動 */
-  display: flex;
-  align-items: center; /* 垂直居中 */
-  justify-content: center; /* 水平居中 */
-  height: 100%;
-}
-
-.text-note {
-  text-align: center;
-  transform: scale(1);
-  transition: transform 0.3s ease-in-out;
 }
 
 .image-note {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .note-image {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
-.image-answer-text {
-  font-style: italic;
+.notes-hidden {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   color: #7f8c8d;
+  font-style: italic;
 }
 </style>

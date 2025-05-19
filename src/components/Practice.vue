@@ -251,6 +251,7 @@ function manualJudge(result) {
 }
 
 function finishPractice() {
+  //待辦：更新至資料庫（錯題次數）
   const result = {
     questions: localQuestions.value,
     timeSpent: timer.value,

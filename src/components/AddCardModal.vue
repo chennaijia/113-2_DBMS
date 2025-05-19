@@ -100,8 +100,8 @@ const answerText = ref('')
 const questionInput = ref<HTMLInputElement | null>(null)
 const answerInput = ref<HTMLInputElement | null>(null)
 
-const questionImageFile = ref(null)
-const answerImageFile = ref(null)
+const questionImageFile = ref<File | null>(null)
+const answerImageFile = ref<File | null>(null)
 
 
 function triggerInput(type: 'question' | 'answer') {
@@ -121,8 +121,9 @@ watch(questionType, (newType) => {
   }
 })
 
-const handleFileChange = (event, type) => {
-  const file = event.target.files[0]
+const handleFileChange = (event: Event, type: 'question' | 'answer') => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
   if (!file) return
 
   const imageURL = URL.createObjectURL(file)
@@ -134,6 +135,7 @@ const handleFileChange = (event, type) => {
     answerImageFile.value = file
   }
 }
+
 
 
 const submitCard = async () => {
@@ -172,9 +174,12 @@ const submitCard = async () => {
     formData.append('answer_pic', answerImageFile.value)
   }
 
-  // 👈 取得當前本子ID
-  //formData.append('questionBookId', 1);
-  formData.append('questionBookId', props.bookId);
+// 👈 取得當前本子ID
+//formData.append('questionBookId', 1);
+
+formData.append('QuestionBook_ID', String(props.bookId))
+
+
 
 
   console.log('📦 準備送出的表單資料：', {
@@ -197,7 +202,7 @@ const submitCard = async () => {
 
     console.log('✅ 後端回傳成功：', res.data)
 
-    emit('card-added', res.data)
+    emit('add-card', res.data)
     emit('close')
 
     // Reset
