@@ -1,4 +1,11 @@
 <template>
+  <div class="d-flex align-items-center gap-3 ms-5 mt-5">
+    <button class="btn btn-outline-primary rounded-pill return-btn" @click="goBack">
+      <i class="bi bi-caret-left"></i>
+      <span class="ms-2">返回</span>
+    </button>
+    <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題練習</div>
+  </div>
   <div class="practice-result-container text-center mt-5" style="max-width: 1200px; margin: 0 auto">
     <h2 class="fw-bold text-lg mb-2">恭喜完成練習！<i class="bi bi-award"></i></h2>
     <p class="text-muted mb-4">以下是本次練習的統計結果</p>
@@ -24,7 +31,6 @@
 
     <hr class="my-4" />
 
-    <!-- 題目紀錄 -->
     <div class="w-100 px-4 text-start" style="max-width: 1200px; margin: 0 auto">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-3 fw-bold text-lg">題目作答紀錄 <i class="bi bi-bar-chart-line"></i></h5>
@@ -41,7 +47,6 @@
       </div>
       <ul class="list-group mt-3">
         <li class="list-group-item ..." v-for="(q, index) in visibleQuestions" :key="q.id">
-          <!-- clickable header -->
           <div
             class="d-flex justify-content-between align-items-center question-header px-1 py-2 text-dark-dark-m"
             @click="toggle(index)"
@@ -96,7 +101,6 @@
                 </div>
               </div>
 
-              <!-- 如果是 open 題型 -->
               <div v-if="q.questionType === 'open'">
                 <div v-if="q.checked && q.isCorrect !== null">
                   <strong><i class="bi bi-check-circle"></i> 判定結果：</strong>
@@ -116,7 +120,6 @@
                 </div>
               </div>
 
-              <!-- 如果是非 open 題型 -->
               <div v-else>
                 <div class="mb-2">
                   <strong><i class="bi bi-fonts"></i> 正確答案文字：</strong><br />
@@ -139,16 +142,15 @@
       </ul>
     </div>
 
-    <!-- 操作按鈕 -->
     <div class="d-flex justify-content-center gap-3 mt-5 flex-wrap">
       <button
         class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
-        @click="$emit('restart')"
+        @click="restart"
       >
         <i class="bi bi-crosshair"></i>
         <span class="ms-2">再練一次</span>
       </button>
-      <button class="btn btn-outline-primary rounded-pill px-4 py-2" @click="$emit('back')">
+      <button class="btn btn-outline-primary rounded-pill px-4 py-2" @click="goBack">
         <i class="bi bi-house"></i>
         <span class="ms-2">回首頁</span>
       </button>
@@ -160,6 +162,7 @@
 import { ref, onMounted, computed } from 'vue'
 
 const props = defineProps({
+  currentSubject: String,
   total: Number,
   correct: Number,
   accuracy: Number,
@@ -167,7 +170,7 @@ const props = defineProps({
   questions: Array,
 })
 
-defineEmits(['restart', 'back'])
+defineEmits(['restart', 'change-page'])
 
 const expandedIndex = ref(null)
 
@@ -231,6 +234,16 @@ function normalizeAnswer(ans) {
     return cleaned.split(',').sort().join(',')
   }
   return cleaned
+}
+
+function goBack() {
+  //待辦：清空Array(還是在Practice清？)&跳出警告
+  emit('change-page', 'book', props.currentSubject)
+}
+
+function restart() {
+  //待辦：清空Array&跳出警告
+  emit('restart')
 }
 </script>
 

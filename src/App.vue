@@ -25,6 +25,7 @@
         />
         <PracticeResult
           v-else-if="startPractice && isFinished"
+          :currentSubject="currentSubject"
           :questions="practiceResult.questions"
           :timeSpent="practiceResult.timeSpent"
           :total="practiceResult.questions.length"
@@ -36,15 +37,15 @@
                 100
             )
           "
-          @restart="restartPractice"
-          @back="goBack"
+          @restart="goBack"
+          @change-page="handleChangePage"
         />
         <SelectQuestions
           v-else
+          :currentSubject="currentSubject"
           @start="start"
           @start-practice="setQuestion"
           @change-page="handleChangePage"
-          :currentSubject="currentSubject"
         />
       </div>
       <div v-else-if="currentPage === 'test'">
@@ -110,6 +111,11 @@ function setQuestion(selected) {
 
 function goBack() {
   startPractice.value = false
+  isFinished.value = false
+  practiceResult.value = {
+    questions: [],
+    timeSpent: '00:00',
+  }
 }
 
 function handleFinishPractice(result) {
