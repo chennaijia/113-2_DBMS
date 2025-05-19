@@ -289,6 +289,9 @@ async function copyBook(idx: number) {
   const src = books.value[idx];
 
   try {
+
+    console.log('🟢開始複製題本');
+
     /* 1️⃣ 先呼叫後端，拿到新 ID */
     const { data } = await copyQB(src.id);  // { QuestionBook_ID: 123 }
     console.log('啊啊啊啊 ID：', data.QuestionBook_ID);
