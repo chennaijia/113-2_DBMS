@@ -174,9 +174,10 @@ const submitCard = async () => {
     formData.append('answer_pic', answerImageFile.value)
   }
 
-  // 👈 取得當前本子ID
-  //formData.append('questionBookId', 1);
-  formData.append('QuestionBook_ID', String(props.bookId));
+// 👈 取得當前本子ID
+//formData.append('questionBookId', 1);
+
+formData.append('QuestionBook_ID', String(props.bookId))
 
 
 

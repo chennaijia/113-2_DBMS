@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import {
-  uploadQuestion,
   listQuestions,
 } from '../controllers/question.controller';
 import { auth } from '../middleware/auth';
-import { upload } from '../middleware/upload';
 import { listQuestionsByBook } from '../controllers/question.controller'
 import { Request, Response, NextFunction } from 'express';
-
+import { uploadQuestion } from '../controllers/question.controller';
+import { upload } from '../middleware/upload';
 
 export const questionRouter = Router();
 

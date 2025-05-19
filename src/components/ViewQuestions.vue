@@ -37,9 +37,12 @@
 
 
  <!-- Modal區域 -->
- <AddCardModal v-if="showAddModal" :bookId="currentBookId" @add-card="addCard" @close="closeModals" />
- <!--AddCardModal v-if="showAddModal" @add-card="addCard" @close="closeModals" /-->
- <EditCardModal v-if="showEditModal" :card="selectedCard" @close="closeModals" />
+<AddCardModal
+  :bookId="book.QuestionBook_ID"
+  v-if="showAddModal"
+  @close="showAddModal = false"
+  @add-card="loadCards"
+/>
 </template>
 
 
@@ -97,7 +100,11 @@ export default {
       try {
         if (!props.book?.QuestionBook_ID) return
         const { data } = await fetchQuestionsByBook(props.book.QuestionBook_ID)
-        cards.value = data.length ? data : defaultCards()
+        cards.value = (data.length ? data : defaultCards()).map((q) => ({
+            ...q,
+            questionImage: q.content_pic,
+            answerImage: q.answer_pic,
+}))
       } catch (err) {
         console.error('❌ 讀題目失敗：', err)
         cards.value = defaultCards()

@@ -13,7 +13,7 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
     console.log('📥 接收到的表單資料:', req.body);
     console.log('🖼️ 接收到的檔案:', req.files);
 
-    const questionBookId = Number(req.body.questionBookId);
+    const questionBookId = Number(req.body.QuestionBook_ID);
     if (!questionBookId) {
       res.status(400).json({ message: '缺少題本 ID (questionBookId)' });
       return;
@@ -71,7 +71,19 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
     const id = await Question.createQuestion(newQuestion, questionBookId, req.user!.id); // ✅ 連同題本 ID 傳入
     console.log('✅ 題目成功存入資料庫，ID:', id);
 
-    res.status(201).json({ id });
+    res.status(201).json({
+  id,
+  questionImage: contentPicUrl,
+  answerImage: answerPicUrl,
+  answer: req.body.answer,
+  questionType: req.body.qtype,
+  note: '',
+  question: '',
+  starred: false,
+  wrongCount: 0,
+  rightCount: 0
+})
+
   } catch (error) {
     console.error('❌ 上傳題目錯誤:', error);
     res.status(500).json({ message: '新增題目失敗', error });
