@@ -345,12 +345,13 @@ export default {
 },
 
 performCheckIn(dateStr) {
-  fetch('/api/checkin', {
+  fetch('/api/checking', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem('token')}`,
+},
+
     body: JSON.stringify({ date: dateStr }),
   })
     .then(res => {
@@ -372,12 +373,21 @@ performCheckIn(dateStr) {
     fetchCheckIns() {
       // 模擬 API GET 請求
       const monthStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
-      fetch(`/api/checkins?month=${monthStr}`)
-        .then(res => res.json())
-        .then(data => {
-          this.checkInDays = data;
-        })
-        .catch(err => console.error('獲取打卡紀錄失敗:', err));
+      fetch(`/api/checking?month=${monthStr}`, {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('token')}`,
+  },
+})
+  .then(res => res.json())
+  .then(data => {
+    if (Array.isArray(data)) {
+      this.checkInDays = data;
+    } else {
+      console.warn('⚠️ 後端返回非陣列:', data);
+      this.checkInDays = [];
+    }
+  })
+  .catch(err => console.error('獲取打卡紀錄失敗:', err));
 
       // 模擬數據（實際使用時可移除）
       const dummyData = [];

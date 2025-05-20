@@ -7,6 +7,7 @@ import { qbRouter } from './routes/qb.routes';
 import { pool } from './config/database';
 import checkinRoutes from './routes/checking.route';
 
+
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -66,7 +67,9 @@ app.use('/api/log', authRouter);
 app.use('/api/question', questionRouter);
 app.use('/api/books', qbRouter);
 app.use('/api/questions', questionRouter)
+
 app.use('/api/checking', checkinRoutes);
+
 
 
 app.listen(3000, () => console.log('API on http://localhost:3000'));
