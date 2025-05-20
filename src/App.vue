@@ -20,6 +20,8 @@
           :currentSubject="currentSubject"
           @change-page="handleChangePage"
           :questions="selectedQuestions.value"
+          :mode="selectedMode"
+          :count="questionCount"
           @goBack="goBack"
           @finish-practice="handleFinishPractice"
         />
@@ -74,10 +76,14 @@ import BackendTestQuestion from './components/BackendTestQuestion.vue'
 const subjects = ref(['高三國文', '高二數學'])
 const currentPage = ref('home')
 const currentSubject = ref('')
-const currentBook = ref(null) // ✅ 現在增加一個 book 狀態
+const currentBook = ref(null)
 const startPractice = ref(false)
 const selectedQuestions = ref([])
 const isFinished = ref(false)
+
+const selectedMode = ref('')
+const questionCount = ref(1)
+
 
 const practiceResult = ref({
   questions: [],
@@ -104,10 +110,21 @@ function handleChangePage(page, subject = '') {
 }
 */
 
+/*
 function setQuestion(selected) {
   startPractice.value = true
   selectedQuestions.value = selected
 }
+*/
+
+function setQuestion({ mode, questions, count }) {
+  selectedMode.value = mode
+  selectedQuestions.value = questions
+  questionCount.value = count
+  startPractice.value = true
+}
+
+
 
 function goBack() {
   startPractice.value = false

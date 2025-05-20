@@ -372,7 +372,7 @@ performCheckIn(dateStr) {
     fetchCheckIns() {
       // 模擬 API GET 請求
       const monthStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
-      fetch(`/api/checkins?month=${monthStr}`)
+      fetch(`/api/checkings?month=${monthStr}`)
         .then(res => res.json())
         .then(data => {
           this.checkInDays = data;

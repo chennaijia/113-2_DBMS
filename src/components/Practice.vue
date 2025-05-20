@@ -16,44 +16,27 @@
     </div>
     <div v-if="questions && questions.length" class="practice-content">
       <div class="progress mb-4">
-        <div
-          class="progress-bar"
-          role="progressbar"
-          :style="{ width: progressWidth + '%' }"
-          :aria-valuenow="progressWidth"
-          aria-valuemin="0"
-          aria-valuemax="100"
-        ></div>
+        <div class="progress-bar" role="progressbar" :style="{ width: progressWidth + '%' }"
+          :aria-valuenow="progressWidth" aria-valuemin="0" aria-valuemax="100"></div>
       </div>
 
       <div class="question-box mb-1">
-        <img
-          :src="currentImage"
-          class="img-fluid rounded shadow-sm"
-          style="width: 100%; max-height: 60vh; object-fit: contain"
-          alt="題目圖片"
-        />
+        <img :src="currentImage" class="img-fluid rounded shadow-sm"
+          style="width: 100%; max-height: 60vh; object-fit: contain" alt="題目圖片" />
       </div>
 
       <div class="text-s">題目類型 {{ currentType }}</div>
 
       <div class="mb-4 d-flex flex-column align-items-start">
         <label for="userInput" class="form-label text-m">答案：</label>
-        <input
-          id="userInput"
-          v-model="currentQuestion.userAnswer"
-          class="form-control"
-          :disabled="currentQuestion.checked"
-        />
+        <input id="userInput" v-model="currentQuestion.userAnswer" class="form-control"
+          :disabled="currentQuestion.checked" />
       </div>
 
-      <div
-        v-if="
-          localQuestions[currentIndex]?.checked &&
-          localQuestions[currentIndex]?.questionType !== 'open'
-        "
-        class="mt-2"
-      >
+      <div v-if="
+        localQuestions[currentIndex]?.checked &&
+        localQuestions[currentIndex]?.questionType !== 'open'
+      " class="mt-2">
         <span :class="localQuestions[currentIndex]?.isCorrect ? 'text-success' : 'text-danger'">
           {{
             localQuestions[currentIndex]?.isCorrect
@@ -62,27 +45,16 @@
           }}
         </span>
         <!-- maybe 詳解？-->
-        <img
-          :src="localQuestions[currentIndex]?.answerUrl"
-          alt="答案圖片"
-          class="img-fluid rounded shadow-sm mb-3"
-          style="width: 100%; max-height: 60vh; object-fit: contain"
-        />
+        <img :src="localQuestions[currentIndex]?.answerUrl" alt="答案圖片" class="img-fluid rounded shadow-sm mb-3"
+          style="width: 100%; max-height: 60vh; object-fit: contain" />
       </div>
 
-      <div
-        v-if="
-          localQuestions[currentIndex]?.checked &&
-          localQuestions[currentIndex]?.questionType === 'open'
-        "
-        class="mt-3"
-      >
-        <img
-          :src="localQuestions[currentIndex]?.answerUrl"
-          alt="答案圖片"
-          class="img-fluid rounded shadow-sm mb-3"
-          style="width: 100%; max-height: 60vh; object-fit: contain"
-        />
+      <div v-if="
+        localQuestions[currentIndex]?.checked &&
+        localQuestions[currentIndex]?.questionType === 'open'
+      " class="mt-3">
+        <img :src="localQuestions[currentIndex]?.answerUrl" alt="答案圖片" class="img-fluid rounded shadow-sm mb-3"
+          style="width: 100%; max-height: 60vh; object-fit: contain" />
         <div v-if="localQuestions[currentIndex]?.isCorrect !== null">
           <div class="text-m text-center">
             {{ localQuestions[currentIndex]?.isCorrect ? '恭喜答對！' : '再接再厲 加油！' }}
@@ -100,26 +72,16 @@
       </div>
 
       <div class="d-flex justify-content-center gap-3 mt-5">
-        <button
-          class="btn btn-outline-secondary rounded-pill"
-          @click="prevQuestion"
-          :disabled="currentIndex === 0"
-        >
+        <button class="btn btn-outline-secondary rounded-pill" @click="prevQuestion" :disabled="currentIndex === 0">
           <i class="bi bi-caret-left-fill"></i> 上一題
         </button>
-        <button
-          class="btn btn-outline-warning rounded-pill"
-          :disabled="localQuestions[currentIndex].checked"
-          @click="checkAnswer"
-        >
+        <button class="btn btn-outline-warning rounded-pill" :disabled="localQuestions[currentIndex].checked"
+          @click="checkAnswer">
           <i class="bi bi-bug"></i> 對答案
         </button>
 
-        <button
-          class="btn btn-outline-primary rounded-pill"
-          @click="nextQuestion"
-          v-if="currentIndex < questions.length - 1"
-        >
+        <button class="btn btn-outline-primary rounded-pill" @click="nextQuestion"
+          v-if="currentIndex < questions.length - 1">
           下一題 <i class="bi bi-caret-right-fill"></i>
         </button>
         <button class="btn btn-outline-primary rounded-pill" @click="finishPractice" v-else>
@@ -138,7 +100,16 @@ const props = defineProps({
   currentSubject: String,
   questions: {
     type: Array,
+    required: false,
+    default: () => [],
+  },
+  mode: {
+    type: String,
     required: true,
+  },
+  count: {
+    type: Number,
+    default: 5,
   },
 })
 
@@ -197,6 +168,10 @@ onMounted(() => {
     startStopwatch()
     currentIndex.value = 0
   }
+  onMounted(() => {
+    loadQuestions()
+  })
+
 })
 
 onBeforeUnmount(() => {
@@ -217,6 +192,45 @@ watch(
   },
   { immediate: true }
 )
+
+const loadQuestions = async () => {
+  let fetchedQuestions = []
+
+  try {
+    if (props.mode === 'option1') {
+      // 自選模式（已傳入題目）
+      fetchedQuestions = props.questions
+    } else if (props.mode === 'option2') {
+      // 隨機出題
+      const res = await fetch(`/api/questions/random?bookId=${props.currentSubject}&count=${props.count}`)
+      fetchedQuestions = await res.json()
+    } else if (props.mode === 'option3') {
+      // 錯最多的題目
+      const res = await fetch(`/api/questions/most-wrong?bookId=${props.currentSubject}&count=${props.count}`)
+      fetchedQuestions = await res.json()
+    }
+
+    localQuestions.value = fetchedQuestions.map((q) => ({
+      ...q,
+      answerUrl: `/answers/${q.id}.jpg`,
+      answerText: '',
+      userAnswer: '',
+      isCorrect: null,
+      checked: false,
+    }))
+
+    if (fetchedQuestions.length > 0) {
+      startStopwatch()
+      currentIndex.value = 0
+    }
+  } catch (error) {
+    console.error('載入題目失敗', error)
+    alert('無法載入題目，請稍後再試。')
+  }
+}
+
+
+
 
 function goBack() {
   emit('goBack')

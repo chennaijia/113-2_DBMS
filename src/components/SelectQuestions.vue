@@ -12,12 +12,8 @@
 
     <div class="container d-flex flex-column align-items-center mt-5 gap-3">
       <div class="dropdown-container text-center">
-        <select
-          id="dropdown"
-          class="form-select custom-dropdown text-center"
-          v-model="selectedOption"
-          @change="handleSelection"
-        >
+        <select id="dropdown" class="form-select custom-dropdown text-center" v-model="selectedOption"
+          @change="handleSelection">
           <option value="option0">選擇模式</option>
           <option value="option1">自選題目</option>
           <option value="option2">隨機出題</option>
@@ -28,12 +24,8 @@
       <p class="text-s">{{ content[selectedOption] }}</p>
 
       <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
-        <Questions
-          :selectedOption="selectedOption"
-          :questions="questions"
-          :questionCount="questionCount"
-          @update-selected="handleSelectedQuestion"
-        />
+        <Questions :selectedOption="selectedOption" :questions="questions" :questionCount="questionCount"
+          @update-selected="handleSelectedQuestion" />
       </div>
     </div>
   </div>
@@ -107,7 +99,12 @@ function handleSelectedQuestion(questions) {
     alert('尚未選擇題目！')
     return
   }
-  emit('start-practice', selectedQuestions)
+  emit('start-practice', {
+    mode: selectedOption.value,
+    questions: selectedQuestions.value,
+    count: questionCount.value,
+  })
+
 }
 
 function goBack() {
