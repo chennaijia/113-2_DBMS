@@ -20,20 +20,20 @@ export const postCheckIn = async (req: AuthReq, res: Response): Promise<void> =>
 export const getMonthlyCheckIns = async (req: AuthReq, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { month } = req.query;
+    const month = req.query.month as string; // e.g., '2025-05'
 
-    if (!month || typeof month !== 'string') {
-      res.status(400).json({ message: '缺少月份' });
-      return;
-    }
+    const [rows] = await pool.query(
+      `SELECT DATE_FORMAT(date, '%Y-%m-%d') as date
+       FROM CHECKING
+       WHERE user_id = ? AND DATE_FORMAT(date, '%Y-%m') = ?`,
+      [userId, month]
+    );
 
-    const records = await getCheckInsByMonth(userId, month);
-    const dates = records.map(r => r.date.toISOString().split('T')[0]);
-
-    res.json(dates);
+    const dates = (rows as any[]).map(row => row.date);
+    res.status(200).json(dates); // ✅ 回傳 ['2025-05-18', '2025-05-20']
   } catch (err) {
-    console.error('❌ 取得打卡紀錄失敗:', err);
-    res.status(500).json({ message: '取得打卡紀錄失敗' });
+    console.error('❌ 無法取得打卡紀錄:', err);
+    res.status(500).json({ message: '查詢打卡紀錄失敗' });
   }
 };
 
