@@ -4,6 +4,7 @@
     "@iconify/vue": "^4.3.0",
     "@popperjs/core": "^2.11.8",
     "axios": "^1.9.0",
+    "bcryptjs": "^3.0.2",
     "bootstrap": "^5.3.5",
     "cloudinary": "^2.6.1",
     "cors": "^2.8.5",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.1",
+    "@types/bcryptjs": "^2.4.6",
     "@types/bootstrap": "^5",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
@@ -33,7 +35,7 @@
     "@vue/tsconfig": "^0.7.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3",
-    "vite": "^6.3.3",
+    "vite": "^6.3.5",
     "vite-plugin-vue-devtools": "^7.7.5"
   },
   "scripts": {

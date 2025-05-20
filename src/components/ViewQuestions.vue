@@ -1,21 +1,40 @@
 <template>
   <!-- 上方按鈕列 -->
   <div class="toolbar">
-    <select @change="onFilterChange" v-model="filterOption" class="filter-select">
-      <option value="">全部</option>
-      <option value="starred">加星號</option>
-      <option value="noAnswer">錯誤超過五次</option>
-      <option value="truefalse">是非題</option>
-      <option value="multiple123">選擇題(數字選項)</option>
-      <option value="multipleABC">選擇題(字母選項)</option>
-      <option value="open">問答題</option>
-    </select>
+   <select @change="onFilterChange" v-model="filterOption" class="filter-select">
+     <option value="">全部</option>
+     <option value="starred">加星號</option>
+     <option value="noAnswer">錯誤超過五次</option>
+     <option value="truefalse">是非題</option>
+     <option value="multiple123">選擇題(數字選項)</option>
+     <option value="multipleABC">選擇題(字母選項)</option>
+     <option value="open">問答題</option>
+   </select>
+  <div class="button-row">
+     <button class="btn secondary" @click="toggleEditMode">
+       {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
+     </button>
+     <button class="btn success" @click="openAddCardModal">➕ 新增錯題</button>
+   </div>
+
+   <button class="btn primary" @click="toggleShowAnswers">
+     {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
+   </button>
+ </div>
 
 
-    <button class="btn primary" @click="toggleShowAnswers">
-      {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
-    </button>
-  </div>
+ <!-- 題目列表 -->
+ <div class="question-container">
+   <div v-for="(card, index) in filteredCards" :key="card.id">
+     <QuestionCard :index="index + 1" :card="card" :editMode="editMode" :showAnswers="showAnswers"
+       @toggle-star="toggleStar(card.id)" @edit="openEditCardModal(card)" @delete-card="deleteThisCard" />
+   </div>
+
+
+   <!-- 下方按鈕列 -->
+
+ </div>
+
 
 
   <!-- 題目列表 -->
@@ -28,12 +47,7 @@
 
 
     <!-- 下方按鈕列 -->
-    <div class="button-row">
-      <button class="btn secondary" @click="toggleEditMode">
-        {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
-      </button>
-      <button class="btn success" @click="openAddCardModal">➕ 新增錯題</button>
-    </div>
+
   </div>
 
 
@@ -297,9 +311,32 @@ export default {
 
 
 <style scoped>
+.toolbar {
+  position: fixed;
+  top: 0;
+  left: 80px;
+  right: 0;
+  width: 1200px;
+  background-color: #fff;
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  padding: 10px 20px;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
 .button-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
 }
+
+/* 下方內容要加 padding-top，避免被 toolbar 擋住 */
+.question-container {
+  padding-top: 10px; /* 根據 .toolbar 高度調整 */
+}
+
+
 </style>

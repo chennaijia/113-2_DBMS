@@ -57,8 +57,8 @@
 
       <!-- 題型處理 -->
       <div v-if="card.questionType === 'truefalse'">
-        <label><input type="radio" value="✔" v-model="card.answer" />✔</label>
-        <label><input type="radio" value="✘" v-model="card.answer" />✘</label>
+        <label><input type="radio" value='T' v-model="card.answer" />T</label>
+        <label><input type="radio" value='F' v-model="card.answer" />F</label>
       </div>
 
       <div v-else-if="card.questionType === 'multipleABC'">
