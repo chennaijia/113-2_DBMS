@@ -29,8 +29,8 @@
       <!-- 題型條件渲染 -->
       <template v-if="questionType === 'truefalse'">
         <label>選擇正確答案:</label>
-        <label><input type="radio" value="✔" v-model="answer" />✔</label>
-        <label><input type="radio" value="✘" v-model="answer" />✘</label>
+        <label><input type="radio" value='T' v-model="answer" />T</label>
+        <label><input type="radio" value='F' v-model="answer" />F</label>
       </template>
 
       <template v-else-if="questionType === 'multipleABC'">
