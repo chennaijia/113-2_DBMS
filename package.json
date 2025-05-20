@@ -1,5 +1,7 @@
 {
   "name": "DBMS",
+   "main": "src/server.ts",
+  "license": "MIT",
   "dependencies": {
     "@iconify/vue": "^4.3.0",
     "@popperjs/core": "^2.11.8",

@@ -157,8 +157,9 @@
           <button
             @click="checkInToday"
             class="btn btn-checkin mt-3"
-            :disabled="isTodayCheckedIn">
-            {{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}
+            :disabled="isTodayCheckedIn || isCheckingIn">
+            <span v-if="isCheckingIn">打卡中...</span>
+            <span v-else>{{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}</span>
           </button>
         </div>
 
@@ -201,6 +202,7 @@ export default {
       weekDays: ['日', '一', '二', '三', '四', '五', '六'],
       checkInDays: [], // 格式 'YYYY-MM-DD'
       toast: null,
+      isCheckingIn: false,
 
 
 
@@ -262,12 +264,12 @@ export default {
       return this.checkInDays.filter(date => date.startsWith(prefix)).length;
     },
     todayDateStr() {
-      const today = new Date();
-      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    },
-    isTodayCheckedIn() {
-      return this.checkInDays.includes(this.todayDateStr);
-    },
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  },
+  isTodayCheckedIn() {
+    return this.checkInDays.includes(this.todayDateStr);
+  },
 
 
 
@@ -345,13 +347,14 @@ export default {
 },
 
 performCheckIn(dateStr) {
+  this.isCheckingIn = true; // ← 開始 loading
+
   fetch('/api/checking', {
     method: 'POST',
     headers: {
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('token')}`,
-},
-
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
     body: JSON.stringify({ date: dateStr }),
   })
     .then(res => {
@@ -365,8 +368,13 @@ performCheckIn(dateStr) {
     .catch(err => {
       console.error('打卡失敗:', err);
       alert('打卡失敗，請稍後再試');
+    })
+    .finally(() => {
+      this.isCheckingIn = false; // ← 無論成功或失敗都結束 loading
     });
 },
+
+
     formatDate(day) {
       return `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     },
@@ -390,17 +398,17 @@ performCheckIn(dateStr) {
   .catch(err => console.error('獲取打卡紀錄失敗:', err));
 
       // 模擬數據（實際使用時可移除）
-      const dummyData = [];
-      const today = new Date();
-      // 隨機生成本月已打卡的日期
-      if (this.currentMonth === today.getMonth() && this.currentYear === today.getFullYear()) {
-        for (let i = 1; i < today.getDate(); i++) {
-          if (Math.random() > 0.3) { // 70% 機率已打卡
-            dummyData.push(this.formatDate(i));
-          }
-        }
-      }
-      this.checkInDays = dummyData;
+      // const dummyData = [];
+      // const today = new Date();
+      // // 隨機生成本月已打卡的日期
+      // if (this.currentMonth === today.getMonth() && this.currentYear === today.getFullYear()) {
+      //   for (let i = 1; i < today.getDate(); i++) {
+      //     if (Math.random() > 0.3) { // 70% 機率已打卡
+      //       dummyData.push(this.formatDate(i));
+      //     }
+      //   }
+      // }
+      // this.checkInDays = dummyData;
     },
     prevMonth() {
       if (this.currentMonth === 0) {
