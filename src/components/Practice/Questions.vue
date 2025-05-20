@@ -5,29 +5,32 @@
     </div>
 
     <div v-else-if="selectedOption === 'option1'">
+      <p>目前模式：{{ selectedOption }}</p>
+      <p>題目總數：{{ props.questions.length }}</p>
+
       <div class="text-end mb-3">
         <button class="btn btn-sm btn-outline-primary" @click="toggleSelectAll">
           <i :class="isAllSelected ? 'bi bi-x' : 'bi bi-check-all'"></i>
           <span class="ms-1">
-            {{ isAllSelected ? '取消全選' : '全選題目' }}（{{ selectedQuestionIds.length }}/{{
-              questions.length
-            }}）
+            {{ isAllSelected ? '取消全選' : '全選題目' }}（{{ selectedQuestionIds.length }}/{{ props.questions.length }}）
           </span>
         </button>
       </div>
 
-      <div v-for="(question, index) in questions" :key="question.id"
+      <div v-for="(question, index) in props.questions" :key="question.Question_ID"
         class="d-flex align-items-start mb-3 p-3 border rounded bg-light gap-3">
-        <input type="checkbox" class="form-check-input mt-1" :value="question.id" v-model="selectedQuestionIds" />
+        <input type="checkbox" class="form-check-input mt-1" :value="question.Question_ID"
+          v-model="selectedQuestionIds" />
         <div class="text-center">
           <span class="text-s fw-bold">{{ index + 1 }}.</span>
         </div>
 
         <div class="d-flex flex-column w-100">
-          <img :src="question.image" class="img-fluid rounded" style="width: 100%; height: auto; object-fit: contain"
-            alt="題目圖片" />
+
+          <img v-if="question.Content_pic" :src="question.Content_pic" class="img-fluid rounded"
+            style="width: 100%; height: auto; object-fit: contain" alt="題目圖片" />
           <div class="mt-2">
-            <span class="text-red-s text-start">錯誤次數：{{ question.wrongCount }} 次</span>
+            <span class="text-red-s text-start">錯誤次數：{{ question.errCount }} 次</span>
           </div>
         </div>
       </div>
@@ -35,15 +38,12 @@
 
     <div v-else>
       <div class="mt-3">
-        <button class="btn btn-outline-primary me-2" @click="decreaseCount" :disabled="localCount <= 1">
-          -
-        </button>
+        <button class="btn btn-outline-primary me-2" @click="decreaseCount" :disabled="localCount <= 1">-</button>
         <input type="number" class="form-control d-inline-block text-center" style="width: 60px"
           v-model.number="localCount" min="1" :max="questions.length" />
-        <button class="btn btn-outline-primary ms-2" @click="increaseCount" :disabled="localCount >= questions.length">
-          +
-        </button>
-        <span class="ms-2">/ {{ questions.length }} 題</span>
+        <button class="btn btn-outline-primary ms-2" @click="increaseCount"
+          :disabled="localCount >= props.questions.length">+</button>
+        <span class="ms-2">/ {{ props.questions.length }} 題</span>
       </div>
     </div>
 
@@ -59,51 +59,42 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { fetchQuestionsByBook } from '@/api/questions.js'
 
 const props = defineProps({
   selectedOption: String,
   questions: Array,
   questionCount: Number,
   currentSubject: String,
+  userId: {
+    type: Number,
+    required: true,
+  }
 })
-
-const questions = computed(() => props.questions)
-
-
-//const { data } = await fetchQuestionsByBook(props.book.QuestionBook_ID)
-
-
-const fetchAllQuestions = async () => {
-  try {
-    const data = await fetchQuestionsByBook(props.book.QuestionBook_ID)
-    questions.value = data
-  } catch (error) {
-    console.error('載入題目失敗', error)
-  }
-}
-
-
-const handleSelection = () => {
-  selectedQuestions.value = []
-
-  if (selectedOption.value === 'option1') {
-    fetchAllQuestions()
-  }
-}
-
 
 const emit = defineEmits('update-selected')
 
 const selectedQuestionIds = ref([])
 const localCount = ref(props.questionCount)
 
-watch(
-  () => props.questionCount,
-  (newCount) => {
-    localCount.value = newCount
+watch(() => props.questionCount, (newCount) => {
+  localCount.value = newCount
+
+})
+
+watch(() => props.questions, (newVal) => {
+  if (newVal.length > 0 && localCount.value > newVal.length) {
+    localCount.value = newVal.length
   }
-)
+})
+
+
+// ✅ 當題目變動時自動調整最大值
+watch(() => props.questions, (val) => {
+  console.log('傳進來的題目', val)
+  if (val.length > 0 && localCount.value > val.length) {
+    localCount.value = val.length
+  }
+})
 
 const isAllSelected = computed(() => {
   return selectedQuestionIds.value.length === props.questions.length
@@ -113,9 +104,7 @@ const toggleSelectAll = () => {
   if (isAllSelected.value) {
     selectedQuestionIds.value = []
   } else {
-    //selectedQuestionIds.value = props.questions.map((q) => q.id)
-    selectedQuestionIds.value = questions.value.map((q) => q.id)
-
+    selectedQuestionIds.value = props.questions.map((q) => q.Question_ID)
   }
 }
 
@@ -130,21 +119,21 @@ const filteredQuestions = computed(() => {
   if (props.selectedOption === 'option2') {
     return [...props.questions].sort(() => 0.5 - Math.random()).slice(0, localCount.value)
   } else if (props.selectedOption === 'option3') {
-    return [...props.questions]
-      .sort((a, b) => b.wrongCount - a.wrongCount)
-      .slice(0, localCount.value)
+    return [...props.questions].sort((a, b) => b.errCount - a.errCount).slice(0, localCount.value)
   }
   return props.questions
 })
 
 function confirmSelection() {
-  let selected =
+  const selected =
     props.selectedOption === 'option1'
-      ? props.questions.filter((q) => selectedQuestionIds.value.includes(q.id))
+      ? props.questions.filter((q) => selectedQuestionIds.value.includes(q.Question_ID))
       : filteredQuestions.value
+
   emit('update-selected', selected)
 }
 </script>
+
 
 <style scoped>
 .question-container {
@@ -167,16 +156,6 @@ function confirmSelection() {
 .text-red-s {
   color: #cc5050;
   font-size: 15px;
-}
-
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
 }
 
 .fixed-bottom-end {

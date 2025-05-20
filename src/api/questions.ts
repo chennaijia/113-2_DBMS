@@ -15,3 +15,23 @@ export const updateNote = (id: number, note: string) => {
 
 export const fetchRandomQuestion = () =>
   api.get('/questions/random');
+
+export async function fetchQuestionsByBookPractice(bookId: number) {
+  const res = await api.get(`/questions/by-book/${bookId}`)
+  return res.data // ✅ 這裡要回傳資料，不是整個 response
+}
+
+export async function fetchRandomQuestionsPractice(bookId: number, userId: number, count: number) {
+  const res = await api.get(`/questions/random-practice`, {
+    params: { bookId, userId, count }
+  })
+  return res.data
+}
+
+export async function fetchMostWrongQuestions(bookId: number, userId: number, count: number) {
+  const res = await api.get(`/questions/most-wrong`, {
+    params: { bookId, userId, count }
+  })
+  return res.data
+}
+

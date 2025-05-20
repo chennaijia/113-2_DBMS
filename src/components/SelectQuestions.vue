@@ -25,6 +25,7 @@
 
       <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
         <Questions :selectedOption="selectedOption" :questions="questions" :questionCount="questionCount"
+          :currentSubject="currentSubject" :userId="userId" :total="totalQuestionCount"
           @update-selected="handleSelectedQuestion" />
       </div>
     </div>
@@ -32,8 +33,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import Questions from './Practice/Questions.vue'
+import {
+  fetchQuestionsByBookPractice,
+  fetchRandomQuestionsPractice,
+  fetchMostWrongQuestions,
+} from '@/api/questions.js'
+
 
 const selectedOption = ref('option0')
 const questionCount = ref(1)
@@ -42,11 +49,19 @@ const selectedQuestions = ref([])
 const emit = defineEmits('start-practice', 'change-page')
 
 const props = defineProps({
+
   currentSubject: {
     type: String,
     required: true,
   },
+  book: Object,
+  userId: {
+    type: Number,
+    required: true, // ✅ 建議加這行讓它強制需要
+  },
+  questionCount: Number,
 })
+
 
 const content = {
   option1: '請在下方勾選要練習的題目!',
@@ -54,44 +69,45 @@ const content = {
   option3: '請在下方選取要練習的題目數!',
 }
 
-//待辦：改成從錯題本抓！
-const questions = ref([
-  {
-    id: 1,
-    question: '問題1',
-    wrongCount: 8,
-    image: '/images/1.jpg',
-    questionType: 'open',
-    correctAnswer: 'B',
-  },
-  {
-    id: 2,
-    question: '問題2',
-    wrongCount: 0,
-    image: '/images/2.jpg',
-    questionType: 'multiple123',
-    correctAnswer: '是',
-  },
-  {
-    id: 3,
-    question: '問題3',
-    wrongCount: 3,
-    image: '/images/3.jpg',
-    questionType: 'open',
-    correctAnswer: '選項2',
-  },
-  {
-    id: 4,
-    question: '問題4',
-    wrongCount: 5,
-    image: '/images/4.jpg',
-    questionType: 'open',
-    correctAnswer: '丙',
-  },
-])
+const questions = ref([])
 
-const handleSelection = () => {
+const handleSelection = async () => {
+
+
   selectedQuestions.value = []
+
+  const bookId = props.book?.QuestionBook_ID
+  const count = questionCount.value
+  const userId = props.userId
+
+  console.log('🚀 正在送出 most-wrong API with:', {
+    bookId,
+    userId,
+    count
+  })
+
+  try {
+    if (selectedOption.value === 'option1') {
+      const data = await fetchQuestionsByBookPractice(bookId)
+      questions.value = data
+      console.log('✅ option1 題目資料：', data)
+    }
+
+    if (selectedOption.value === 'option2') {
+      const data = await fetchRandomQuestionsPractice(bookId, userId, count)
+      questions.value = data
+      console.log('✅ option2 題目資料：', data)
+    }
+
+    if (selectedOption.value === 'option3') {
+      const data = await fetchMostWrongQuestions(bookId, userId, count)
+      questions.value = data
+      console.log('✅ option3 題目資料：', data)
+    }
+  } catch (error) {
+    console.error('載入題目失敗', error)
+    alert('無法載入題目，請稍後再試')
+  }
 }
 
 function handleSelectedQuestion(questions) {
@@ -105,13 +121,26 @@ function handleSelectedQuestion(questions) {
     questions: selectedQuestions.value,
     count: questionCount.value,
   })
-
 }
 
 function goBack() {
   emit('change-page', 'book', props.currentSubject)
 }
+
+watch(
+  () => props.userId,
+  (newUserId) => {
+    if (newUserId) {
+      handleSelection()
+    }
+  },
+  { immediate: true }
+)
+
+
 </script>
+
+
 
 <style scoped>
 .container {

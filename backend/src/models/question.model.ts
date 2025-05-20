@@ -83,6 +83,44 @@ export const listQuestionsByBook = async (bookId: number, userId: number) => {
   return rows
 }
 
+export const getRandomPracticeQuestions = async (bookId: number, userId: number, count: number) => {
+  const [rows]: any = await pool.query(
+    `SELECT q.*
+     FROM QUESTION q
+     JOIN QUESTION_COLLECTION qc ON q.Question_ID = qc.Question_ID
+    WHERE qc.User_ID = ? AND qc.QuestionBook_ID = ?
+    ORDER BY RAND()
+    LIMIT ?`,
+    [userId, bookId, count]
+  )
+  return rows // ✅ 回傳整包題目
+}
+
+export const getMostWrongQuestions = async (bookId: number, userId: number, count: number) => {
+  const [rows]: any = await pool.query(
+    `SELECT q.*
+     FROM QUESTION q
+     JOIN QUESTION_COLLECTION qc ON q.Question_ID = qc.Question_ID
+    WHERE qc.User_ID = ? AND qc.QuestionBook_ID = ?
+    ORDER BY qc.Error_Count DESC
+    LIMIT ?`,
+    [userId, bookId, count]
+  )
+  console.log('✅ question.model loaded')
+
+  return rows
+}
+
+export const getQuestionCount = async (bookId: number, userId: number) => {
+  const [rows]: any = await pool.query(
+    `SELECT COUNT(*) AS count
+     FROM QUESTION q
+     JOIN QUESTION_COLLECTION qc ON q.Question_ID = qc.Question_ID
+    WHERE qc.User_ID = ? AND qc.QuestionBook_ID = ?`,
+    [userId, bookId]
+  )
+ return Number(rows[0].count)
+}
 
 
 

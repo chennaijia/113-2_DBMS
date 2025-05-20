@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import * as Question from '../models/question.model';
 import { AuthReq } from '../middleware/auth';
-import cloudinary  from '../config/cloudinary';
+import cloudinary from '../config/cloudinary';
 import streamifier from 'streamifier';
 import { pool } from '../config/database'; // 確保這裡的 pool 是正確的
-import { listQuestionsByBook as getByBook } from '../models/question.model'
+import { listQuestionsByBook as getByBook, getRandomPracticeQuestions, getMostWrongQuestions as getMostWrongQuestionsModel } from '../models/question.model'
 
 export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   try {
@@ -70,17 +70,17 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
     console.log('✅ 題目成功存入資料庫，ID:', id);
 
     res.status(201).json({
-  id,
-  questionImage: contentPicUrl,
-  answerImage: answerPicUrl,
-  answer: req.body.answer,
-  questionType: req.body.qtype,
-  note: '',
-  question: '',
-  starred: false,
-  wrongCount: 0,
-  rightCount: 0
-})
+      id,
+      questionImage: contentPicUrl,
+      answerImage: answerPicUrl,
+      answer: req.body.answer,
+      questionType: req.body.qtype,
+      note: '',
+      question: '',
+      starred: false,
+      wrongCount: 0,
+      rightCount: 0
+    })
 
   } catch (error) {
     console.error('❌ 上傳題目錯誤:', error);
@@ -235,3 +235,54 @@ export const getRandomQuestion = async (req: AuthReq, res: Response): Promise<vo
     res.status(500).json({ message: '伺服器錯誤' }) // ✅ 捕捉錯誤並回應
   }
 }
+
+
+export const getRandomWrongQuestions = async (req: AuthReq, res: Response): Promise<void> => {
+  try {
+    console.log('✅ 抓資料使用者 ID:', req.user?.id);
+
+    const { bookId, count } = req.query
+    const userId = req.user!.id // ✅ 從 token 中取 userId
+
+    if (!bookId || !count) {
+      res.status(400).json({ message: '缺少參數：bookId 或 count' })
+      return
+    }
+
+    const questions = await getRandomPracticeQuestions(
+      Number(bookId),
+      userId,
+      Number(count)
+    )
+
+    res.json(questions) // ✅ 不要 return
+  } catch (error) {
+    console.error('取得隨機錯題失敗:', error)
+    res.status(500).json({ message: '伺服器錯誤，無法取得題目' })
+  }
+}
+
+export const getMostWrongQuestions = async (req: AuthReq, res: Response): Promise<void> => {
+  try {
+    const { bookId, count } = req.query
+    const userId = req.user!.id // ✅ 從 token 中取 userId
+
+    if (!bookId || !count) {
+      res.status(400).json({ message: '缺少參數 bookId 或 count' })
+      return
+    }
+
+    const questions = await getMostWrongQuestionsModel(
+      Number(bookId),
+      userId,
+      Number(count)
+    )
+
+    res.status(200).json(questions)
+  } catch (error) {
+    console.error('取得錯最多題目失敗:', error)
+    res.status(500).json({ message: '伺服器錯誤' })
+  }
+}
+
+

@@ -45,6 +45,8 @@
         <SelectQuestions
           v-else
           :currentSubject="currentSubject"
+          :book="currentBook"
+          :userId="userId.value"
           @start="start"
           @start-practice="setQuestion"
           @change-page="handleChangePage"
@@ -83,6 +85,9 @@ const isFinished = ref(false)
 
 const selectedMode = ref('')
 const questionCount = ref(1)
+const userId = ref(1) // ✅ 不要是空字串
+
+
 
 
 const practiceResult = ref({
@@ -103,19 +108,6 @@ function handleChangePage(page, payload = '') {
   }
 }
 
-/*
-function handleChangePage(page, subject = '') {
-  currentPage.value = page
-  currentSubject.value = subject
-}
-*/
-
-/*
-function setQuestion(selected) {
-  startPractice.value = true
-  selectedQuestions.value = selected
-}
-*/
 
 function setQuestion({ mode, questions, count }) {
   selectedMode.value = mode

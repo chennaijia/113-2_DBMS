@@ -266,22 +266,6 @@ export default {
         .catch((err) => console.error('❌ 筆記儲存失敗:', err))
     }, 1000)
 
-    /*
-    watch(
-      () => props.card,
-      (card) => {
-        if (card?.id) {
-          watch(
-            () => card.note,
-            (newNote) => {
-              saveNoteDebounced(card.id, newNote)
-            }
-          )
-        }
-      },
-      { immediate: true }
-    )
-    */
 
 
     return {
