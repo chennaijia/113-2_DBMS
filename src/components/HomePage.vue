@@ -373,14 +373,6 @@ performCheckIn(dateStr) {
     fetchCheckIns() {
       // 模擬 API GET 請求
       const monthStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
-<<<<<<< HEAD
-      fetch(`/api/checkings?month=${monthStr}`)
-        .then(res => res.json())
-        .then(data => {
-          this.checkInDays = data;
-        })
-        .catch(err => console.error('獲取打卡紀錄失敗:', err));
-=======
       fetch(`/api/checking?month=${monthStr}`, {
   headers: {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -396,7 +388,6 @@ performCheckIn(dateStr) {
     }
   })
   .catch(err => console.error('獲取打卡紀錄失敗:', err));
->>>>>>> f749ab2d173bc96523b77622bdf8288835c4a2df
 
       // 模擬數據（實際使用時可移除）
       const dummyData = [];

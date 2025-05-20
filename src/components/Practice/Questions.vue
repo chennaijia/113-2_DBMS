@@ -16,28 +16,16 @@
         </button>
       </div>
 
-      <div
-        v-for="(question, index) in questions"
-        :key="question.id"
-        class="d-flex align-items-start mb-3 p-3 border rounded bg-light gap-3"
-      >
-        <input
-          type="checkbox"
-          class="form-check-input mt-1"
-          :value="question.id"
-          v-model="selectedQuestionIds"
-        />
+      <div v-for="(question, index) in questions" :key="question.id"
+        class="d-flex align-items-start mb-3 p-3 border rounded bg-light gap-3">
+        <input type="checkbox" class="form-check-input mt-1" :value="question.id" v-model="selectedQuestionIds" />
         <div class="text-center">
           <span class="text-s fw-bold">{{ index + 1 }}.</span>
         </div>
 
         <div class="d-flex flex-column w-100">
-          <img
-            :src="question.image"
-            class="img-fluid rounded"
-            style="width: 100%; height: auto; object-fit: contain"
-            alt="題目圖片"
-          />
+          <img :src="question.image" class="img-fluid rounded" style="width: 100%; height: auto; object-fit: contain"
+            alt="題目圖片" />
           <div class="mt-2">
             <span class="text-red-s text-start">錯誤次數：{{ question.wrongCount }} 次</span>
           </div>
@@ -47,26 +35,12 @@
 
     <div v-else>
       <div class="mt-3">
-        <button
-          class="btn btn-outline-primary me-2"
-          @click="decreaseCount"
-          :disabled="localCount <= 1"
-        >
+        <button class="btn btn-outline-primary me-2" @click="decreaseCount" :disabled="localCount <= 1">
           -
         </button>
-        <input
-          type="number"
-          class="form-control d-inline-block text-center"
-          style="width: 60px"
-          v-model.number="localCount"
-          min="1"
-          :max="questions.length"
-        />
-        <button
-          class="btn btn-outline-primary ms-2"
-          @click="increaseCount"
-          :disabled="localCount >= questions.length"
-        >
+        <input type="number" class="form-control d-inline-block text-center" style="width: 60px"
+          v-model.number="localCount" min="1" :max="questions.length" />
+        <button class="btn btn-outline-primary ms-2" @click="increaseCount" :disabled="localCount >= questions.length">
           +
         </button>
         <span class="ms-2">/ {{ questions.length }} 題</span>
@@ -74,10 +48,8 @@
     </div>
 
     <div v-if="selectedOption !== 'option0'" class="fixed-bottom-end mt-4">
-      <button
-        class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
-        @click="confirmSelection"
-      >
+      <button class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
+        @click="confirmSelection">
         <i class="bi bi-check"></i>
         <span class="ms-2">開始練習</span>
       </button>
@@ -87,6 +59,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { fetchQuestionsByBook } from '@/api/questions.js'
 
 const props = defineProps({
   selectedOption: String,
@@ -94,6 +67,31 @@ const props = defineProps({
   questionCount: Number,
   currentSubject: String,
 })
+
+const questions = computed(() => props.questions)
+
+
+//const { data } = await fetchQuestionsByBook(props.book.QuestionBook_ID)
+
+
+const fetchAllQuestions = async () => {
+  try {
+    const data = await fetchQuestionsByBook(props.book.QuestionBook_ID)
+    questions.value = data
+  } catch (error) {
+    console.error('載入題目失敗', error)
+  }
+}
+
+
+const handleSelection = () => {
+  selectedQuestions.value = []
+
+  if (selectedOption.value === 'option1') {
+    fetchAllQuestions()
+  }
+}
+
 
 const emit = defineEmits('update-selected')
 
@@ -115,7 +113,9 @@ const toggleSelectAll = () => {
   if (isAllSelected.value) {
     selectedQuestionIds.value = []
   } else {
-    selectedQuestionIds.value = props.questions.map((q) => q.id)
+    //selectedQuestionIds.value = props.questions.map((q) => q.id)
+    selectedQuestionIds.value = questions.value.map((q) => q.id)
+
   }
 }
 
