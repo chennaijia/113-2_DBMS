@@ -174,9 +174,9 @@ const submitCard = async () => {
     formData.append('answer_pic', answerImageFile.value)
   }
 
-// 👈 取得當前本子ID
-//formData.append('questionBookId', 1);
-formData.append('QuestionBook_ID', String(props.bookId))
+  // 👈 取得當前本子ID
+  //formData.append('questionBookId', 1);
+  formData.append('QuestionBook_ID', String(props.bookId))
 
 
 
@@ -214,11 +214,11 @@ formData.append('QuestionBook_ID', String(props.bookId))
     alert('✅ 新增成功！')
     console.log('🔄 資料已重置，流程完成')
   } catch (error: any) {
-  console.error('❌ 新增題目失敗:', error);
+    console.error('❌ 新增題目失敗:', error);
 
-  const message = error.response?.data?.message || '新增題目失敗，請稍後再試';
-  alert(`❌ 錯誤：${message}`);
-}
+    const message = error.response?.data?.message || '新增題目失敗，請稍後再試';
+    alert(`❌ 錯誤：${message}`);
+  }
 }
 
 

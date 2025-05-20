@@ -23,16 +23,6 @@ export const createQB = async (req: AuthReq, res: Response) => {
   }
 };
 
-
-
-/** GET /api/qb － 顯示所有題本 */
-/*
-export const listQB = async (_req: Request, res: Response) => {
-  const rows = await QB.listQB();
-  res.json(rows);
-};
-*/
-
 /** GET /api/qb/:id － 取得單一題本 */
 export const getQB = async (req, res) =>  {
   const row = await QB.getQB(+req.params.id);

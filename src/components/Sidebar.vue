@@ -11,13 +11,7 @@
 
   <div class="offcanvas-custom" :class="{ show: isSidebarOpen }">
     <div class="offcanvas-header mb-5 mt-3">
-      <Icon
-        icon="material-symbols:menu-rounded"
-        width="40"
-        height="40"
-        class="close-icon"
-        @click="closeSidebar"
-      />
+      <Icon icon="material-symbols:menu-rounded" width="40" height="40" class="close-icon" @click="closeSidebar" />
     </div>
 
     <div class="offcanvas-body">
@@ -25,10 +19,7 @@
         <!-- 主頁 -->
         <div class="accordion-item">
           <h2 class="accordion-header">
-            <button
-              class="sidebar_accordion accordion-button collapsed"
-              @click="$emit('change-page', 'home')"
-            >
+            <button class="sidebar_accordion accordion-button collapsed" @click="$emit('change-page', 'home')">
               主頁
             </button>
           </h2>
@@ -37,56 +28,29 @@
         <!-- 錯題本 -->
         <div class="accordion-item">
           <h2 class="accordion-header">
-            <button
-              class="sidebar_accordion accordion-button collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapseMistakeBooks"
-              aria-expanded="false"
-              aria-controls="collapseMistakeBooks"
-            >
-              我的錯題本
-            </button>
+            <button class="sidebar_accordion accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseMistakeBooks" aria-expanded="false" aria-controls="collapseMistakeBooks"
+              @click="$emit('change-page', 'book')">
+                我的錯題本
+              </button>
           </h2>
 
           <div id="collapseMistakeBooks" class="accordion-collapse collapse">
             <div class="accordion-body">
               <div class="accordion" id="accordionSubjects">
-                <div
-                  v-for="(book, index) in books"
-                  :key="book.QuestionBook_ID"
-                  class="accordion-item"
-                >
+                <div v-for="(book, index) in books" :key="book.QuestionBook_ID" class="accordion-item">
                   <h2 class="accordion-header" :id="'headingBook' + index">
-                    <button
-                      class="sidebar_accordion accordion-button collapsed"
-                      type="button"
-                      :data-bs-toggle="'collapse'"
-                      :data-bs-target="'#collapseBook' + index"
-                      :aria-controls="'collapseBook' + index"
-                    >
+                    <button class="sidebar_accordion accordion-button collapsed" type="button"
+                      :data-bs-toggle="'collapse'" :data-bs-target="'#collapseBook' + index"
+                      :aria-controls="'collapseBook' + index">
                       {{ book.BName }}
                     </button>
                   </h2>
-                  <div
-                    :id="'collapseBook' + index"
-                    class="accordion-collapse collapse"
-                    :aria-labelledby="'headingBook' + index"
-                    data-bs-parent="#accordionSubjects"
-                  >
+                  <div :id="'collapseBook' + index" class="accordion-collapse collapse"
+                    :aria-labelledby="'headingBook' + index" data-bs-parent="#accordionSubjects">
                     <div class="accordion-body link-group">
-                      <a
-                        href="#"
-                        @click.prevent="$emit('change-page', 'question', book)"
-                        class="sidebar-link"
-                        >錯題瀏覽</a
-                      >
-                      <a
-                        href="#"
-                        @click.prevent="$emit('change-page', 'practice', book)"
-                        class="sidebar-link"
-                        >錯題練習</a
-                      >
+                      <a href="#" @click.prevent="$emit('change-page', 'question', book)" class="sidebar-link">錯題瀏覽</a>
+                      <a href="#" @click.prevent="$emit('change-page', 'practice', book)" class="sidebar-link">錯題練習</a>
                     </div>
                   </div>
                 </div>
@@ -214,10 +178,12 @@ onUnmounted(() => {
   transition: left 0.4s ease, opacity 0.4s ease;
   opacity: 0;
 }
+
 .offcanvas-custom.show {
   left: 0;
   opacity: 1;
 }
+
 .custom-backdrop {
   position: fixed;
   top: 0;
@@ -227,6 +193,7 @@ onUnmounted(() => {
   background-color: rgba(0, 0, 0, 0.4);
   z-index: 1040;
 }
+
 .side-bar {
   width: 80px;
   height: 100vh;
@@ -238,41 +205,49 @@ onUnmounted(() => {
   flex-shrink: 0;
   position: relative;
 }
+
 .menu-icon {
   color: #7eaee4;
   cursor: pointer;
 }
+
 .login-label p {
   color: #7eaee4;
   font-size: 14px;
 }
+
 .close-icon {
   color: #7eaee4;
   cursor: pointer;
   position: absolute;
   right: 20px;
 }
+
 .sidebar_accordion {
   font-weight: bold;
   font-size: 18px;
   color: #7eaee4;
   background-color: transparent;
 }
+
 .sidebar_accordion.accordion-button:not(.collapsed) {
   color: #ffffff;
   background-color: #7eaee4;
   text-shadow: 1px 1px 2px #5b92c3;
 }
+
 .sidebar_subject_button {
   font-size: 16px;
   font-weight: normal;
   color: #5b92c3;
   background-color: transparent;
 }
+
 .sidebar_subject_button.accordion-button:not(.collapsed) {
   color: #ffffff;
   background-color: #5b92c3;
 }
+
 .link-group {
   display: flex;
   flex-direction: column;
@@ -280,20 +255,24 @@ onUnmounted(() => {
   padding-top: 8px;
   padding-left: 20px;
 }
+
 .sidebar-link {
   color: #7eaee4;
   text-decoration: none;
   font-size: 16px;
 }
+
 .sidebar-link:hover {
   text-decoration: underline;
 }
+
 .login-footer {
   position: absolute;
   bottom: 30px;
   width: 100%;
   text-align: center;
 }
+
 .login-footer h2 {
   color: #7eaee4;
   font-weight: bold;

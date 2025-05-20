@@ -1,11 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import { auth }     from './middleware/auth';
+import { auth } from './middleware/auth';
 import { authRouter } from './routes/auth.routes';
 import { questionRouter } from './routes/question.routes';
-import { qbRouter }from './routes/qb.routes';
+import { qbRouter } from './routes/qb.routes';
 import { pool } from './config/database';
-
+import checkinRoutes from './routes/checking.route';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -64,10 +64,9 @@ app.use('/api/log', authRouter);
 
 
 app.use('/api/question', questionRouter);
-app.use('/api/books', qbRouter); // ✅ 對應你的路由定義
+app.use('/api/books', qbRouter);
 app.use('/api/questions', questionRouter)
-
-
+app.use('/api/checking', checkinRoutes);
 
 
 app.listen(3000, () => console.log('API on http://localhost:3000'));

@@ -117,7 +117,7 @@ export default {
           answer: q.Answer || '',                             // ✅ 答案內容
           questionImage: q.Content_pic || '',                 // ✅ 題目圖片
           answerImage: q.Answer_pic || '',                    // ✅ 解答圖片
-          note: q.note || '',                                 // ✅ 筆記（如有）
+          note: q.Content || '',                                 // ✅ 筆記（如有）
           starred: q.isStar === 1,                            // ✅ 加星欄位轉換
           wrongCount: q.wrong_count || 0,                     // ✅ 錯誤次數（如有統計）
           rightCount: q.right_count || 0                      // ✅ 正確次數（如有統計）

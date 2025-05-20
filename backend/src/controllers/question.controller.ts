@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import * as Question from '../models/question.model';
 import { AuthReq } from '../middleware/auth';
-import { uploadToCloudinary } from '../config/cloudinary'
-import { upload } from '../middleware/upload';
 import cloudinary  from '../config/cloudinary';
 import streamifier from 'streamifier';
 import { pool } from '../config/database'; // 確保這裡的 pool 是正確的

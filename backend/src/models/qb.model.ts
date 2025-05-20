@@ -22,13 +22,6 @@ export async function createQB(input: QBInput) {
   return (result as ResultSetHeader).insertId;
 }
 
-/*
-export const listQB = async () => {
-  const [rows] = await pool.query('SELECT * FROM Question_Book');
-  return rows;
-};
-*/
-
 export const listQBByUser = async (userId: number) => {
   console.log('🎒userId:', userId);
   const [rows] = await pool.query(
