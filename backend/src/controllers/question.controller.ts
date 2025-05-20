@@ -133,6 +133,14 @@ export const deleteQuestion = async (req: AuthReq, res: Response): Promise<void>
     await pool.query('DELETE FROM QUESTION_COLLECTION WHERE Question_ID = ?', [id])
     await pool.query('DELETE FROM QUESTION WHERE Question_ID = ?', [id])
 
+    // ✅ 刪除題目時，更新題本的題目數量
+    await pool.query(
+      `UPDATE QUESTION_BOOK
+       SET Question_Count = Question_Count - 1
+       WHERE QuestionBook_ID = ? AND Creator_ID = ?`,
+      [rows[0].QuestionBook_ID, userId] // 只需要這兩個參數
+    )
+
     res.status(200).json({ message: '刪除成功' }) // ✅ 不要 return
   } catch (err) {
     console.error('❌ 刪除題目失敗:', err)
@@ -179,7 +187,7 @@ export const updateNote = async (req: AuthReq, res: Response): Promise<void> => 
     const userId = req.user!.id
     const { note } = req.body
 
-    // ✅ 改為檢查是不是這個使用者創建的題目
+    // ✅ 檢查使用者是否有修改權限
     const [rows]: any = await pool.query(
       'SELECT 1 FROM QUESTION WHERE Question_ID = ? AND Creator_ID = ?',
       [id, userId]
@@ -190,9 +198,9 @@ export const updateNote = async (req: AuthReq, res: Response): Promise<void> => 
       return
     }
 
-    // ✅ 更新筆記
+    // ✅ 正確更新 Content 欄位
     await pool.query(
-      'UPDATE QUESTION SET note = ? WHERE Question_ID = ?',
+      'UPDATE QUESTION SET Content = ? WHERE Question_ID = ?',
       [note, id]
     )
 
@@ -202,6 +210,7 @@ export const updateNote = async (req: AuthReq, res: Response): Promise<void> => 
     res.status(500).json({ message: '更新筆記失敗' })
   }
 }
+
 
 export const getRandomQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   const userId = req.user!.id

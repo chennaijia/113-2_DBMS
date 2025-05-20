@@ -7,15 +7,15 @@
         <span class="type-label">
           【
           {{ card.questionType === 'truefalse'
-          ? '是非題'
-          : card.questionType === 'multipleABC'
-          ? '選擇題（字母選項）'
-          : card.questionType === 'multiple123'
-          ? '選擇題（數字選項）'
-          : card.questionType === 'open'
-          ? '問答題'
-          : '未知題型'
-        }}
+            ? '是非題'
+            : card.questionType === 'multipleABC'
+              ? '選擇題（字母選項）'
+              : card.questionType === 'multiple123'
+                ? '選擇題（數字選項）'
+                : card.questionType === 'open'
+                  ? '問答題'
+                  : '未知題型'
+          }}
           】
         </span>
 
@@ -38,17 +38,19 @@
       </div>
 
       <!-- ✏️ 筆記應該綁定資料 -->
-      <textarea v-model="card.note" rows="3" class="note" placeholder="輸入筆記..."></textarea>
+      <textarea v-model="noteText" rows="3" class="note" placeholder="輸入筆記...">
+      </textarea>
     </div>
 
     <!-- 編輯模式 -->
     <div v-else>
       <div class="card-header">
         <span>{{ index }}.</span>
-        <span class="type-label">【{{ card.questionType === 'truefalse' ? '是非題' : card.questionType === 'multiple' ? '選擇題' : '問答題' }}】</span>
+        <span class="type-label">【{{ card.questionType === 'truefalse' ? '是非題' : card.questionType === 'multiple' ?
+          '選擇題' : '問答題' }}】</span>
       </div>
 
-       <p>題目圖片:</p>
+      <p>題目圖片:</p>
       <input type="file" @change="(e) => handleFileChange(e, card, 'questionImage')" />
       <img v-if="card.questionImage" :src="card.questionImage" class="preview-image" />
 
@@ -60,12 +62,12 @@
       </div>
 
       <div v-else-if="card.questionType === 'multipleABC'">
-        <label v-for="opt in ['A','B','C','D','E']" :key="opt">
+        <label v-for="opt in ['A', 'B', 'C', 'D', 'E']" :key="opt">
           <input type="checkbox" :value="opt" v-model="card.answer" />{{ opt }}
         </label>
       </div>
       <div v-else-if="card.questionType === 'multiple123'">
-        <label v-for="opt in ['1','2','3','4','5']" :key="opt">
+        <label v-for="opt in ['1', '2', '3', '4', '5']" :key="opt">
           <input type="checkbox" :value="opt" v-model="card.answer" />{{ opt }}
         </label>
       </div>
@@ -81,7 +83,9 @@
       <img v-if="card.answerImage" :src="card.answerImage" class="preview-image" />
 
       <!-- 編輯模式中也能修改筆記 -->
-      <textarea v-model="card.note" rows="3" class="note" placeholder="輸入筆記..."></textarea>
+      <textarea v-model="noteText" rows="3" class="note" placeholder="輸入筆記..."></textarea>
+      <span v-if="savingNote">儲存中...</span>
+
       <button class="delete-button" @click="deleteThisCard">刪了吧破防了💔</button>
     </div>
   </div>
@@ -89,7 +93,7 @@
 
 
 <script>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export default {
   props: {
@@ -102,6 +106,14 @@ export default {
   setup(props, { emit }) {
     const uploadingType = ref(null)
     const fileInput = ref(null)
+
+    const noteText = computed({
+      get: () => props.card.note,
+      set: (val) => {
+        emit('update-note', { id: props.card.id, note: val })
+      }
+    })
+
 
     function deleteThisCard() {
       if (confirm('確定要刪除這張卡片嗎？')) {
@@ -118,32 +130,39 @@ export default {
         alert('請上傳題目圖片')
         return
       }
-      if(answer.value.length === 0){
+      if (answer.value.length === 0) {
         alert('請輸入答案')
         return
       }
     }
-    function handleFileChange(event, card, type) {
-  const file = event.target.files[0]
-  if (!file) return
-  if (file.size > 2 * 1024 * 1024) {
-    alert('圖片太大，請選擇小於 2MB 的檔案')
-    return
-  }
 
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    if (type === 'questionImage') card.questionImage = e.target.result
-    if (type === 'answerImage') card.answerImage = e.target.result
-  }
-  reader.readAsDataURL(file)
-}
+    function handleFileChange(event, card, type) {
+      const file = event.target.files[0]
+      if (!file) return
+      if (file.size > 2 * 1024 * 1024) {
+        alert('圖片太大，請選擇小於 2MB 的檔案')
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        if (type === 'questionImage') card.questionImage = e.target.result
+        if (type === 'answerImage') card.answerImage = e.target.result
+      }
+      reader.readAsDataURL(file)
+    }
 
 
     function removeImage(type) {
       if (type === 'question') props.card.questionImage = null
       if (type === 'answer') props.card.answerImage = null
     }
+
+    function onNoteChange() {
+      console.log('📝 note changed:', props.card.id, props.card.note)
+      emit('update-note', { id: props.card.id, note: props.card.note })
+    }
+
 
     return {
       uploadingType,
@@ -152,7 +171,10 @@ export default {
       uploadImage,
       handleFileChange,
       removeImage,
-      submitCard
+      submitCard,
+      noteText,
+      noteText // ✅ 只保留這個即可，自動觸發事件
+
     }
   }
 }
@@ -163,7 +185,8 @@ export default {
 .card {
   width: 100%;
   margin: 20px auto;
-  background-color: #f5f9fd; /* 淡藍灰背景 */
+  background-color: #f5f9fd;
+  /* 淡藍灰背景 */
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -176,7 +199,8 @@ export default {
   align-items: center;
   font-weight: bold;
   margin-bottom: 12px;
-  color: #0d47a1; /* 深藍字 */
+  color: #0d47a1;
+  /* 深藍字 */
 }
 
 .type-label {
@@ -200,7 +224,8 @@ export default {
 
 .box {
   flex: 1;
-  background-color: #e3f2fd; /* 藍色區塊 */
+  background-color: #e3f2fd;
+  /* 藍色區塊 */
   padding: 20px;
   border-radius: 8px;
   text-align: center;

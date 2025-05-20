@@ -176,7 +176,6 @@ const submitCard = async () => {
 
 // 👈 取得當前本子ID
 //formData.append('questionBookId', 1);
-
 formData.append('QuestionBook_ID', String(props.bookId))
 
 

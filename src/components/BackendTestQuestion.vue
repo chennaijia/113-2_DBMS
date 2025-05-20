@@ -281,9 +281,6 @@ onMounted(async () => {
         alert('⛔沒有題目資料');
       }
 
-
-
-
       questions.value = res.data; // ✅ 更新畫面上的題目
     } catch (err) {
       console.error('❌ 取得題目失敗:', err);

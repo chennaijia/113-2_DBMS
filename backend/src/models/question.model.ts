@@ -52,35 +52,16 @@ export const createQuestion = async (
     [questionBookId, questionId, userId]
   );
 
-  return questionId;
-};
-
-
-
-/*
-export const createQuestion = async (q: QuestionInput): Promise<number> => {
-  const [result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO question
-     (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      q.qtype,
-      q.content || '',
-      q.content_pic || null,
-      q.answer || '',
-      q.answer_pic || null,
-      q.detail_ans || '',
-      q.detail_ans_pic || null,
-      q.subject || '',
-      q.level,
-      q.creator_id,
-      q.isStar || 0, // 預設值為 0
-    ]
+  //更新題本的題目數量
+  await pool.query(
+    `UPDATE QUESTION_BOOK
+   SET Question_Count = Question_Count + 1
+   WHERE QuestionBook_ID = ? AND Creator_ID = ?`,
+    [questionBookId, userId] // 只需要這兩個參數
   );
 
-  return (result as ResultSetHeader).insertId;
+  return questionId;
 };
-*/
 
 
 export const listQuestions = async (creatorId: number) => {

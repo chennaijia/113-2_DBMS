@@ -9,7 +9,7 @@ export const deleteQuestionById = (id: number) =>
 export const updateStarStatus = (id: number, isStar: boolean) =>
   api.patch(`/questions/${id}/star`, { isStar })
 
-export const updateNote = (id: any, note: any) => {
+export const updateNote = (id: number, note: string) => {
    return api.patch(`/questions/${id}/note`, { note })
 }
 
