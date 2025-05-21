@@ -8,6 +8,8 @@
       "path": "./tsconfig.app.json"
     }
   ],
+
+  
   "compilerOptions": {
     "esModuleInterop": true,
     "moduleResolution": "node",

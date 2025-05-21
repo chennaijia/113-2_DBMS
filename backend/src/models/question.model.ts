@@ -119,7 +119,8 @@ export const getQuestionCount = async (bookId: number, userId: number) => {
     WHERE qc.User_ID = ? AND qc.QuestionBook_ID = ?`,
     [userId, bookId]
   )
- return Number(rows[0].count)
+  console.log('✅ question.model loaded')
+  return Number(rows[0].count)
 }
 
 

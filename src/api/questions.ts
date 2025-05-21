@@ -35,3 +35,7 @@ export async function fetchMostWrongQuestions(bookId: number, userId: number, co
   return res.data
 }
 
+export async function fetchQuestionCount(bookId: number) {
+  const res = await api.get(`/question/count/${bookId}`)
+  return res.data.count
+}

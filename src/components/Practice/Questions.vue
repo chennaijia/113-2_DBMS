@@ -40,9 +40,8 @@
       <div class="mt-3">
         <button class="btn btn-outline-primary me-2" @click="decreaseCount" :disabled="localCount <= 1">-</button>
         <input type="number" class="form-control d-inline-block text-center" style="width: 60px"
-          v-model.number="localCount" min="1" :max="questions.length" />
-        <button class="btn btn-outline-primary ms-2" @click="increaseCount"
-          :disabled="localCount >= props.questions.length">+</button>
+          v-model.number="localCount" min="1" :max="totalQuestionCount" />
+        <button class="btn btn-outline-primary ms-2" @click="increaseCount" :disabled="localCount >= totalQuestionCount">+</button>
         <span class="ms-2">/ {{ props.questions.length }} 題</span>
       </div>
     </div>
@@ -58,63 +57,88 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { fetchQuestionCount } from '@/api/questions'
 
+// ✅ 接收父層傳進來的 props
 const props = defineProps({
   selectedOption: String,
   questions: Array,
   questionCount: Number,
   currentSubject: String,
-  userId: {
-    type: Number,
-    required: true,
-  }
+  userId: { type: Number, required: true },
+  bookId: { type: Number, required: true }
 })
 
-const emit = defineEmits('update-selected')
+// ✅ 向父層回傳選取結果
+const emit = defineEmits(['update-selected'])
 
+// ✅ 本地狀態變數
 const selectedQuestionIds = ref([])
 const localCount = ref(props.questionCount)
+const totalQuestionCount = ref(0) // 後端取得的總題數
 
-watch(() => props.questionCount, (newCount) => {
-  localCount.value = newCount
-
-})
-
-watch(() => props.questions, (newVal) => {
-  if (newVal.length > 0 && localCount.value > newVal.length) {
-    localCount.value = newVal.length
+// ✅ 生命週期：一進來就向後端拿總題數
+onMounted(async () => {
+  try {
+    totalQuestionCount.value = await fetchQuestionCount(props.bookId)
+    console.log('👌 總題數載入成功：', totalQuestionCount.value)
+  } catch (err) {
+    console.error('❌ 載入總題數失敗：', err)
+    alert('載入題目數量失敗，請稍後再試！')
   }
 })
 
+/**
+ * ✅ 監聽 props 變化
+ */
 
-// ✅ 當題目變動時自動調整最大值
+// 如果外層變更題數，更新 localCount
+watch(() => props.questionCount, (newCount) => {
+  localCount.value = newCount
+})
+
+// 如果傳入的題目陣列長度變短，強制 localCount 不超過它
 watch(() => props.questions, (val) => {
-  console.log('傳進來的題目', val)
   if (val.length > 0 && localCount.value > val.length) {
     localCount.value = val.length
   }
 })
 
+/**
+ * ✅ 功能計算與控制
+ */
+
+// 判斷是否全選
 const isAllSelected = computed(() => {
   return selectedQuestionIds.value.length === props.questions.length
 })
 
+// 點擊全選／取消全選
 const toggleSelectAll = () => {
-  if (isAllSelected.value) {
-    selectedQuestionIds.value = []
-  } else {
-    selectedQuestionIds.value = props.questions.map((q) => q.Question_ID)
+  selectedQuestionIds.value = isAllSelected.value
+    ? []
+    : props.questions.map((q) => q.Question_ID)
+}
+
+// 加減按鈕行為（依據 totalQuestionCount 限制）
+const increaseCount = () => {
+  if (localCount.value < totalQuestionCount.value) {
+    localCount.value++
   }
 }
 
-const increaseCount = () => {
-  if (localCount.value < props.questions.length) localCount.value++
-}
 const decreaseCount = () => {
-  if (localCount.value > 1) localCount.value--
+  if (localCount.value > 1) {
+    localCount.value--
+  }
 }
 
+/**
+ * ✅ 題目選擇邏輯
+ */
+
+// 根據模式過濾題目
 const filteredQuestions = computed(() => {
   if (props.selectedOption === 'option2') {
     return [...props.questions].sort(() => 0.5 - Math.random()).slice(0, localCount.value)
@@ -124,6 +148,7 @@ const filteredQuestions = computed(() => {
   return props.questions
 })
 
+// 點擊「開始練習」
 function confirmSelection() {
   const selected =
     props.selectedOption === 'option1'
@@ -133,6 +158,7 @@ function confirmSelection() {
   emit('update-selected', selected)
 }
 </script>
+
 
 
 <style scoped>

@@ -4,7 +4,10 @@ import { AuthReq } from '../middleware/auth';
 import cloudinary from '../config/cloudinary';
 import streamifier from 'streamifier';
 import { pool } from '../config/database'; // 確保這裡的 pool 是正確的
-import { listQuestionsByBook as getByBook, getRandomPracticeQuestions, getMostWrongQuestions as getMostWrongQuestionsModel } from '../models/question.model'
+import { listQuestionsByBook as getByBook, getRandomPracticeQuestions,
+        getMostWrongQuestions as getMostWrongQuestionsModel,
+        getQuestionCount as getQuestionCountModel
+      } from '../models/question.model'
 
 export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   try {
@@ -88,6 +91,7 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
   }
 };
 
+//viewQuestion取得該使用者題目列表
 export const listQuestions = async (req: AuthReq, res: Response) => {
   try {
     console.log('✅ 抓資料使用者 ID:', req.user?.id);
@@ -100,7 +104,7 @@ export const listQuestions = async (req: AuthReq, res: Response) => {
   }
 };
 
-
+//viewQuestion取得題本中的題目
 export const listQuestionsByBook = async (req: AuthReq, res: Response) => {
   try {
     const bookId = +req.params.bookId
@@ -113,6 +117,7 @@ export const listQuestionsByBook = async (req: AuthReq, res: Response) => {
   }
 }
 
+//viewQuestion刪除題目
 export const deleteQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   try {
     const id = +req.params.id
@@ -146,6 +151,7 @@ export const deleteQuestion = async (req: AuthReq, res: Response): Promise<void>
   }
 }
 
+//viewQuestion更新星號狀態
 export const toggleStar = async (req: AuthReq, res: Response): Promise<void> => {
   try {
     const id = +req.params.id
@@ -179,6 +185,7 @@ export const toggleStar = async (req: AuthReq, res: Response): Promise<void> => 
   }
 }
 
+//viewQuestion更新筆記
 export const updateNote = async (req: AuthReq, res: Response): Promise<void> => {
   try {
     const id = +req.params.id
@@ -209,9 +216,10 @@ export const updateNote = async (req: AuthReq, res: Response): Promise<void> => 
   }
 }
 
-
+//主頁面每日題目練習
 export const getRandomQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   const userId = req.user!.id
+
 
   try {
     const [rows]: any = await pool.query(
@@ -236,7 +244,7 @@ export const getRandomQuestion = async (req: AuthReq, res: Response): Promise<vo
   }
 }
 
-
+//練習錯題隨機錯題模式
 export const getRandomWrongQuestions = async (req: AuthReq, res: Response): Promise<void> => {
   try {
     console.log('✅ 抓資料使用者 ID:', req.user?.id);
@@ -262,6 +270,7 @@ export const getRandomWrongQuestions = async (req: AuthReq, res: Response): Prom
   }
 }
 
+//練習錯題隨機錯最多模式
 export const getMostWrongQuestions = async (req: AuthReq, res: Response): Promise<void> => {
   try {
     const { bookId, count } = req.query
@@ -285,4 +294,25 @@ export const getMostWrongQuestions = async (req: AuthReq, res: Response): Promis
   }
 }
 
+//該使用者練習題本題目數量
+export const getQuestionCount = async (req: AuthReq, res: Response): Promise<void> => {
+
+  try {
+    console.log('✅ 抓資料使用者 ID:', req.user?.id);
+
+    const bookId = +req.params.bookId
+    const userId = req.user!.id
+
+    if (isNaN(bookId)) {
+      res.status(400).json({ message: 'bookId 必須是數字' })
+      return
+    }
+
+    const count = await getQuestionCountModel(bookId, userId)
+    res.status(200).json({ count })
+  } catch (err) {
+    console.error('❌ getQuestionCount 失敗：', err)
+    res.status(500).json({ message: '讀取題目數量失敗' })
+  }
+}
 

@@ -5,7 +5,14 @@ import {
 import { auth } from '../middleware/auth';
 import { listQuestionsByBook } from '../controllers/question.controller'
 import { Request, Response, NextFunction } from 'express';
-import { uploadQuestion, toggleStar ,updateNote ,getRandomQuestion, getRandomWrongQuestions, getMostWrongQuestions} from '../controllers/question.controller';
+import { uploadQuestion,
+        toggleStar,
+        updateNote,
+        getRandomQuestion,
+        getRandomWrongQuestions,
+        getMostWrongQuestions,
+        getQuestionCount
+      } from '../controllers/question.controller';
 import { upload } from '../middleware/upload';
 import { deleteQuestion } from '../controllers/question.controller';
 export const questionRouter = Router();
@@ -18,6 +25,8 @@ questionRouter.patch('/:id/note', auth, updateNote)
 questionRouter.get('/random', auth, getRandomQuestion)
 questionRouter.get('/random-practice', auth, getRandomWrongQuestions)
 questionRouter.get('/most-wrong', auth, getMostWrongQuestions)
+questionRouter.get('/count/:bookId', auth, getQuestionCount)
+
 
 
 
