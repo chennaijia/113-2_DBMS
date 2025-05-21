@@ -2,7 +2,7 @@
 <template>
   <!-- === (原樣保留 - 你提供的整段 template 內容) === -->
   <!--問題：直接登入還不能跟sidebar同步(要refresh)，要不要把登入資訊放在App.vue中統一控制？-->
-  <div>
+<div>
     <!-- 創建錯題本按鈕 -->
     <div class="guide-highlight-add" style="position: absolute; left: 10%; padding: 16px; top: 3%">
       <button
@@ -20,6 +20,7 @@
         "
         :disabled="showGuide"
         @click="createBook"
+        v-if="isLoggedIn"
       >
         <Icon icon="material-symbols:add-rounded" width="40" height="40" style="color: black" />
         <div>創建新的錯題本</div>
@@ -29,8 +30,27 @@
     <!-- 彈出 AddBook.vue -->
     <AddBook v-if="showAddBook" @close="showAddBook = false" @confirm="handleAddBook" />
 
-    <!-- 錯題本排列 -->
-    <div style="position: absolute; left: 10%; padding: 50px; top: 15%">
+    <!-- 登入提示 (未登入時顯示) -->
+    <div v-if="!isLoggedIn" style="position: absolute; left: 10%; padding: 50px; top: 15%; text-align: center; width: 80%;">
+      <div style="font-size: 24px; margin-bottom: 20px;">請先登入以查看您的錯題本</div>
+      <button
+        @click="openLoginModal"
+        style="
+          background-color: #7eaee4;
+          color: white;
+          padding: 12px 24px;
+          border: none;
+          border-radius: 8px;
+          font-size: 18px;
+          cursor: pointer;
+        "
+      >
+        登入
+      </button>
+    </div>
+
+    <!-- 錯題本排列 (已登入時顯示) -->
+    <div v-if="isLoggedIn" style="position: absolute; left: 10%; padding: 50px; top: 15%">
       <div
         style="
           display: grid;
@@ -41,7 +61,7 @@
       >
         <div
           v-for="(book, index) in books"
-          :key="book.id"
+          :key="book.QuestionBook_ID"
           style="
             position: relative;
             display: flex;
@@ -65,11 +85,11 @@
               cursor: pointer;
             "
           >
-            <Icon icon="mdi:trash-can" width="24" height="24" style="color: #ff6b6b" />
+            <Icon icon="mdi:trash-can" width="24" height="24" style="color: #ffbf69; cursor: pointer;" />
           </button>
 
           <!-- 書本 icon -->
-          <Icon :icon="book.icon" width="190px" height="190px" style="color: #ffbf69" />
+          <Icon :icon="book.icon" width="190px" height="190px" style="color: #ffbf69; cursor: pointer;" @click="$emit('change-page', 'question', book)"/>
 
           <!-- 複製按鈕 -->
           <button
@@ -137,8 +157,9 @@
       </div>
     </div>
 
-    <!-- 編輯/刪除按鈕 -->
+    <!-- 編輯/刪除按鈕 (已登入時顯示) -->
     <div
+      v-if="isLoggedIn"
       class="guide-highlight-edit"
       style="
         position: absolute;
@@ -285,7 +306,7 @@
 
 <script setup lang="ts">
 /* ------------ import ------------ */
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, inject } from 'vue'
 import { Icon } from '@iconify/vue'
 import AddBook from './AddBook.vue'
 import Login from './Login.vue'
@@ -296,7 +317,7 @@ import * as bootstrap from 'bootstrap'
 
 /* ------------ 型別 ------------ */
 interface BookUI {
-  id: number
+  QuestionBook_ID: number
   title: string
   icon: string
   mistakeCount: number
@@ -307,18 +328,46 @@ interface BookUI {
   expanded: boolean
 }
 
+/* ------------ inject 登入狀態 (非常重要！) ------------ */
+interface LoginState {
+  isLoggedIn: import('vue').Ref<boolean> // 確保是 ref 類型
+  userName: import('vue').Ref<string> // 確保是 ref 類型
+  login: (userName: string) => void
+  logout: () => void
+}
+// ✅ 確保注入的是響應式變數本身，而不是它們的 .value
+const {
+  isLoggedIn, // 直接使用從 App.vue 注入的 isLoggedIn ref
+  userName,   // 直接使用從 App.vue 注入的 userName ref
+  login: handleLoginFromParent,
+  logout: handleLogoutFromParent
+} = inject('loginState') as LoginState
+
 /* ------------ reactive 狀態 ------------ */
 const showAddBook = ref(false)
 const editMode = ref(false)
 const showGuide = ref(false)
 const showLoginModal = ref(false)
-const isLoggedIn = ref(!!localStorage.getItem('userName'))
+/*
+const isLoggedIn = ref(false)
+const userName = ref('')
+*/
 const currentSlideIndex = ref(0)
 const books = ref<BookUI[]>([])
 
 /* ------------ 生命週期 ------------ */
 onMounted(async () => {
-  if (isLoggedIn.value) await loadBooks() // 只有 token 已存在才先抓
+  // 檢查登入狀態
+  /*const savedUser = localStorage.getItem('userName')
+  if (savedUser) {
+    isLoggedIn.value = true
+    userName.value = savedUser
+    await loadBooks() // 已登入才載入錯題本
+  }
+  */
+  if (isLoggedIn.value) {
+    await loadBooks() // 已登入才載入錯題本
+  }
   showGuide.value = !isLoggedIn.value
 
   // 建 carousel 事件（保留你的原 JS）
@@ -332,29 +381,47 @@ onMounted(async () => {
     })
     carouselEl.addEventListener('slid.bs.carousel', handleSlide)
   }
+
+  // 註冊重新整理題本的事件監聽器
+  window.addEventListener('refresh-books', loadBooks)
+})
+
+/* 組件卸載時移除事件監聽器 */
+onUnmounted(() => {
+  window.removeEventListener('refresh-books', loadBooks)
 })
 
 /* ------------ 從後端抓清單 ------------ */
 async function loadBooks() {
-  const { data } = await fetchQBs()
-  books.value = data.map((row: any) => ({
-    id: row.QuestionBook_ID,
-    title: row.BName,
-    icon: row.Icon || 'raphael:book',
-    mistakeCount: row.Question_Count ?? 0,
-    date: new Date(row.CreateDate ?? row.CreatedDate ?? Date.now()).toISOString().slice(0, 10),
-    selected: false,
-    editing: false,
-    hover: false,
-    expanded: true,
-  })) as BookUI[]
+  if (!isLoggedIn.value) return // 若未登入則不載入錯題本
+
+  try {
+    const { data } = await fetchQBs()
+    books.value = data.map((row: any) => ({
+      QuestionBook_ID: row.QuestionBook_ID,
+      BName: row.BName,
+      title: row.BName,
+      icon: row.Icon || 'raphael:book',
+      mistakeCount: row.Question_Count ?? 0,
+      date: new Date(row.CreateDate ?? row.CreatedDate ?? Date.now()).toISOString().slice(0, 10),
+      selected: false,
+      editing: false,
+      hover: false,
+      expanded: true,
+    })) as BookUI[]
+  } catch (err) {
+    console.error('❌ 載入錯題本失敗:', err)
+    if ((err as any).response?.status === 401) {
+      logout() // 若 token 過期或無效，執行登出
+    }
+  }
 }
 
 /* ------------ 新增 ------------ */
 async function handleAddBook(input: { title: string; icon: string }) {
   const { data } = await createQB({ BName: input.title, Icon: input.icon })
   books.value.push({
-    id: data.QuestionBook_ID,
+    QuestionBook_ID: data.QuestionBook_ID,
     title: input.title,
     icon: input.icon,
     mistakeCount: 0,
@@ -380,7 +447,7 @@ async function finishEditing() {
 
     if (changedTitle || changedIcon) {
       try {
-        await updateQB(b.id, { BName: b.title, Icon: b.icon })
+        await updateQB(b.QuestionBook_ID, { BName: b.title, Icon: b.icon })
         // 更新成功後把 baseline 同步
         ;(b as any).originalTitle = b.title
         ;(b as any).originalIcon = b.icon
@@ -402,7 +469,7 @@ async function finishEditing() {
 /* ------------ 刪除 ------------ */
 async function deleteBook(idx: number) {
   const target = books.value[idx]
-  await deleteQB(target.id)
+  await deleteQB(target.QuestionBook_ID)
   books.value.splice(idx, 1)
   // 通知其他元件更新
   window.dispatchEvent(new Event('refresh-books'))
@@ -413,16 +480,15 @@ async function copyBook(idx: number) {
   const src = books.value[idx]
 
   try {
-
     console.log('🟢開始複製題本');
 
     /* 1️⃣ 先呼叫後端，拿到新 ID */
-    const { data } = await copyQB(src.id) // { QuestionBook_ID: 123 }
+    const { data } = await copyQB(src.QuestionBook_ID) // { QuestionBook_ID: 123 }
     console.log('啊啊啊啊 ID：', data.QuestionBook_ID)
 
     /* 2️⃣ 只挑純資料欄位，組成新的平面物件 */
     const cloned = {
-      id: data.QuestionBook_ID,
+      QuestionBook_ID: data.QuestionBook_ID,
       title: src.title + ' 的副本',
       icon: src.icon,
       mistakeCount: src.mistakeCount,
@@ -444,31 +510,39 @@ async function copyBook(idx: number) {
   }
 }
 
-/* ------------ 純前端 UI 動作 ------------ */
-function createBook() {
-  showAddBook.value = true
-}
-
+/* ------------ 登入/登出相關 ------------ */
 function openLoginModal() {
   showLoginModal.value = true
 }
+
 function closeLoginModal() {
   showLoginModal.value = false
 }
-async function handleLogin(userName: string) {
-  console.log('登入成功，帳號：', userName)
-  isLoggedIn.value = true
-  localStorage.setItem('userName', userName)
-  closeLoginModal()
-  showGuide.value = false
 
-  await loadBooks()
+// ✅ 調用父組件提供的 handleLogin 函式
+async function handleLogin(newUserName: string) {
+  await handleLoginFromParent(newUserName)
+  showGuide.value = false
+  // loadBooks() 會在 handleLoginFromParent 執行後被觸發
+  closeLoginModal()
+}
+
+// ✅ 調用父組件提供的 logout 函式
+function logout() {
+  handleLogoutFromParent()
+  // books.value = [] // 已經在 handleLogoutFromParent 裡清空了，這裡不需要重複
+}
+
+/* ------------ 純前端 UI 動作 ------------ */
+function createBook() {
+  showAddBook.value = true
 }
 
 function toggleEditMode() {
   editMode.value = !editMode.value
   if (!editMode.value) books.value.forEach((b) => (b.selected = false))
 }
+
 function startEditingTitle(book: BookUI) {
   if (!('originalTitle' in book)) {
     // 首次編輯才存一份，避免之後一直覆蓋
@@ -488,6 +562,7 @@ function handleSlide(event: any) {
   if (event.to === 2 && addBtn) addBtn.classList.add('highlight-shadow')
   if (event.to === 3 && editBtn) editBtn.classList.add('highlight-shadow')
 }
+
 function endGuide() {
   showGuide.value = false
 }

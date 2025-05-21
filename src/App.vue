@@ -7,7 +7,7 @@
       </div>
 
       <div v-else-if="currentPage === 'book'">
-        <ViewBooks />
+        <ViewBooks :subjects="subjects" @change-page="handleChangePage"/>
       </div>
 
       <div v-else-if="currentPage === 'question'">
@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, provide } from 'vue'
 
 import Sidebar from './components/Sidebar.vue'
 import HomePage from './components/HomePage.vue'
@@ -83,11 +83,45 @@ const startPractice = ref(false)
 const selectedQuestions = ref([])
 const isFinished = ref(false)
 
+const isLoggedIn = ref(false)
+const userName = ref('')
+
 const selectedMode = ref('')
 const questionCount = ref(1)
 const userId = ref(1) // ✅ 不要是空字串
 
 
+if (localStorage.getItem('userName')) {
+  isLoggedIn.value = true
+  userName.value = localStorage.getItem('userName')
+}
+
+// Login function
+function handleLogin(newUserName) {
+  isLoggedIn.value = true
+  userName.value = newUserName
+  localStorage.setItem('userName', newUserName)
+  // Dispatch an event to refresh book data
+  window.dispatchEvent(new Event('refresh-books'))
+}
+
+// Logout function
+function handleLogout() {
+  isLoggedIn.value = false
+  userName.value = ''
+  localStorage.removeItem('userName')
+  localStorage.removeItem('token')
+  // Dispatch an event to clear book data
+  window.dispatchEvent(new Event('refresh-books'))
+}
+
+// Provide login state and functions to child components
+provide('loginState', {
+  isLoggedIn,
+  userName,
+  login: handleLogin,
+  logout: handleLogout
+})
 
 
 const practiceResult = ref({
@@ -103,8 +137,12 @@ function handleChangePage(page, payload = '') {
   if (typeof payload === 'object') {
     currentBook.value = payload
     currentSubject.value = payload.BName // 如果你想用名稱當 subject
+
+        console.log('App.vue: 收到 change-page 事件，頁面:', page, '選中的書本:', currentBook.value);
   } else {
     currentSubject.value = payload
+
+        console.log('App.vue: 收到 change-page 事件，頁面:', page, '主題:', currentSubject.value);
   }
 }
 
