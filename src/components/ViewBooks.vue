@@ -3,8 +3,87 @@
   <!-- === (原樣保留 - 你提供的整段 template 內容) === -->
   <!--問題：直接登入還不能跟sidebar同步(要refresh)，要不要把登入資訊放在App.vue中統一控制？-->
 <div>
+    <!--導覽-->
+    <div>
+      <div
+        v-if="showGuide && currentSlideIndex === 1"
+        class="guide-highlight-sidebar guide-ghost-sidebar"
+        style="
+          position: fixed; /* Use fixed to keep it in viewport */
+          top: 0;
+          left: 0; /* Starts hidden off-screen */
+          width: 280px;
+          height: 100%;
+          background-color: #ffffff;
+          border-top-right-radius: 20px;
+          border-bottom-right-radius: 20px;
+          box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+          z-index: 1060; /* Above guide overlay */
+          padding: 24px 16px;
+          transition: left 0.4s ease, opacity 0.4s ease; /* Maintain animation */
+          opacity: 1; /* Make it visible */
+          pointer-events: none; /* Make it non-interactive */
+        "
+        :style="{ left: showGuide && currentSlideIndex === 1 ? '0' : '-280px' }" 
+        aria-hidden="true"
+      >
+        <div class="offcanvas-header mb-5 mt-3">
+          <Icon icon="material-symbols:menu-rounded" width="40" height="40" class="close-icon" />
+        </div>
+
+        <div class="offcanvas-body">
+          <div class="accordion accordion-flush">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="sidebar_accordion accordion-button collapsed">
+                  主頁
+                </button>
+              </h2>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="sidebar_accordion accordion-button collapsed">
+                  我的錯題本
+                </button>
+              </h2>
+            </div>
+          </div> <div class="login-footer d-flex justify-content-center">
+            <div>
+              <h2>登入</h2>
+            </div> </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 創建錯題本「導覽」 -->
+    <div
+      v-if="showGuide && currentSlideIndex === 2"
+      class="guide-highlight-add guide-ghost-button"
+      style="
+        position: absolute;
+        left: 10%;
+        top: 3%;
+        pointer-events: none; 
+        z-index: 1060; 
+      "
+      aria-hidden="true"
+    >
+      <button
+        style="
+          padding: 12px 24px;
+          font-size: 30px;
+          display: flex;
+          align-items: center;
+          cursor: default; 
+        "
+        class="btn btn-outline-primary rounded-pill"
+        disabled="true" >
+        <Icon icon="material-symbols:add-rounded" width="40" height="40" />
+        <div>創建新的錯題本</div>
+      </button>
+    </div>
     <!-- 創建錯題本按鈕 -->
-    <div class="guide-highlight-add" style="position: absolute; left: 10%; padding: 16px; top: 3%">
+    <div style="position: absolute; left: 10%; padding: 16px; top: 3%">
       <button
         style="
           padding: 12px 24px;
@@ -149,11 +228,38 @@
         </div>
       </div>
     </div>
+    <!-- 編輯按鈕「導覽」 -->
+    <div
+      v-if="showGuide && currentSlideIndex === 3"
+      class="guide-highlight-edit guide-ghost-button"
+      style="
+        position: absolute;
+        bottom: 70px;
+        right: 3%;
+        transform: translateX(-50%);
+        pointer-events: none; 
+        z-index: 1060; 
+      "
+      aria-hidden="true"
+    >
+      <button
+        style="
+          padding: 12px 24px;
+          font-size: 30px;
+          display: flex;
+          align-items: center;
+          cursor: default;
+        "
+        class="btn btn-outline-primary rounded-pill"
+        disabled="true" >
+        <Icon icon="bx:edit-alt" width="40" height="40" />
+        <div>編輯</div>
+      </button>
+    </div>
 
     <!-- 編輯/刪除按鈕 (已登入時顯示) -->
     <div
       v-if="isLoggedIn"
-      class="guide-highlight-edit"
       style="
         position: absolute;
         bottom: 70px;
@@ -292,7 +398,7 @@
 
 <script setup lang="ts">
 /* ------------ import ------------ */
-import { ref, onMounted, onUnmounted, inject } from 'vue'
+import { ref, onMounted, onUnmounted, inject, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import AddBook from './AddBook.vue'
 import Login from './Login.vue'
@@ -357,16 +463,19 @@ onMounted(async () => {
   showGuide.value = !isLoggedIn.value
 
   // 建 carousel 事件（保留你的原 JS）
-  const carouselEl = document.querySelector('.guide-carousel')
-  if (carouselEl) {
-    const carousel = new bootstrap.Carousel(carouselEl, { interval: false, wrap: false })
-    carouselEl.addEventListener('slide.bs.carousel', (event: any) => {
-      if (currentSlideIndex.value === 0 && event.direction === 'right') event.preventDefault()
-      if (currentSlideIndex.value === 3 && event.direction === 'left') event.preventDefault()
-      currentSlideIndex.value = event.to
-    })
-    carouselEl.addEventListener('slid.bs.carousel', handleSlide)
-  }
+  nextTick(() => { 
+    const carouselEl = document.querySelector('.guide-carousel')
+    if (carouselEl) {
+      const carousel = new bootstrap.Carousel(carouselEl, { interval: false, wrap: false })
+      carouselEl.addEventListener('slide.bs.carousel', (event: any) => {
+        console.log('slide event:', currentSlideIndex.value)
+        if (currentSlideIndex.value === 0 && event.direction === 'right'){ event.preventDefault(); return;}
+        if (currentSlideIndex.value === 3 && event.direction === 'left') {event.preventDefault(); return;}
+        currentSlideIndex.value = event.to;
+      });
+      carouselEl.addEventListener('slid.bs.carousel', handleSlide)
+    }
+  });
 
   // 註冊重新整理題本的事件監聽器
   window.addEventListener('refresh-books', loadBooks)
@@ -584,7 +693,8 @@ function endGuide() {
 
 .highlight-shadow {
   box-shadow: 0 0 0 5px #4da3ff !important;
-  border-radius: 8px;
+  background-color: white;
+  border-radius: 35px;
   transition: box-shadow 0.3s;
   z-index: 1060;
   position: relative;
@@ -611,4 +721,122 @@ button[disabled] {
  transform: translate(-50%, -50%); /* 確保真正置中 */
 }
 
+
+/* 側邊欄的樣式 */
+.offcanvas-custom {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100%;
+  background-color: #ffffff;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1050;
+  padding: 24px 16px;
+  transition: left 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+}
+
+.offcanvas-custom.show {
+  left: 0;
+  opacity: 1;
+}
+
+.custom-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+}
+
+.side-bar {
+  width: 80px;
+  height: 100vh;
+  background-color: #d8e9f5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.menu-icon {
+  color: #7eaee4;
+  cursor: pointer;
+}
+
+.login-label p {
+  color: #7eaee4;
+  font-size: 14px;
+}
+
+.close-icon {
+  color: #7eaee4;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+}
+
+.sidebar_accordion {
+  font-weight: bold;
+  font-size: 18px;
+  color: #7eaee4;
+  background-color: transparent;
+}
+
+.sidebar_accordion.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #7eaee4;
+  text-shadow: 1px 1px 2px #5b92c3;
+}
+
+.sidebar_subject_button {
+  font-size: 16px;
+  font-weight: normal;
+  color: #5b92c3;
+  background-color: transparent;
+}
+
+.sidebar_subject_button.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #5b92c3;
+}
+
+.link-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  padding-left: 20px;
+}
+
+.sidebar-link {
+  color: #7eaee4;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.sidebar-link:hover {
+  text-decoration: underline;
+}
+
+.login-footer {
+  position: absolute;
+  bottom: 30px;
+  width: 100%;
+  text-align: center;
+}
+
+.login-footer h2 {
+  color: #7eaee4;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+}
 </style>
