@@ -5,7 +5,8 @@
         <!-- 卡片正面 -->
         <div class="flip-card-front">
           <div class="card-content">
-            <h2 class="card-title">題目</h2>
+            <h2 class="card-title">隨機抽考!!</h2>
+            <p class="qtype-label">{{ typeLabel }}</p>
 
             <!-- 題目顯示區 (文字或圖片) -->
             <div class="question-area">
@@ -16,18 +17,30 @@
 
             <!-- 答案輸入區 -->
             <div class="answer-input-area">
-              <input
-                v-model="userAnswer"
+              <input v-model="userAnswer"
                 class="answer-input"
-                placeholder="輸入答案範例：ACDE（多選題答案中間不用有空格）"
+                :placeholder="answerPlaceholder"
                 :readonly="isAnswerSubmitted"
-                :class="{ 'input-disabled': isAnswerSubmitted }"
-              />
+                :class="{ 'input-disabled': isAnswerSubmitted }"/>
             </div>
 
             <!-- 按鈕區 -->
             <div class="button-container">
-              <button class="submit-button" @click="submitAnswer">提交答案</button>
+              <button
+                  class="btn-main submit-button"
+                  @click="submitAnswer"
+                  :disabled="isAnswerSubmitted"
+                  :class="{ submitted: isAnswerSubmitted }"
+                >
+                  {{ isAnswerSubmitted ? '已提交' : '提交答案' }}
+                </button>
+              <button
+                class="btn-main return-button"
+                @click="resetCard"
+                v-if="isFlipped && !isAnswerSubmitted">
+                回到題目
+              </button>
+
             </div>
           </div>
         </div>
@@ -45,28 +58,41 @@
             <div class="bottom-area">
               <!-- 左下答案顯示 -->
               <div class="answer-area">
-                <h3>正確答案：</h3>
-                <div v-if="currentQuestion.type === 'text'" class="text-answer">
-                  {{ currentQuestion.answer }}
-                </div>
-                <div v-else-if="currentQuestion.type === 'image'" class="image-answer">
-                  <img :src="currentQuestion.answer" alt="答案圖片" class="answer-area-image" />
-                </div>
-              </div>
+                    <h3>正確答案：</h3>
+
+                    <!-- 如果有文字答案就顯示 -->
+                    <div v-if="currentQuestion.Answer" class="text-answer">
+                      {{ currentQuestion.Answer }}
+                    </div>
+
+                    <!-- 如果有圖片答案就顯示 -->
+                    <div v-if="currentQuestion.Answer_pic" class="image-answer">
+                      <img :src="currentQuestion.Answer_pic" alt="答案圖片" class="answer-area-image" />
+                    </div>
+                  </div>
 
               <!-- 右下筆記區域 -->
               <div class="notes-area" @click="toggleNotes">
-                <h3>筆記</h3>
+                  <h3>筆記</h3>
 
-                <div v-if="showNotes">
-                  <div class="image-note">
-                    <img :src="currentQuestion.notes" alt="筆記圖片" class="note-image" />
+                  <div v-if="showNotes">
+                    <!-- 文字筆記 -->
+                    <div v-if="currentQuestion.Content" class="text-note">
+                      {{ currentQuestion.Content }}
+                    </div>
+                    <!-- 如果你有上傳圖片型筆記 -->
+                    <div v-else-if="currentQuestion.Content_pic" class="image-note">
+                      <img :src="currentQuestion.Content_pic" alt="筆記圖片" class="note-image" />
+                    </div>
+                    <!-- 兩者都沒有就預設 -->
+                    <div v-else class="notes-empty">
+                      （無筆記）
+                    </div>
                   </div>
+
+                  <!-- <div v-else class="notes-hidden">
+                    <span>（點擊查看筆記）</span> -->
                 </div>
-                <div v-else class="notes-hidden">
-                  <span>（點擊查看筆記）</span>
-                </div>
-              </div>
             </div>
 
             <!-- 返回按鈕 -->
@@ -128,13 +154,16 @@
           </div>
 
           <!-- 今日打卡按鈕 -->
-          <button
-            @click="checkInToday"
-            class="btn btn-checkin mt-3"
-            :disabled="isTodayCheckedIn || isCheckingIn">
-            <span v-if="isCheckingIn">打卡中...</span>
-            <span v-else>{{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}</span>
-          </button>
+               <button
+                class="btn-main btn-checkin"
+                @click="checkInToday"
+                :disabled="isTodayCheckedIn || isCheckingIn"
+                :class="{ submitted: isTodayCheckedIn }"
+              >
+                <span v-if="isCheckingIn">打卡中...</span>
+                <span v-else>{{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}</span>
+              </button>
+
         </div>
 
         <!-- 打卡成功提示 -->
@@ -167,6 +196,7 @@ import { fetchRandomQuestion } from '../api/questions';
 
 export default {
   name: 'HomePage',
+
   components: { Icon },
   data() {
     const today = new Date();
@@ -215,6 +245,34 @@ export default {
     };
   },
   computed: {
+  // 顯示題型文字
+  typeLabel() {
+    const t = this.currentQuestion.type   // 從後端回來的欄位名稱
+    const map = {
+      truefalse:   '是非題',
+      multipleABC: '多選題（字母）',
+      multiple123:'多選題（數字）',
+      open:        '問答題',
+    }
+    return map[t] || '未知題型'
+  },
+
+  // 顯示對應的 placeholder
+  answerPlaceholder() {
+    const t = this.currentQuestion.type
+    const map = {
+      truefalse:   '輸入 T 或 F',
+      multipleABC: '輸入答案範例：ACDE',
+      multiple123:'輸入答案範例：135',
+      open:        '輸入完整答案',
+    }
+    return map[t] || '輸入答案'
+  },
+
+  // 判斷是否能送出（只允許送一次）
+  canSubmit() {
+    return !this.isAnswerSubmitted
+  },
     calendar() {
       const firstDay = new Date(this.currentYear, this.currentMonth, 1);
       const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
@@ -473,9 +531,11 @@ performCheckIn(dateStr) {
     const { data } = await fetchRandomQuestion()
     this.questions = [{
       id: data.Question_ID,
-      type: 'image',
+      type: data.QType,
       content: data.Content_pic,
-      answer: data.Answer_pic || data.Answer,
+      Answer: data.Answer || '',
+      Answer_pic: data.Answer_pic || '',
+       Content: data.Content,
       notes: data.note || '/images/default_note.png'
     }]
     // this.selectDailyQuestion()
@@ -669,7 +729,7 @@ performCheckIn(dateStr) {
 }
 
 .btn-checkin:hover:not(:disabled) {
-  background-color: #3d7dcf;
+  background-color: #a0d0ff;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(93, 156, 236, 0.3);
 }
@@ -703,9 +763,7 @@ performCheckIn(dateStr) {
     gap: 1.5rem;
   }
 
-  .btn-checkin {
-    margin-top: 0 !important;
-  }
+
 }
 
 /* 翻轉卡片 */
@@ -843,13 +901,10 @@ button {
   transition: all 0.3s;
 }
 
-.submit-button {
-  background-color: #3498db;
-  color: white;
-}
+
 
 .return-button {
-  background-color: #2980b9;
+  background-color: #5d9cec;
   color: white;
 }
 
@@ -1024,4 +1079,61 @@ button:hover {
   color: #7f8c8d;
   font-style: italic;
 }
+
+.qtype-label{
+  margin: 4px auto 10px;
+  font-weight: 600;
+  color:#5b92c3;
+}
+
+.btn-checkin.submitted:hover {
+  transform: none;
+  background-color: #a0d0ff;
+}
+
+.btn-main {
+  display: inline-block;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+  /* 預設顏色，之後可由各按鈕延伸或覆蓋 */
+  background-color: #5d9cec;
+  color: white;
+}
+
+/* hover & active（正常狀態） */
+.btn-main:not(.submitted):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(93, 156, 236, 0.3);
+  background-color: #3d7dcf;
+}
+.btn-main:not(.submitted):active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* 禁用 / 已提交 狀態 */
+.submitted,
+.btn-main:disabled {
+  background-color: #a0d0ff !important;
+  color: #4a4a4a !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.submitted {
+  background-color: #a0d0ff !important;
+  color: #4a4a4a !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+
+}
+
+
+
 </style>
