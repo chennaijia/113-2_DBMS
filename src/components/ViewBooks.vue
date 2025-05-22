@@ -3,7 +3,58 @@
   <!-- === (原樣保留 - 你提供的整段 template 內容) === -->
   <!--問題：直接登入還不能跟sidebar同步(要refresh)，要不要把登入資訊放在App.vue中統一控制？-->
 <div>
-  
+    <!--導覽-->
+    <div>
+      <div
+        v-if="showGuide && currentSlideIndex === 1"
+        class="guide-highlight-sidebar guide-ghost-sidebar"
+        style="
+          position: fixed; /* Use fixed to keep it in viewport */
+          top: 0;
+          left: 0; /* Starts hidden off-screen */
+          width: 280px;
+          height: 100%;
+          background-color: #ffffff;
+          border-top-right-radius: 20px;
+          border-bottom-right-radius: 20px;
+          box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+          z-index: 1060; /* Above guide overlay */
+          padding: 24px 16px;
+          transition: left 0.4s ease, opacity 0.4s ease; /* Maintain animation */
+          opacity: 1; /* Make it visible */
+          pointer-events: none; /* Make it non-interactive */
+        "
+        :style="{ left: showGuide && currentSlideIndex === 1 ? '0' : '-280px' }" 
+        aria-hidden="true"
+      >
+        <div class="offcanvas-header mb-5 mt-3">
+          <Icon icon="material-symbols:menu-rounded" width="40" height="40" class="close-icon" />
+        </div>
+
+        <div class="offcanvas-body">
+          <div class="accordion accordion-flush">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="sidebar_accordion accordion-button collapsed">
+                  主頁
+                </button>
+              </h2>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="sidebar_accordion accordion-button collapsed">
+                  我的錯題本
+                </button>
+              </h2>
+            </div>
+          </div> <div class="login-footer d-flex justify-content-center">
+            <div>
+              <h2>登入</h2>
+            </div> </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 創建錯題本「導覽」 -->
     <div
       v-if="showGuide && currentSlideIndex === 2"
@@ -643,7 +694,7 @@ function endGuide() {
 .highlight-shadow {
   box-shadow: 0 0 0 5px #4da3ff !important;
   background-color: white;
-  border-radius: 50px;
+  border-radius: 35px;
   transition: box-shadow 0.3s;
   z-index: 1060;
   position: relative;
@@ -670,4 +721,122 @@ button[disabled] {
  transform: translate(-50%, -50%); /* 確保真正置中 */
 }
 
+
+/* 側邊欄的樣式 */
+.offcanvas-custom {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100%;
+  background-color: #ffffff;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1050;
+  padding: 24px 16px;
+  transition: left 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+}
+
+.offcanvas-custom.show {
+  left: 0;
+  opacity: 1;
+}
+
+.custom-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+}
+
+.side-bar {
+  width: 80px;
+  height: 100vh;
+  background-color: #d8e9f5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.menu-icon {
+  color: #7eaee4;
+  cursor: pointer;
+}
+
+.login-label p {
+  color: #7eaee4;
+  font-size: 14px;
+}
+
+.close-icon {
+  color: #7eaee4;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+}
+
+.sidebar_accordion {
+  font-weight: bold;
+  font-size: 18px;
+  color: #7eaee4;
+  background-color: transparent;
+}
+
+.sidebar_accordion.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #7eaee4;
+  text-shadow: 1px 1px 2px #5b92c3;
+}
+
+.sidebar_subject_button {
+  font-size: 16px;
+  font-weight: normal;
+  color: #5b92c3;
+  background-color: transparent;
+}
+
+.sidebar_subject_button.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #5b92c3;
+}
+
+.link-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  padding-left: 20px;
+}
+
+.sidebar-link {
+  color: #7eaee4;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.sidebar-link:hover {
+  text-decoration: underline;
+}
+
+.login-footer {
+  position: absolute;
+  bottom: 30px;
+  width: 100%;
+  text-align: center;
+}
+
+.login-footer h2 {
+  color: #7eaee4;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+}
 </style>
