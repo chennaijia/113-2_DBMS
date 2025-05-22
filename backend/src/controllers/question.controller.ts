@@ -4,7 +4,8 @@ import { AuthReq } from '../middleware/auth';
 import cloudinary from '../config/cloudinary';
 import streamifier from 'streamifier';
 import { pool } from '../config/database'; // 確保這裡的 pool 是正確的
-import { listQuestionsByBook as getByBook, getRandomPracticeQuestions,
+import { listQuestionsByBook as getByBook,
+        getRandomPracticeQuestions,
         getMostWrongQuestions as getMostWrongQuestionsModel,
         getQuestionCount as getQuestionCountModel,
         judgeAndUpdate
