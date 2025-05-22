@@ -24,7 +24,7 @@
           opacity: 1; /* Make it visible */
           pointer-events: none; /* Make it non-interactive */
         "
-        :style="{ left: showGuide && currentSlideIndex === 1 ? '0' : '-280px' }" 
+        :style="{ left: showGuide && currentSlideIndex === 1 ? '0' : '-280px' }"
         aria-hidden="true"
       >
         <div class="offcanvas-header mb-5 mt-3">
@@ -63,8 +63,8 @@
         position: absolute;
         left: 10%;
         top: 3%;
-        pointer-events: none; 
-        z-index: 1060; 
+        pointer-events: none;
+        z-index: 1060;
       "
       aria-hidden="true"
     >
@@ -74,7 +74,7 @@
           font-size: 30px;
           display: flex;
           align-items: center;
-          cursor: default; 
+          cursor: default;
         "
         class="btn btn-outline-primary rounded-pill"
         disabled="true" >
@@ -237,8 +237,8 @@
         bottom: 70px;
         right: 3%;
         transform: translateX(-50%);
-        pointer-events: none; 
-        z-index: 1060; 
+        pointer-events: none;
+        z-index: 1060;
       "
       aria-hidden="true"
     >
@@ -398,7 +398,7 @@
 
 <script setup lang="ts">
 /* ------------ import ------------ */
-import { ref, onMounted, onUnmounted, inject, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, inject, nextTick, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import AddBook from './AddBook.vue'
 import Login from './Login.vue'
@@ -406,6 +406,7 @@ import { fetchQBs, createQB, updateQB, deleteQB, copyQB } from '@/api/qb' // 你
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import * as bootstrap from 'bootstrap'
+
 
 /* ------------ 型別 ------------ */
 interface BookUI {
@@ -463,7 +464,7 @@ onMounted(async () => {
   showGuide.value = !isLoggedIn.value
 
   // 建 carousel 事件（保留你的原 JS）
-  nextTick(() => { 
+  nextTick(() => {
     const carouselEl = document.querySelector('.guide-carousel')
     if (carouselEl) {
       const carousel = new bootstrap.Carousel(carouselEl, { interval: false, wrap: false })

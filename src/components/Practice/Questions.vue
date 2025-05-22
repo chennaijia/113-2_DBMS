@@ -67,7 +67,8 @@ const props = defineProps({
   questionCount: Number,
   currentSubject: String,
   userId: { type: Number, required: true },
-  bookId: { type: Number, required: true }
+  book: { type: Object, required: true },
+  bookId: { type: Number, required: true },
 })
 
 // ✅ 向父層回傳選取結果
@@ -78,9 +79,12 @@ const selectedQuestionIds = ref([])
 const localCount = ref(props.questionCount)
 const totalQuestionCount = ref(0) // 後端取得的總題數
 
+
 // ✅ 生命週期：一進來就向後端拿總題數
 onMounted(async () => {
   try {
+    console.log('📦 傳入的 bookId:/Questions', props.bookId)
+
     totalQuestionCount.value = await fetchQuestionCount(props.bookId)
     console.log('👌 總題數載入成功：', totalQuestionCount.value)
   } catch (err) {

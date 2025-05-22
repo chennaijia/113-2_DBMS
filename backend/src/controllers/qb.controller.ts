@@ -55,4 +55,3 @@ export const listQB = async (req: AuthReq, res: Response) => {
   const rows = await QB.listQBByUser(userId);
   res.json(rows);
 };
-

@@ -22,6 +22,7 @@
           @change-page="handleChangePage"
           :questions="selectedQuestions.value"
           :mode="selectedMode"
+          :book="currentBook"
           :count="questionCount"
           @goBack="goBack"
           @finish-practice="handleFinishPractice"
@@ -45,8 +46,8 @@
         />
         <SelectQuestions
           v-else
-          :currentSubject="currentSubject"
           :book="currentBook"
+          :currentSubject="currentSubject"
           :userId="userId.value"
           @start="start"
           @start-practice="setQuestion"

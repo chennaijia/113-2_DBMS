@@ -12,12 +12,8 @@
 
     <div class="container d-flex flex-column align-items-center mt-5 gap-3">
       <div class="dropdown-container text-center">
-        <select
-          id="dropdown"
-          class="form-select custom-dropdown text-center"
-          v-model="selectedOption"
-          @change="handleSelection"
-        >
+        <select id="dropdown" class="form-select custom-dropdown text-center" v-model="selectedOption"
+          @change="handleSelection">
           <option value="option0">選擇模式</option>
           <option value="option1">自選題目</option>
           <option value="option2">隨機出題</option>
@@ -28,20 +24,17 @@
       <p class="text-s">{{ content[selectedOption] }}</p>
 
       <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
-        <Questions
-          :selectedOption="selectedOption"
-          :questions="questions"
-          :questionCount="questionCount"
-          @update-selected="handleSelectedQuestion"
-        />
+        <Questions :selectedOption="selectedOption" :questions="questions" :bookId="bookId"
+          :questionCount="questionCount" @update-selected="handleSelectedQuestion" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import Questions from './Practice/Questions.vue'
+import { fetchQuestionsByBookPractice, fetchRandomQuestionsPractice, fetchQuestionCount } from '@/api/questions'
 
 const selectedOption = ref('option0')
 const questionCount = ref(1)
@@ -54,6 +47,14 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  book: {
+    type: Number,
+    required: true,
+  },
+  userId: {
+    type: Number,
+    required: true,
+  },
 })
 
 const content = {
@@ -62,8 +63,12 @@ const content = {
   option3: '請在下方選取要練習的題目數!',
 }
 
-//待辦：改成從錯題本抓！
-const questions = ref([
+const bookId = ref(props.book.QuestionBook_ID)
+const questions = ref([])
+const totalQuestionCount = ref(0)
+
+//改好了
+/*const questions = ref([
   {
     id: 1,
     question: '問題1',
@@ -117,24 +122,58 @@ const questions = ref([
     checked: false,
   },
 ])
+*/
 
 const handleSelection = () => {
   selectedQuestions.value = []
+  handleSelectedQuestion()
 }
 
-function handleSelectedQuestion(questions) {
-  selectedQuestions.value = questions
+
+
+
+const handleSelectedQuestion = async () => {
+  console.log('🚀 handleSelectedQueston開始載入題目')
+
+  selectedQuestions.value = []
+  questionCount.value = await fetchQuestionCount(bookId.value)
+  console.log('🚀 題目數量：', questionCount.value)
+
+  if (selectedOption.value === 'option1') {
+    // 自選題目：載入所有題目供使用者勾選
+    questions.value = await fetchQuestionsByBookPractice(bookId.value)
+    console.log('🚀 自選題目：', questions.value)
+  } else if (selectedOption.value === 'option2') {
+    // 隨機出題：從後端取得隨機題目
+    questions.value = await fetchRandomQuestionsPractice(bookId.value, questionCount.value)
+    selectedQuestions.value = questions.value
+    console.log('🚀 隨機出題：', questions.value)
+  } else if (selectedOption.value === 'option3') {
+    // 錯最多的題目：取得所有題目並排序
+    questions.value = await fetchMostWrongQuestionsPractice(bookId.value, questionCount.value)
+    selectedQuestions.value = questions.value
+    console.log('🚀 錯最多的題目：', questions.value)
+  }
+
   if (selectedQuestions.value.length === 0) {
     alert('尚未選擇題目！')
     return
   }
-
   emit('start-practice', {
     mode: selectedOption.value,
-    questions: selected,
+    questions: selectedQuestions.value,
     count: questionCount.value,
   })
+
 }
+
+
+onMounted(async () => {
+  console.log('📘 book from props:/SelectQuestions', props.book)
+  console.log('👤 userId from props:/SelectQuestons', props.userId)
+  console.log('📦 bookId from props:/SelectQuestions', props.book.QuestionBook_ID)
+
+})
 
 // ✅ 點擊返回
 function goBack() {

@@ -1,6 +1,6 @@
 {
   "name": "DBMS",
-   "main": "src/server.ts",
+  "main": "src/server.ts",
   "license": "MIT",
   "dependencies": {
     "@iconify/vue": "^4.3.0",
