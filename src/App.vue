@@ -11,7 +11,8 @@
       </div>
 
       <div v-else-if="currentPage === 'question'">
-        <ViewQuestions :currentSubject="currentSubject" :book="currentBook" />
+        <ViewQuestions :currentSubject="currentSubject" :book="currentBook"  @goBack="goBack"/>
+
       </div>
 
       <div v-else-if="currentPage === 'practice'">
@@ -157,13 +158,21 @@ function setQuestion({ mode, questions, count }) {
 
 
 function goBack() {
-  startPractice.value = false
-  isFinished.value = false
-  practiceResult.value = {
-    questions: [],
-    timeSpent: '00:00',
+  if (currentPage.value === 'practice') {
+    // 練習模式的返回
+    startPractice.value = false
+    isFinished.value = false
+    practiceResult.value = {
+      questions: [],
+      timeSpent: '00:00',
+    }
+    currentPage.value = 'home'
+  } else if (currentPage.value === 'question') {
+    // 錯題瀏覽的返回（可回首頁或回書本）
+    currentPage.value = 'book'  // ✅ 改這裡，看你想返回哪一頁
   }
 }
+
 
 function handleFinishPractice(result) {
   isFinished.value = true

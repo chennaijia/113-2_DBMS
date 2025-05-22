@@ -1,40 +1,41 @@
 <template>
   <!-- 上方按鈕列 -->
-  <div class="toolbar">
-   <select @change="onFilterChange" v-model="filterOption" class="filter-select">
-     <option value="">全部</option>
-     <option value="starred">加星號</option>
-     <option value="noAnswer">錯誤超過五次</option>
-     <option value="truefalse">是非題</option>
-     <option value="multiple123">選擇題(數字選項)</option>
-     <option value="multipleABC">選擇題(字母選項)</option>
-     <option value="open">問答題</option>
-   </select>
-  <div class="button-row">
-     <button class="btn secondary" @click="toggleEditMode">
-       {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
-     </button>
-     <button class="btn success" @click="openAddCardModal">➕ 新增錯題</button>
-   </div>
+  <div class="toolbar d-flex justify-content-between align-items-center">
+  <!-- 返回鍵區 -->
+  <div class="d-flex align-items-center gap-3">
+  <button class="btn btn-outline-primary rounded-pill return-btn" @click="goBack">
+    <i class="bi bi-caret-left"></i>
+    <span class="ms-2">返回</span>
+  </button>
+  <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題瀏覽</div>
+  </div>
 
-   <button class="btn primary" @click="toggleShowAnswers">
-     {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
-   </button>
- </div>
+  <!-- 其他內容 -->
+  <div class="toolbar-content d-flex flex-wrap align-items-center gap-3">
 
+    <select @change="onFilterChange" v-model="filterOption" class="form-select rounded-pill border-primary text-primary" style="width: auto;">
+      <option value="">全部</option>
+      <option value="starred">加星號</option>
+      <option value="noAnswer">錯誤超過五次</option>
+      <option value="truefalse">是非題</option>
+      <option value="multiple123">選擇題(數字選項)</option>
+      <option value="multipleABC">選擇題(字母選項)</option>
+      <option value="open">問答題</option>
+    </select>
 
- <!-- 題目列表 -->
- <div class="question-container">
-   <div v-for="(card, index) in filteredCards" :key="card.id">
-     <QuestionCard :index="index + 1" :card="card" :editMode="editMode" :showAnswers="showAnswers"
-       @toggle-star="toggleStar(card.id)" @edit="openEditCardModal(card)" @delete-card="deleteThisCard" />
-   </div>
+    <button class="btn btn-outline-primary rounded-pill" @click="toggleEditMode">
+      {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
+    </button>
 
+    <button class="btn btn-outline-primary rounded-pill" @click="openAddCardModal">
+      ➕ 新增錯題
+    </button>
 
-   <!-- 下方按鈕列 -->
-
- </div>
-
+    <button class="btn btn-outline-primary rounded-pill" @click="toggleShowAnswers">
+      {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
+    </button>
+  </div>
+</div>
 
 
   <!-- 題目列表 -->
@@ -58,6 +59,7 @@
 
 
 <script>
+
 import { ref, computed, onMounted, watch } from 'vue'
 import QuestionCard from './QuestionCard.vue'
 import AddCardModal from './AddCardModal.vue'
@@ -77,7 +79,7 @@ export default {
     },
   },
   components: { QuestionCard, AddCardModal },
-  setup(props) {
+  setup(props,{ emit }) {
     const cards = ref([])
 
     const defaultCards = () => [
@@ -195,7 +197,9 @@ export default {
       // 通過檢查，才切換模式
       editMode.value = !editMode.value
     }
-
+    function goBack() {
+    emit('goBack')
+    }
 
 
     function onFilterChange(event) {
@@ -286,7 +290,8 @@ export default {
       toggleStar,
       addCard,
       deleteThisCard,
-      saveNoteDebounced
+      saveNoteDebounced,
+      goBack
     }
   }
 }
@@ -303,24 +308,23 @@ export default {
   width: 1200px;
   background-color: #fff;
   z-index: 100;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
   padding: 10px 20px;
-  align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
-}
-
-.button-row {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* 下方內容要加 padding-top，避免被 toolbar 擋住 */
+.toolbar-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
 .question-container {
-  padding-top: 10px; /* 根據 .toolbar 高度調整 */
+  padding-top: 30px; /* 根據 .toolbar 的高度調整 */
 }
-
 
 </style>
