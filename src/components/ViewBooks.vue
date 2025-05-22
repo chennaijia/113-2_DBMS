@@ -7,12 +7,7 @@
     <div class="guide-highlight-add" style="position: absolute; left: 10%; padding: 16px; top: 3%">
       <button
         style="
-          background-color: #cfe5ff;
-          color: black;
           padding: 12px 24px;
-          border: none;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
           font-size: 30px;
           display: flex;
           align-items: center;
@@ -21,8 +16,9 @@
         :disabled="showGuide"
         @click="createBook"
         v-if="isLoggedIn"
+        class="btn btn-outline-primary rounded-pill"
       >
-        <Icon icon="material-symbols:add-rounded" width="40" height="40" style="color: black" />
+        <Icon icon="material-symbols:add-rounded" width="40" height="40" />
         <div>創建新的錯題本</div>
       </button>
     </div>
@@ -31,22 +27,19 @@
     <AddBook v-if="showAddBook" @close="showAddBook = false" @confirm="handleAddBook" />
 
     <!-- 登入提示 (未登入時顯示) -->
-    <div v-if="!isLoggedIn" style="position: absolute; left: 10%; padding: 50px; top: 15%; text-align: center; width: 80%;">
-      <div style="font-size: 24px; margin-bottom: 20px;">請先登入以查看您的錯題本</div>
-      <button
-        @click="openLoginModal"
-        style="
-          background-color: #7eaee4;
-          color: white;
-          padding: 12px 24px;
-          border: none;
-          border-radius: 8px;
-          font-size: 18px;
-          cursor: pointer;
-        "
-      >
-        登入
-      </button>
+    <div v-if="!isLoggedIn">
+      <div class="login-overlay"></div>
+      <div style="position: absolute; left: 10%; padding: 50px; top: 40%; text-align: center; width: 80%;">
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-55%, -20%);
+          text-align: center;
+          font-size: 24px;
+          color: black;">
+          請先登入<br/>以查看您的錯題本</div>
+      </div>
     </div>
 
     <!-- 錯題本排列 (已登入時顯示) -->
@@ -85,7 +78,7 @@
               cursor: pointer;
             "
           >
-            <Icon icon="mdi:trash-can" width="24" height="24" style="color: #ffbf69; cursor: pointer;" />
+            <Icon icon="mdi:trash-can" width="24" height="24" style="color: #cc5050; cursor: pointer;" />
           </button>
 
           <!-- 書本 icon -->
@@ -172,31 +165,24 @@
       <button
         v-if="!editMode"
         style="
-          background-color: #cfe5ff;
-          color: black;
           padding: 12px 24px;
-          border: none;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
           font-size: 30px;
           display: flex;
           align-items: center;
-          cursor: pointer;
         "
+        class="btn btn-outline-primary rounded-pill"
         :disabled="showGuide"
         @click="toggleEditMode"
       >
-        <Icon icon="bx:edit-alt" width="40" height="40" style="color: black" />
+        <Icon icon="bx:edit-alt" width="40" height="40" />
         <div>編輯</div>
       </button>
       <button
         v-if="editMode"
         @click="finishEditing"
+        class="btn btn-outline-primary rounded-pill"
         style="
-          background-color: #cfe5ff;
-          color: black;
           padding: 12px 24px;
-          border: none;
           border-radius: 8px;
           font-size: 30px;
           display: flex;
@@ -609,4 +595,20 @@ button[disabled] {
   pointer-events: none;
   opacity: 0.5;
 }
+
+.login-overlay {
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ width: 90vw;
+ height: 90vh;
+ background-image: url('/fav.PNG');
+ background-size: contain;
+ background-repeat: no-repeat;
+ background-position: center;
+ opacity: 0.1;
+ filter: brightness(80%);
+ transform: translate(-50%, -50%); /* 確保真正置中 */
+}
+
 </style>
