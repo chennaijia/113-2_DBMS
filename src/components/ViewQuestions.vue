@@ -129,7 +129,6 @@ export default {
         cards.value = data.map((q) => ({
           id: q.Question_ID || q.id,
           questionType: q.QType || '',                        // ✅ 題型轉換
-          question: q.Content || '',                          // ✅ 題目文字（目前可能是空）
           answer: q.Answer || '',                             // ✅ 答案內容
           questionImage: q.Content_pic || '',                 // ✅ 題目圖片
           answerImage: q.Answer_pic || '',                    // ✅ 解答圖片

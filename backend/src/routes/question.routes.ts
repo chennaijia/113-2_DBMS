@@ -12,7 +12,8 @@ import { uploadQuestion,
         getRandomWrongQuestions,
         getMostWrongQuestions,
         getQuestionCount,
-        submitAnswer
+        submitAnswer,
+        updateQuestionHandler
       } from '../controllers/question.controller';
 import { upload } from '../middleware/upload';
 import { deleteQuestion } from '../controllers/question.controller';
@@ -29,7 +30,7 @@ questionRouter.get('/random-practice', auth, getRandomWrongQuestions)
 questionRouter.get('/most-wrong', auth, getMostWrongQuestions)
 questionRouter.get('/count/:bookId', auth, getQuestionCount)
 questionRouter.post('/:id/submit', auth, submitAnswer);
-
+questionRouter.patch('/:id',auth,updateQuestionHandler);
 
 
 

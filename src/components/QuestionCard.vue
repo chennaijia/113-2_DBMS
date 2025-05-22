@@ -70,12 +70,12 @@
 
       <div v-else-if="card.questionType === 'multipleABC'">
         <label v-for="opt in ['A', 'B', 'C', 'D', 'E']" :key="opt">
-          <input type="checkbox" :value="opt" v-model="card.answer" />{{ opt }}
+          <input type="radio" :name="'opt-' + card.id" :value="opt" v-model="card.answer" />{{ opt }}
         </label>
       </div>
       <div v-else-if="card.questionType === 'multiple123'">
         <label v-for="opt in ['1', '2', '3', '4', '5']" :key="opt">
-          <input type="checkbox" :value="opt" v-model="card.answer" />{{ opt }}
+          <input type="radio" :name="'opt-' + card.id" :value="opt" v-model="card.answer" />{{ opt }}
         </label>
       </div>
 
