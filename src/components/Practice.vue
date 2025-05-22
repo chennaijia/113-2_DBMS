@@ -138,7 +138,16 @@ const props = defineProps({
   currentSubject: String,
   questions: {
     type: Array,
+    required: false,
+    default: () => [],
+  },
+  mode: {
+    type: String,
     required: true,
+  },
+  count: {
+    type: Number,
+    default: 5,
   },
 })
 

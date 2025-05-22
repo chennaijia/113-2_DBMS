@@ -64,20 +64,6 @@
     <p style="white-space: pre-wrap; margin-top: 24px">{{ message }}</p>
   </div>
 
-  <div style="margin: 50px;">
-  <h3>✅ 打卡 API 測試</h3>
-  <p>目前時間：{{ today }}</p>
-  <button @click="testCheckIn" class="btn btn-primary">打卡一次</button>
-  <button @click="loadCheckInData" class="btn btn-success ms-2">查詢本月打卡紀錄</button>
-
-  <div v-if="checkIns.length > 0" class="mt-3">
-    <h5>📅 本月打卡日：</h5>
-    <ul>
-      <li v-for="(d, i) in checkIns" :key="i">{{ d }}</li>
-    </ul>
-  </div>
-</div>
-
 </template>
 
 <script>

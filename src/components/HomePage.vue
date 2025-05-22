@@ -5,7 +5,8 @@
         <!-- 卡片正面 -->
         <div class="flip-card-front">
           <div class="card-content">
-            <h2 class="card-title">題目</h2>
+            <h2 class="card-title">隨機抽考!!</h2>
+            <p class="qtype-label">{{ typeLabel }}</p>
 
             <!-- 題目顯示區 (文字或圖片) -->
             <div class="question-area">
@@ -16,18 +17,30 @@
 
             <!-- 答案輸入區 -->
             <div class="answer-input-area">
-              <input
-                v-model="userAnswer"
+              <input v-model="userAnswer"
                 class="answer-input"
-                placeholder="輸入答案範例：ACDE（多選題答案中間不用有空格）"
+                :placeholder="answerPlaceholder"
                 :readonly="isAnswerSubmitted"
-                :class="{ 'input-disabled': isAnswerSubmitted }"
-              />
+                :class="{ 'input-disabled': isAnswerSubmitted }"/>
             </div>
 
             <!-- 按鈕區 -->
             <div class="button-container">
-              <button class="submit-button" @click="submitAnswer">提交答案</button>
+              <button
+                  class="btn-main submit-button"
+                  @click="submitAnswer"
+                  :disabled="isAnswerSubmitted"
+                  :class="{ submitted: isAnswerSubmitted }"
+                >
+                  {{ isAnswerSubmitted ? '已提交' : '提交答案' }}
+                </button>
+              <button
+                class="btn-main return-button"
+                @click="resetCard"
+                v-if="isFlipped && !isAnswerSubmitted">
+                回到題目
+              </button>
+
             </div>
           </div>
         </div>
@@ -37,62 +50,49 @@
           <div class="card-content">
             <!-- 上方結果區域 -->
             <div class="result-area">
-              <div v-if="currentQuestion.type === 'text'" class="feedback-icon">
-                <div v-if="isAnswerCorrect === true">
-                  <Icon icon="mdi:check-circle" class="correct-icon" />
-                </div>
-                <div v-else-if="isAnswerCorrect === false">
-                  <Icon icon="mdi:close-circle" class="incorrect-icon" />
-                </div>
-              </div>
-              <div v-else-if="currentQuestion.type === 'image'" class="manual-check">
-                <div class="answer-image-container">
-                  <div v-if="manualFeedback !== null">
-                    <Icon
-                      :icon="manualFeedback ? 'mdi:check-circle' : 'mdi:close-circle'"
-                      :class="manualFeedback ? 'correct-icon' : 'incorrect-icon'"
-                    />
-                  </div>
-                </div>
-                <div class="manual-check-buttons">
-                  <button @click="markAsCorrect" class="correct-button">
-                    <Icon icon="mdi:check-circle" />
-                    正確
-                  </button>
-                  <button @click="markAsIncorrect" class="incorrect-button">
-                    <Icon icon="mdi:close-circle" />
-                    錯誤
-                  </button>
-                </div>
-              </div>
+              <Icon v-if="isAnswerCorrect === true"  icon="mdi:check-circle"  class="correct-icon" />
+              <Icon v-else-if="isAnswerCorrect === false" icon="mdi:close-circle" class="incorrect-icon" />
             </div>
 
             <!-- 下方答案與筆記區域 -->
             <div class="bottom-area">
               <!-- 左下答案顯示 -->
               <div class="answer-area">
-                <h3>正確答案：</h3>
-                <div v-if="currentQuestion.type === 'text'" class="text-answer">
-                  {{ currentQuestion.answer }}
-                </div>
-                <div v-else-if="currentQuestion.type === 'image'" class="image-answer">
-                  <img :src="currentQuestion.answer" alt="答案圖片" class="answer-area-image" />
-                </div>
-              </div>
+                    <h3>正確答案：</h3>
+
+                    <!-- 如果有文字答案就顯示 -->
+                    <div v-if="currentQuestion.Answer" class="text-answer">
+                      {{ currentQuestion.Answer }}
+                    </div>
+
+                    <!-- 如果有圖片答案就顯示 -->
+                    <div v-if="currentQuestion.Answer_pic" class="image-answer">
+                      <img :src="currentQuestion.Answer_pic" alt="答案圖片" class="answer-area-image" />
+                    </div>
+                  </div>
 
               <!-- 右下筆記區域 -->
               <div class="notes-area" @click="toggleNotes">
-                <h3>筆記</h3>
+                  <h3>筆記</h3>
 
-                <div v-if="showNotes">
-                  <div class="image-note">
-                    <img :src="currentQuestion.notes" alt="筆記圖片" class="note-image" />
+                  <div v-if="showNotes">
+                    <!-- 文字筆記 -->
+                    <div v-if="currentQuestion.Content" class="text-note">
+                      {{ currentQuestion.Content }}
+                    </div>
+                    <!-- 如果你有上傳圖片型筆記 -->
+                    <div v-else-if="currentQuestion.Content_pic" class="image-note">
+                      <img :src="currentQuestion.Content_pic" alt="筆記圖片" class="note-image" />
+                    </div>
+                    <!-- 兩者都沒有就預設 -->
+                    <div v-else class="notes-empty">
+                      （無筆記）
+                    </div>
                   </div>
+
+                  <!-- <div v-else class="notes-hidden">
+                    <span>（點擊查看筆記）</span> -->
                 </div>
-                <div v-else class="notes-hidden">
-                  <span>（點擊查看筆記）</span>
-                </div>
-              </div>
             </div>
 
             <!-- 返回按鈕 -->
@@ -154,12 +154,16 @@
           </div>
 
           <!-- 今日打卡按鈕 -->
-          <button
-            @click="checkInToday"
-            class="btn btn-checkin mt-3"
-            :disabled="isTodayCheckedIn">
-            {{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}
-          </button>
+               <button
+                class="btn-main btn-checkin"
+                @click="checkInToday"
+                :disabled="isTodayCheckedIn || isCheckingIn"
+                :class="{ submitted: isTodayCheckedIn }"
+              >
+                <span v-if="isCheckingIn">打卡中...</span>
+                <span v-else>{{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}</span>
+              </button>
+
         </div>
 
         <!-- 打卡成功提示 -->
@@ -192,6 +196,7 @@ import { fetchRandomQuestion } from '../api/questions';
 
 export default {
   name: 'HomePage',
+
   components: { Icon },
   data() {
     const today = new Date();
@@ -201,6 +206,7 @@ export default {
       weekDays: ['日', '一', '二', '三', '四', '五', '六'],
       checkInDays: [], // 格式 'YYYY-MM-DD'
       toast: null,
+      isCheckingIn: false,
 
 
 
@@ -239,6 +245,34 @@ export default {
     };
   },
   computed: {
+  // 顯示題型文字
+  typeLabel() {
+    const t = this.currentQuestion.type   // 從後端回來的欄位名稱
+    const map = {
+      truefalse:   '是非題',
+      multipleABC: '多選題（字母）',
+      multiple123:'多選題（數字）',
+      open:        '問答題',
+    }
+    return map[t] || '未知題型'
+  },
+
+  // 顯示對應的 placeholder
+  answerPlaceholder() {
+    const t = this.currentQuestion.type
+    const map = {
+      truefalse:   '輸入 T 或 F',
+      multipleABC: '輸入答案範例：ACDE',
+      multiple123:'輸入答案範例：135',
+      open:        '輸入完整答案',
+    }
+    return map[t] || '輸入答案'
+  },
+
+  // 判斷是否能送出（只允許送一次）
+  canSubmit() {
+    return !this.isAnswerSubmitted
+  },
     calendar() {
       const firstDay = new Date(this.currentYear, this.currentMonth, 1);
       const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
@@ -262,12 +296,12 @@ export default {
       return this.checkInDays.filter(date => date.startsWith(prefix)).length;
     },
     todayDateStr() {
-      const today = new Date();
-      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    },
-    isTodayCheckedIn() {
-      return this.checkInDays.includes(this.todayDateStr);
-    },
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  },
+  isTodayCheckedIn() {
+    return this.checkInDays.includes(this.todayDateStr);
+  },
 
 
 
@@ -277,25 +311,44 @@ export default {
 
   },
   methods: {
-    submitAnswer() {
-  const type = this.currentQuestion.qtype;
-  const userAns = this.userAnswer.trim().toUpperCase();
-  const correctAns = this.currentQuestion.answer;
+    async submitAnswer () {
+  // 取得題目 id & 使用者輸入
+  const questionId = this.currentQuestion.id;
+  const userAns    = this.userAnswer.trim().toUpperCase();
 
-  if (type === 'truefalse') {
-    this.isAnswerCorrect = userAns === correctAns;
-  } else if (type === 'multipleABC' || type === 'multiple123') {
-    const sortStr = str => str.split('').sort().join('');
-    this.isAnswerCorrect = sortStr(userAns) === sortStr(correctAns);
-  } else if (type === 'open') {
-    this.isAnswerCorrect = userAns === correctAns.trim();
-  } else {
-    this.isAnswerCorrect = null; // 無法判斷
+  if (!questionId || !userAns) {
+    alert('請先輸入答案！');
+    return;
   }
 
-  this.isFlipped = true;
-  this.isAnswerSubmitted = true;
+  try {
+    const res = await fetch(`http://localhost:3000/api/questions/${questionId}/submit`, {
+      method : 'POST',
+      headers: {
+        'Content-Type' : 'application/json',
+        Authorization  : `Bearer ${localStorage.getItem('token')}`
+      },
+      body   : JSON.stringify({ answer: userAns })
+    });
+
+    if (!res.ok) throw new Error('提交失敗');
+    const data = await res.json();
+
+    // ⬇️ 依回傳結果更新畫面
+    this.isAnswerCorrect  = data.correct;
+    this.isFlipped        = true;
+    this.isAnswerSubmitted= true;
+
+    // optional：如果想顯示最新統計
+    this.currentQuestion.practiceCount = data.practiceCount;
+    this.currentQuestion.errCount      = data.errCount;
+
+  } catch (err) {
+    console.error('提交答案失敗:', err);
+    alert('提交失敗，請稍後再試');
+  }
 },
+
     cellClass(day) {
       if (!day) return 'bg-light empty-cell';
       const dateStr = this.formatDate(day);
@@ -345,13 +398,14 @@ export default {
 },
 
 performCheckIn(dateStr) {
+  this.isCheckingIn = true; // ← 開始 loading
+
   fetch('/api/checking', {
     method: 'POST',
     headers: {
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('token')}`,
-},
-
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
     body: JSON.stringify({ date: dateStr }),
   })
     .then(res => {
@@ -365,8 +419,13 @@ performCheckIn(dateStr) {
     .catch(err => {
       console.error('打卡失敗:', err);
       alert('打卡失敗，請稍後再試');
+    })
+    .finally(() => {
+      this.isCheckingIn = false; // ← 無論成功或失敗都結束 loading
     });
 },
+
+
     formatDate(day) {
       return `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     },
@@ -390,17 +449,17 @@ performCheckIn(dateStr) {
   .catch(err => console.error('獲取打卡紀錄失敗:', err));
 
       // 模擬數據（實際使用時可移除）
-      const dummyData = [];
-      const today = new Date();
-      // 隨機生成本月已打卡的日期
-      if (this.currentMonth === today.getMonth() && this.currentYear === today.getFullYear()) {
-        for (let i = 1; i < today.getDate(); i++) {
-          if (Math.random() > 0.3) { // 70% 機率已打卡
-            dummyData.push(this.formatDate(i));
-          }
-        }
-      }
-      this.checkInDays = dummyData;
+      // const dummyData = [];
+      // const today = new Date();
+      // // 隨機生成本月已打卡的日期
+      // if (this.currentMonth === today.getMonth() && this.currentYear === today.getFullYear()) {
+      //   for (let i = 1; i < today.getDate(); i++) {
+      //     if (Math.random() > 0.3) { // 70% 機率已打卡
+      //       dummyData.push(this.formatDate(i));
+      //     }
+      //   }
+      // }
+      // this.checkInDays = dummyData;
     },
     prevMonth() {
       if (this.currentMonth === 0) {
@@ -426,16 +485,6 @@ performCheckIn(dateStr) {
       }
     },
 
-
-
-    submitAnswer() {
-      if (this.currentQuestion.type === 'text') {
-        // 文字題目自動判斷正誤
-        this.isAnswerCorrect = this.userAnswer.trim().toLowerCase() === this.currentQuestion.answer.toLowerCase();
-      }
-      this.isFlipped = true;
-      this.isAnswerSubmitted = true; // 標記答案已提交
-    },
 
     markAsCorrect() {
       this.manualFeedback = true;
@@ -482,9 +531,11 @@ performCheckIn(dateStr) {
     const { data } = await fetchRandomQuestion()
     this.questions = [{
       id: data.Question_ID,
-      type: 'image',
+      type: data.QType,
       content: data.Content_pic,
-      answer: data.Answer_pic || data.Answer,
+      Answer: data.Answer || '',
+      Answer_pic: data.Answer_pic || '',
+       Content: data.Content,
       notes: data.note || '/images/default_note.png'
     }]
     // this.selectDailyQuestion()
@@ -678,7 +729,7 @@ performCheckIn(dateStr) {
 }
 
 .btn-checkin:hover:not(:disabled) {
-  background-color: #3d7dcf;
+  background-color: #a0d0ff;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(93, 156, 236, 0.3);
 }
@@ -712,9 +763,7 @@ performCheckIn(dateStr) {
     gap: 1.5rem;
   }
 
-  .btn-checkin {
-    margin-top: 0 !important;
-  }
+
 }
 
 /* 翻轉卡片 */
@@ -852,13 +901,10 @@ button {
   transition: all 0.3s;
 }
 
-.submit-button {
-  background-color: #3498db;
-  color: white;
-}
+
 
 .return-button {
-  background-color: #2980b9;
+  background-color: #5d9cec;
   color: white;
 }
 
@@ -1033,4 +1079,61 @@ button:hover {
   color: #7f8c8d;
   font-style: italic;
 }
+
+.qtype-label{
+  margin: 4px auto 10px;
+  font-weight: 600;
+  color:#5b92c3;
+}
+
+.btn-checkin.submitted:hover {
+  transform: none;
+  background-color: #a0d0ff;
+}
+
+.btn-main {
+  display: inline-block;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+  /* 預設顏色，之後可由各按鈕延伸或覆蓋 */
+  background-color: #5d9cec;
+  color: white;
+}
+
+/* hover & active（正常狀態） */
+.btn-main:not(.submitted):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(93, 156, 236, 0.3);
+  background-color: #3d7dcf;
+}
+.btn-main:not(.submitted):active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* 禁用 / 已提交 狀態 */
+.submitted,
+.btn-main:disabled {
+  background-color: #a0d0ff !important;
+  color: #4a4a4a !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.submitted {
+  background-color: #a0d0ff !important;
+  color: #4a4a4a !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+
+}
+
+
+
 </style>

@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import Questions from './Practice/Questions.vue'
 
 const selectedOption = ref('option0')
@@ -128,12 +128,29 @@ function handleSelectedQuestion(questions) {
     alert('尚未選擇題目！')
     return
   }
-  emit('start-practice', selectedQuestions)
+
+  emit('start-practice', {
+    mode: selectedOption.value,
+    questions: selected,
+    count: questionCount.value,
+  })
 }
 
+// ✅ 點擊返回
 function goBack() {
   emit('change-page', 'book', props.currentSubject)
 }
+
+// ✅ 初始 or userId 改變時，自動載入題目
+watch(
+  () => props.userId,
+  (newUserId) => {
+    if (newUserId) {
+      handleSelection()
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

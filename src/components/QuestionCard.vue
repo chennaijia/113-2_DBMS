@@ -2,27 +2,34 @@
   <div class="card">
     <!-- 顯示模式 -->
     <div v-if="!editMode">
-      <div class="card-header">
+      <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+        <!-- 題號 -->
         <span>{{ index }}.</span>
-        <span class="type-label">
-          【
-          {{ card.questionType === 'truefalse'
-            ? '是非題'
-            : card.questionType === 'multipleABC'
-              ? '選擇題（字母選項）'
-              : card.questionType === 'multiple123'
-                ? '選擇題（數字選項）'
-                : card.questionType === 'open'
-                  ? '問答題'
-                  : '未知題型'
-          }}
-          】
-        </span>
 
-        <button class="star" @click="$emit('toggle-star')">
+        <!-- 星號靠近題號 -->
+        <button class="star ms-1" @click="$emit('toggle-star')">
           {{ card.starred ? '★' : '☆' }}
         </button>
-        <span class="stats">❌: {{ card.wrongCount }} 次 ✔️: {{ card.rightCount }} 次</span>
+
+        <!-- 題型標籤 -->
+        <span class="type-pill">
+          {{
+            card.questionType === 'truefalse'
+              ? '是非題'
+              : card.questionType === 'multipleABC'
+              ? '選擇題（字母選項）'
+              : card.questionType === 'multiple123'
+              ? '選擇題（數字選項）'
+              : card.questionType === 'open'
+              ? '問答題'
+              : '未知題型'
+          }}
+        </span>
+
+        <!-- 答對答錯統計 -->
+        <span class="stats ms-auto">
+          ❌: {{ card.wrongCount }} 次 ✔️: {{ card.rightCount }} 次
+        </span>
       </div>
 
       <div class="card-content">
@@ -214,7 +221,16 @@ export default {
   cursor: pointer;
   color: #ffca28;
 }
-
+.type-pill {
+  border: 1px solid #0d6efd;
+  color: #0d6efd;
+  padding: 2px 10px;
+  border-radius: 50rem; /* same as rounded-pill */
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: transparent;
+  user-select: none;
+}
 .card-content {
   display: flex;
   gap: 20px;

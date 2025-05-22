@@ -1,53 +1,4 @@
-PORT=3000
-JWT_SECRET=s0m3thingS3cr3t
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=meimeielin
-DB_NAME=dbms-112306010
-CLOUD_NAME=dlvrb8led
-API_KEY=851379669482937
-API_SECRET=J8fvwVf1sCwCI9y-B12xOwcHYR0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <template>
-
 
   <div class="toolbar">
     <select @change="onFilterChange" v-model="filterOption" class="filter-select">
@@ -71,11 +22,7 @@ API_SECRET=J8fvwVf1sCwCI9y-B12xOwcHYR0
 
 
 
-
   <div class="container">
-
-
-
 
     <!-- 題目新增區塊 -->
     <div class="card add-section">
@@ -121,6 +68,8 @@ API_SECRET=J8fvwVf1sCwCI9y-B12xOwcHYR0
     </div>
 
 
+
+
     <!-- 題目列表 -->
     <div class="card-list">
       <h2>目前題目列表 ({{ questions.length }} 題)</h2>
@@ -151,7 +100,6 @@ API_SECRET=J8fvwVf1sCwCI9y-B12xOwcHYR0
 const testClick = () => {
   console.log('✅ 測試按鈕有反應！');
 }
-
 
 
 
