@@ -100,7 +100,7 @@
 
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 export default {
   props: {
@@ -109,11 +109,12 @@ export default {
     showAnswers: Boolean,
     editMode: Boolean
   },
-  emits: ['delete-card'],
+  emits: ['delete-card', 'update-note'],
   setup(props, { emit }) {
     const uploadingType = ref(null)
     const fileInput = ref(null)
 
+    // 筆記綁定
     const noteText = computed({
       get: () => props.card.note,
       set: (val) => {
@@ -121,28 +122,35 @@ export default {
       }
     })
 
+    // ⭐ 重要：確保多選題答案是陣列格式
+    const normalizeAnswerFormat = () => {
+      if ((props.card.questionType === 'multipleABC' || props.card.questionType === 'multiple123')) {
+        const ans = props.card.answer
+        // 如果是字串，轉成陣列；如果是 undefined/null 就給空陣列
+        if (!Array.isArray(ans)) {
+          if (typeof ans === 'string' && ans.length > 0) {
+            props.card.answer = [ans]
+          } else {
+            props.card.answer = []
+          }
+        }
+      }
+    }
 
+    // 在組件載入時與題型變化時都呼叫一次
+    onMounted(() => {
+      normalizeAnswerFormat()
+    })
+    watch(() => props.card.questionType, normalizeAnswerFormat, { immediate: true })
+
+    // 刪除卡片
     function deleteThisCard() {
       if (confirm('確定要刪除這張卡片嗎？')) {
         emit('delete-card', props.card.id)
       }
     }
 
-    function uploadImage(type) {
-      uploadingType.value = type
-      fileInput.value.click()
-    }
-    function submitCard() {
-      if (!questionImage.value) {
-        alert('請上傳題目圖片')
-        return
-      }
-      if (answer.value.length === 0) {
-        alert('請輸入答案')
-        return
-      }
-    }
-
+    // 圖片處理
     function handleFileChange(event, card, type) {
       const file = event.target.files[0]
       if (!file) return
@@ -159,17 +167,15 @@ export default {
       reader.readAsDataURL(file)
     }
 
+    function uploadImage(type) {
+      uploadingType.value = type
+      fileInput.value.click()
+    }
 
     function removeImage(type) {
       if (type === 'question') props.card.questionImage = null
       if (type === 'answer') props.card.answerImage = null
     }
-
-    function onNoteChange() {
-      console.log('📝 note changed:', props.card.id, props.card.note)
-      emit('update-note', { id: props.card.id, note: props.card.note })
-    }
-
 
     return {
       uploadingType,
@@ -178,10 +184,7 @@ export default {
       uploadImage,
       handleFileChange,
       removeImage,
-      submitCard,
-      noteText,
-      noteText // ✅ 只保留這個即可，自動觸發事件
-
+      noteText
     }
   }
 }
