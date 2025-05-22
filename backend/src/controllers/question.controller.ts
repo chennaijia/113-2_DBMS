@@ -6,7 +6,8 @@ import streamifier from 'streamifier';
 import { pool } from '../config/database'; // 確保這裡的 pool 是正確的
 import { listQuestionsByBook as getByBook, getRandomPracticeQuestions,
         getMostWrongQuestions as getMostWrongQuestionsModel,
-        getQuestionCount as getQuestionCountModel
+        getQuestionCount as getQuestionCountModel,
+        judgeAndUpdate
       } from '../models/question.model'
 
 export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void> => {
@@ -316,3 +317,25 @@ export const getQuestionCount = async (req: AuthReq, res: Response): Promise<voi
   }
 }
 
+export const submitAnswer = async (req: AuthReq, res: Response): Promise<void> => {
+  const qid   = Number(req.params.id);
+  const ans   = (req.body.answer ?? '').toString().trim();
+  const uid   = req.user!.id;          // middleware 已驗證
+
+  if (!qid || !ans) {
+   res.status(400).json({ message: '缺少題號或答案' });
+  }
+
+  try {
+    const { correct, practice, wrong } = await judgeAndUpdate(qid, ans, uid);
+    res.status(200).json({
+      message: correct ? '答對 🎉' : '答錯 😢',
+      correct,
+      practiceCount: practice,
+      errCount: wrong
+    });
+  } catch (err) {
+    console.error('❌ 提交答案失敗:', err);
+    res.status(500).json({ message: '提交答案失敗' });
+  }
+};

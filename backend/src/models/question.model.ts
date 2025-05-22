@@ -123,6 +123,46 @@ export const getQuestionCount = async (bookId: number, userId: number) => {
   return Number(rows[0].count)
 }
 
+interface JudgeResult {
+  correct  : boolean;
+  practice : number;
+  wrong    : number;
+}
+
+export const judgeAndUpdate = async (
+  qid: number,
+  userAns: string,          // 使用者答案
+  _uid: number              // 這裡目前用不到，但若之後要記錄個人統計可用
+): Promise<JudgeResult> => {
+
+  // 1️⃣  抓正確答案 & 現有統計
+  const [rows]: any = await pool.query(
+    'SELECT Answer, practiceCount, errCount FROM QUESTION WHERE Question_ID = ?',
+    [qid]
+  );
+  if (!rows.length) throw new Error('找不到題目');
+
+  const correctAns  = rows[0].Answer.toString().trim().toUpperCase();
+  const isCorrect   = correctAns === userAns.toUpperCase();
+
+  // 2️⃣  更新統計
+  const practiceInc = 1;
+  const errInc      = isCorrect ? 0 : 1;
+
+  await pool.execute(
+    `UPDATE QUESTION
+       SET practiceCount = practiceCount + ?,
+           errCount      = errCount      + ?
+     WHERE Question_ID = ?`,
+    [practiceInc, errInc, qid]
+  );
+
+  return {
+    correct  : isCorrect,
+    practice : rows[0].PracticeCount + practiceInc,
+    wrong    : rows[0].Err_Count      + errInc
+  };
+};
 
 
 

@@ -39,3 +39,6 @@ export async function fetchQuestionCount(bookId: number) {
   const res = await api.get(`/question/count/${bookId}`)
   return res.data.count
 }
+
+export const submitQuestion = (id: number, answer: string) =>
+  api.post(`/questions/${id}/submit`, { answer });

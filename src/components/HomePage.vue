@@ -37,34 +37,8 @@
           <div class="card-content">
             <!-- 上方結果區域 -->
             <div class="result-area">
-              <div v-if="currentQuestion.type === 'text'" class="feedback-icon">
-                <div v-if="isAnswerCorrect === true">
-                  <Icon icon="mdi:check-circle" class="correct-icon" />
-                </div>
-                <div v-else-if="isAnswerCorrect === false">
-                  <Icon icon="mdi:close-circle" class="incorrect-icon" />
-                </div>
-              </div>
-              <div v-else-if="currentQuestion.type === 'image'" class="manual-check">
-                <div class="answer-image-container">
-                  <div v-if="manualFeedback !== null">
-                    <Icon
-                      :icon="manualFeedback ? 'mdi:check-circle' : 'mdi:close-circle'"
-                      :class="manualFeedback ? 'correct-icon' : 'incorrect-icon'"
-                    />
-                  </div>
-                </div>
-                <div class="manual-check-buttons">
-                  <button @click="markAsCorrect" class="correct-button">
-                    <Icon icon="mdi:check-circle" />
-                    正確
-                  </button>
-                  <button @click="markAsIncorrect" class="incorrect-button">
-                    <Icon icon="mdi:close-circle" />
-                    錯誤
-                  </button>
-                </div>
-              </div>
+              <Icon v-if="isAnswerCorrect === true"  icon="mdi:check-circle"  class="correct-icon" />
+              <Icon v-else-if="isAnswerCorrect === false" icon="mdi:close-circle" class="incorrect-icon" />
             </div>
 
             <!-- 下方答案與筆記區域 -->
@@ -279,25 +253,44 @@ export default {
 
   },
   methods: {
-    submitAnswer() {
-  const type = this.currentQuestion.qtype;
-  const userAns = this.userAnswer.trim().toUpperCase();
-  const correctAns = this.currentQuestion.answer;
+    async submitAnswer () {
+  // 取得題目 id & 使用者輸入
+  const questionId = this.currentQuestion.id;
+  const userAns    = this.userAnswer.trim().toUpperCase();
 
-  if (type === 'truefalse') {
-    this.isAnswerCorrect = userAns === correctAns;
-  } else if (type === 'multipleABC' || type === 'multiple123') {
-    const sortStr = str => str.split('').sort().join('');
-    this.isAnswerCorrect = sortStr(userAns) === sortStr(correctAns);
-  } else if (type === 'open') {
-    this.isAnswerCorrect = userAns === correctAns.trim();
-  } else {
-    this.isAnswerCorrect = null; // 無法判斷
+  if (!questionId || !userAns) {
+    alert('請先輸入答案！');
+    return;
   }
 
-  this.isFlipped = true;
-  this.isAnswerSubmitted = true;
+  try {
+    const res = await fetch(`http://localhost:3000/api/questions/${questionId}/submit`, {
+      method : 'POST',
+      headers: {
+        'Content-Type' : 'application/json',
+        Authorization  : `Bearer ${localStorage.getItem('token')}`
+      },
+      body   : JSON.stringify({ answer: userAns })
+    });
+
+    if (!res.ok) throw new Error('提交失敗');
+    const data = await res.json();
+
+    // ⬇️ 依回傳結果更新畫面
+    this.isAnswerCorrect  = data.correct;
+    this.isFlipped        = true;
+    this.isAnswerSubmitted= true;
+
+    // optional：如果想顯示最新統計
+    this.currentQuestion.practiceCount = data.practiceCount;
+    this.currentQuestion.errCount      = data.errCount;
+
+  } catch (err) {
+    console.error('提交答案失敗:', err);
+    alert('提交失敗，請稍後再試');
+  }
 },
+
     cellClass(day) {
       if (!day) return 'bg-light empty-cell';
       const dateStr = this.formatDate(day);
@@ -434,16 +427,6 @@ performCheckIn(dateStr) {
       }
     },
 
-
-
-    submitAnswer() {
-      if (this.currentQuestion.type === 'text') {
-        // 文字題目自動判斷正誤
-        this.isAnswerCorrect = this.userAnswer.trim().toLowerCase() === this.currentQuestion.answer.toLowerCase();
-      }
-      this.isFlipped = true;
-      this.isAnswerSubmitted = true; // 標記答案已提交
-    },
 
     markAsCorrect() {
       this.manualFeedback = true;

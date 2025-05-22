@@ -11,10 +11,12 @@ import { uploadQuestion,
         getRandomQuestion,
         getRandomWrongQuestions,
         getMostWrongQuestions,
-        getQuestionCount
+        getQuestionCount,
+        submitAnswer
       } from '../controllers/question.controller';
 import { upload } from '../middleware/upload';
 import { deleteQuestion } from '../controllers/question.controller';
+
 export const questionRouter = Router();
 
 questionRouter.post('/upload', auth, upload, uploadQuestion);
@@ -26,6 +28,7 @@ questionRouter.get('/random', auth, getRandomQuestion)
 questionRouter.get('/random-practice', auth, getRandomWrongQuestions)
 questionRouter.get('/most-wrong', auth, getMostWrongQuestions)
 questionRouter.get('/count/:bookId', auth, getQuestionCount)
+questionRouter.post('/:id/submit', auth, submitAnswer);
 
 
 
