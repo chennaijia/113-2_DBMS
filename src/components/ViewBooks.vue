@@ -3,8 +3,36 @@
   <!-- === (原樣保留 - 你提供的整段 template 內容) === -->
   <!--問題：直接登入還不能跟sidebar同步(要refresh)，要不要把登入資訊放在App.vue中統一控制？-->
 <div>
+  
+    <!-- 創建錯題本「導覽」 -->
+    <div
+      v-if="showGuide && currentSlideIndex === 2"
+      class="guide-highlight-add guide-ghost-button"
+      style="
+        position: absolute;
+        left: 10%;
+        top: 3%;
+        pointer-events: none; 
+        z-index: 1060; 
+      "
+      aria-hidden="true"
+    >
+      <button
+        style="
+          padding: 12px 24px;
+          font-size: 30px;
+          display: flex;
+          align-items: center;
+          cursor: default; 
+        "
+        class="btn btn-outline-primary rounded-pill"
+        disabled="true" >
+        <Icon icon="material-symbols:add-rounded" width="40" height="40" />
+        <div>創建新的錯題本</div>
+      </button>
+    </div>
     <!-- 創建錯題本按鈕 -->
-    <div class="guide-highlight-add" style="position: absolute; left: 10%; padding: 16px; top: 3%">
+    <div style="position: absolute; left: 10%; padding: 16px; top: 3%">
       <button
         style="
           padding: 12px 24px;
@@ -149,11 +177,38 @@
         </div>
       </div>
     </div>
+    <!-- 編輯按鈕「導覽」 -->
+    <div
+      v-if="showGuide && currentSlideIndex === 3"
+      class="guide-highlight-edit guide-ghost-button"
+      style="
+        position: absolute;
+        bottom: 70px;
+        right: 3%;
+        transform: translateX(-50%);
+        pointer-events: none; 
+        z-index: 1060; 
+      "
+      aria-hidden="true"
+    >
+      <button
+        style="
+          padding: 12px 24px;
+          font-size: 30px;
+          display: flex;
+          align-items: center;
+          cursor: default;
+        "
+        class="btn btn-outline-primary rounded-pill"
+        disabled="true" >
+        <Icon icon="bx:edit-alt" width="40" height="40" />
+        <div>編輯</div>
+      </button>
+    </div>
 
     <!-- 編輯/刪除按鈕 (已登入時顯示) -->
     <div
       v-if="isLoggedIn"
-      class="guide-highlight-edit"
       style="
         position: absolute;
         bottom: 70px;
@@ -292,7 +347,7 @@
 
 <script setup lang="ts">
 /* ------------ import ------------ */
-import { ref, onMounted, onUnmounted, inject } from 'vue'
+import { ref, onMounted, onUnmounted, inject, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import AddBook from './AddBook.vue'
 import Login from './Login.vue'
@@ -357,16 +412,19 @@ onMounted(async () => {
   showGuide.value = !isLoggedIn.value
 
   // 建 carousel 事件（保留你的原 JS）
-  const carouselEl = document.querySelector('.guide-carousel')
-  if (carouselEl) {
-    const carousel = new bootstrap.Carousel(carouselEl, { interval: false, wrap: false })
-    carouselEl.addEventListener('slide.bs.carousel', (event: any) => {
-      if (currentSlideIndex.value === 0 && event.direction === 'right') event.preventDefault()
-      if (currentSlideIndex.value === 3 && event.direction === 'left') event.preventDefault()
-      currentSlideIndex.value = event.to
-    })
-    carouselEl.addEventListener('slid.bs.carousel', handleSlide)
-  }
+  nextTick(() => { 
+    const carouselEl = document.querySelector('.guide-carousel')
+    if (carouselEl) {
+      const carousel = new bootstrap.Carousel(carouselEl, { interval: false, wrap: false })
+      carouselEl.addEventListener('slide.bs.carousel', (event: any) => {
+        console.log('slide event:', currentSlideIndex.value)
+        if (currentSlideIndex.value === 0 && event.direction === 'right'){ event.preventDefault(); return;}
+        if (currentSlideIndex.value === 3 && event.direction === 'left') {event.preventDefault(); return;}
+        currentSlideIndex.value = event.to;
+      });
+      carouselEl.addEventListener('slid.bs.carousel', handleSlide)
+    }
+  });
 
   // 註冊重新整理題本的事件監聽器
   window.addEventListener('refresh-books', loadBooks)
@@ -584,7 +642,8 @@ function endGuide() {
 
 .highlight-shadow {
   box-shadow: 0 0 0 5px #4da3ff !important;
-  border-radius: 8px;
+  background-color: white;
+  border-radius: 50px;
   transition: box-shadow 0.3s;
   z-index: 1060;
   position: relative;
