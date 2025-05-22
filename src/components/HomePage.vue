@@ -93,55 +93,66 @@
                   <!-- <div v-else class="notes-hidden">
                     <span>（點擊查看筆記）</span> -->
                 </div>
-<<<<<<< HEAD
-=======
-
-                <!-- 答案輸入區 -->
-                <div class="answer-input-area">
-                  <input
-                    v-model="userAnswer"
-                    class="answer-input"
-                    placeholder="輸入答案範例：ACDE（多選題答案中間不用有空格）"
-                    :readonly="isAnswerSubmitted"
-                    :class="{ 'input-disabled': isAnswerSubmitted }"
-                  />
-                </div>
-
-                <!-- 按鈕區 -->
-                <div class="button-container">
-                  <button class="submit-button btn btn-outline-primary rounded-pill" @click="submitAnswer">提交答案</button>
-                </div>
-              </div>
->>>>>>> d092b915c0d916fae76a17a31e38a61f8b42f14d
             </div>
 
-            <!-- 卡片背面 -->
-            <div class="flip-card-back">
-              <div class="card-content">
-                <!-- 上方結果區域 -->
-                <div class="result-area">
-                  <Icon v-if="isAnswerCorrect === true"  icon="mdi:check-circle"  class="correct-icon" />
-                  <Icon v-else-if="isAnswerCorrect === false" icon="mdi:close-circle" class="incorrect-icon" />
-                </div>
+            <!-- 返回按鈕 -->
+            <div class="button-container">
+              <button class="return-button" @click="resetCard">回到題目</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                <!-- 下方答案與筆記區域 -->
-                <div class="bottom-area">
-                  <!-- 左下答案顯示 -->
-                  <div class="answer-area">
-                    <h3>正確答案：</h3>
-                    <div v-if="currentQuestion.type === 'text'" class="text-answer">
-                      {{ currentQuestion.answer }}
-                    </div>
-                    <div v-else-if="currentQuestion.type === 'image'" class="image-answer">
-                      <img :src="currentQuestion.answer" alt="答案圖片" class="answer-area-image" />
+    <div class="calendar-container-wrapper">
+      <div class="container">
+        <div class="calendar-header">
+          <h2 class="text-center mb-4 fw-bold calendar-title">每日打卡系統</h2>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3 month-navigator">
+          <button class="btn btn-month" @click="prevMonth">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <h4 class="month-title">{{ currentYear }} 年 {{ currentMonth + 1 }} 月</h4>
+          <button class="btn btn-month" @click="nextMonth">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+        <div class="calendar-container shadow rounded">
+          <table class="table table-bordered text-center align-middle calendar-table">
+            <thead>
+              <tr>
+                <th v-for="(day, index) in weekDays" :key="index" class="week-day">
+                  {{ day }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(week, weekIndex) in calendar" :key="weekIndex">
+                <td
+                  v-for="(day, dayIndex) in week"
+                  :key="dayIndex"
+                  :class="cellClass(day)"
+                  @click="handleCheckIn(day)"
+                  style="cursor: pointer; position: relative;">
+                  <div v-if="day" class="day-content">
+                    <span class="day-number">{{ day }}</span>
+                    <div v-if="isCheckedIn(day)" class="check-mark">
                     </div>
                   </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-                  <!-- 右下筆記區域 -->
-                  <div class="notes-area" @click="toggleNotes">
-                    <h3>筆記</h3>
+        <div class="mt-4 text-center stats-container">
+          <div class="streak-info p-3 rounded">
+            <h5 class="mb-0">本月已打卡：<span class="streak-count">{{ currentMonthCheckInCount }} 天</span></h5>
+          </div>
 
-<<<<<<< HEAD
           <!-- 今日打卡按鈕 -->
                <button
                 class="btn-main btn-checkin"
@@ -154,128 +165,39 @@
               </button>
 
         </div>
-=======
-                    <div v-if="showNotes">
-                      <div class="image-note">
-                        <img :src="currentQuestion.notes" alt="筆記圖片" class="note-image" />
-                      </div>
-                    </div>
-                    <div v-else class="notes-hidden">
-                      <span>（點擊查看筆記）</span>
-                    </div>
-                  </div>
-                </div>
->>>>>>> d092b915c0d916fae76a17a31e38a61f8b42f14d
 
-                <!-- 返回按鈕 -->
-                <div class="button-container">
-                  <button class="return-button" @click="resetCard">回到題目</button>
-                </div>
+        <!-- 打卡成功提示 -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+          <div
+            class="toast align-items-center text-white bg-success border-0"
+            ref="toastEl"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex" style="background-color: #3d7dcf">
+              <div class="toast-body">
+                <i class="bi bi-check-circle me-2"></i> 打卡成功！繼續保持！
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="calendar-container-wrapper">
-          <div class="container">
-            <div class="calendar-header">
-              <h2 class="text-center mb-4 fw-bold calendar-title">每日打卡系統</h2>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-3 month-navigator">
-              <button class="btn btn-month" @click="prevMonth">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <h4 class="month-title">{{ currentYear }} 年 {{ currentMonth + 1 }} 月</h4>
-              <button class="btn btn-month" @click="nextMonth">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
-
-            <div class="calendar-container shadow rounded">
-              <table class="table table-bordered text-center align-middle calendar-table">
-                <thead>
-                  <tr>
-                    <th v-for="(day, index) in weekDays" :key="index" class="week-day">
-                      {{ day }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(week, weekIndex) in calendar" :key="weekIndex">
-                    <td
-                      v-for="(day, dayIndex) in week"
-                      :key="dayIndex"
-                      :class="cellClass(day)"
-                      @click="handleCheckIn(day)"
-                      style="cursor: pointer; position: relative;">
-                      <div v-if="day" class="day-content">
-                        <span class="day-number">{{ day }}</span>
-                        <div v-if="isCheckedIn(day)" class="check-mark">
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="mt-4 text-center stats-container">
-              <div class="streak-info p-3 rounded">
-                <h5 class="mb-0">本月已打卡：<span class="streak-count">{{ currentMonthCheckInCount }} 天</span></h5>
-              </div>
-
-              <!-- 今日打卡按鈕 -->
-              <button
-                @click="checkInToday"
-                class="btn-checkin mt-3 btn btn-outline-primary rounded-pill"
-                :disabled="isTodayCheckedIn || isCheckingIn">
-                <span v-if="isCheckingIn">打卡中...</span>
-                <span v-else>{{ isTodayCheckedIn ? '今日已打卡' : '今日打卡' }}</span>
-              </button>
-            </div>
-
-            <!-- 打卡成功提示 -->
-            <div class="toast-container position-fixed bottom-0 end-0 p-3">
-              <div
-                class="toast align-items-center text-white bg-success border-0"
-                ref="toastEl"
-                role="alert"
-                aria-live="assertive"
-                aria-atomic="true">
-                <div class="d-flex" style="background-color: #3d7dcf">
-                  <div class="toast-body">
-                    <i class="bi bi-check-circle me-2"></i> 打卡成功！繼續保持！
-                  </div>
-                  <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import { Icon } from '@iconify/vue';
 import * as bootstrap from 'bootstrap';
-import { ref, inject, computed, onMounted, reactive } from 'vue';
+import { ref } from 'vue'
 import { fetchRandomQuestion } from '../api/questions';
+
 
 export default {
   name: 'HomePage',
 
   components: { Icon },
-    setup() {
-    const loginState = inject('loginState');
-
-    return {
-      isLoggedIn: loginState.isLoggedIn,
-      userName: loginState.userName,
-      handleLoginFromParent: loginState.login,
-      handleLogoutFromParent: loginState.logout
-    };
-  },
   data() {
     const today = new Date();
     return {
@@ -797,15 +719,15 @@ performCheckIn(dateStr) {
 }
 
 .btn-checkin {
-/*  background-color: #5d9cec;
+  background-color: #5d9cec;
   color: white;
-  border: none; */
+  border: none;
   border-radius: 50px;
   padding: 10px 30px;
   font-weight: 600;
   transition: all 0.2s;
 }
-/*
+
 .btn-checkin:hover:not(:disabled) {
   background-color: #a0d0ff;
   transform: translateY(-2px);
@@ -816,7 +738,7 @@ performCheckIn(dateStr) {
   background-color: #a0d0ff;
   cursor: not-allowed;
 }
-*/
+
 /* 動畫效果 */
 @keyframes pulse {
   0% { transform: scale(1); }
@@ -971,7 +893,7 @@ performCheckIn(dateStr) {
 
 button {
   padding: 10px 25px;
-/*  border: none;*/
+  border: none;
   border-radius: 25px;
   cursor: pointer;
   font-size: 1rem;
