@@ -164,6 +164,48 @@ export const judgeAndUpdate = async (
   };
 };
 
+// 新增
+export const updateQuestion = async (
+  id: number,
+  data: {
+    content_pic?: string,
+    answer?: string,
+    answer_pic?: string,
+    detail_ans_pic?: string,
+    content?: string,
+  }
+) => {
+  const fields: string[] = [];
+  const values: any[] = [];
+
+  if (data.content_pic !== undefined) {
+    fields.push('Content_pic = ?');
+    values.push(data.content_pic);
+  }
+  if (data.answer !== undefined) {
+    fields.push('Answer = ?');
+    values.push(data.answer);
+  }
+  if (data.answer_pic !== undefined) {
+    fields.push('Answer_pic = ?');
+    values.push(data.answer_pic);
+  }
+  if (data.detail_ans_pic !== undefined) {
+    fields.push('Detail_Ans_Pic = ?');
+    values.push(data.detail_ans_pic);
+  }
+  if (data.content !== undefined) {
+    fields.push('Content = ?');
+    values.push(data.content);
+  }
+
+  if (fields.length === 0) return;
+  values.push(id);
+  await pool.query(
+    `UPDATE QUESTION SET ${fields.join(', ')} WHERE Question_ID = ?`,
+    values
+  );
+};
 
 
 

@@ -42,3 +42,8 @@ export async function fetchQuestionCount(bookId: number) {
 
 export const submitQuestion = (id: number, answer: string) =>
   api.post(`/questions/${id}/submit`, { answer });
+
+export const updateQuestionById = (qid: number, form: FormData) =>
+  api.patch(`/question/${qid}`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
