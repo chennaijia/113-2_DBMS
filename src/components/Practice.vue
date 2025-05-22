@@ -10,11 +10,11 @@
       </div>
 
       <div class="d-flex gap-3 align-items-center">
-        <span>{{ currentIndex + 1 }} / {{ questions.length }}</span>
+        <span>{{ currentIndex + 1 }} / {{ props.questions.length }}</span>
         <span><i class="bi bi-clock"></i> {{ timer }}</span>
       </div>
     </div>
-    <div v-if="questions && questions.length" class="practice-content">
+    <div v-if="props.questions && props.questions.length" class="practice-content">
       <div class="progress mb-4">
         <div
           class="progress-bar"
@@ -49,21 +49,21 @@
 
       <div
         v-if="
-          localQuestions[currentIndex]?.checked &&
-          localQuestions[currentIndex]?.questionType !== 'open'
+          props.questions[currentIndex]?.checked &&
+          props.questions[currentIndex]?.questionType !== 'open'
         "
         class="mt-2"
       >
-        <span :class="localQuestions[currentIndex]?.isCorrect ? 'text-success' : 'text-danger'">
+        <span :class="props.questions[currentIndex]?.isCorrect ? 'text-success' : 'text-danger'">
           {{
-            localQuestions[currentIndex]?.isCorrect
+            props.questions[currentIndex]?.isCorrect
               ? '答對了！'
-              : '答錯了！正確答案是：' + localQuestions[currentIndex]?.correctAnswer
+              : '答錯了！正確答案是：' + props.questions[currentIndex]?.correctAnswer
           }}
         </span>
         <!-- maybe 詳解？-->
         <img
-          :src="localQuestions[currentIndex]?.answerUrl"
+          :src="props.questions[currentIndex]?.answerUrl"
           alt="答案圖片"
           class="img-fluid rounded shadow-sm mb-3"
           style="width: 100%; max-height: 60vh; object-fit: contain"
@@ -72,20 +72,20 @@
 
       <div
         v-if="
-          localQuestions[currentIndex]?.checked &&
-          localQuestions[currentIndex]?.questionType === 'open'
+          props.questions[currentIndex]?.checked &&
+          props.questions[currentIndex]?.questionType === 'open'
         "
         class="mt-3"
       >
         <img
-          :src="localQuestions[currentIndex]?.answerUrl"
+          :src="props.questions[currentIndex]?.answerUrl"
           alt="答案圖片"
           class="img-fluid rounded shadow-sm mb-3"
           style="width: 100%; max-height: 60vh; object-fit: contain"
         />
-        <div v-if="localQuestions[currentIndex]?.isCorrect !== null">
+        <div v-if="props.questions[currentIndex]?.isCorrect !== null">
           <div class="text-m text-center">
-            {{ localQuestions[currentIndex]?.isCorrect ? '恭喜答對！' : '再接再厲 加油！' }}
+            {{ props.questions[currentIndex]?.isCorrect ? '恭喜答對！' : '再接再厲 加油！' }}
           </div>
         </div>
 
@@ -109,7 +109,7 @@
         </button>
         <button
           class="btn btn-outline-warning rounded-pill"
-          :disabled="localQuestions[currentIndex].checked"
+          :disabled="props.questions[currentIndex].checked"
           @click="checkAnswer"
         >
           <i class="bi bi-bug"></i> 對答案
@@ -118,7 +118,7 @@
         <button
           class="btn btn-outline-primary rounded-pill"
           @click="nextQuestion"
-          v-if="currentIndex < questions.length - 1"
+          v-if="currentIndex < props.questions.length - 1"
         >
           下一題 <i class="bi bi-caret-right-fill"></i>
         </button>
@@ -143,17 +143,13 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['change-page', 'goBack', 'finish-practice'])
-const currentQuestion = computed(() => localQuestions.value[currentIndex.value] || {})
+const currentQuestion = computed(() => props.questions[currentIndex.value] || {})
+const currentImage = computed(() => props.questions[currentIndex.value]?.image || '')
+
 const currentIndex = ref(0)
-const answerRef = ref(null)
-const answeredResults = ref([])
-
-const localQuestions = ref([])
-
-const currentImage = computed(() => localQuestions.value[currentIndex.value]?.image || '')
 
 const progressWidth = computed(() => {
-  return ((currentIndex.value + 1) / localQuestions.value.length) * 100
+  return ((currentIndex.value + 1) / props.questions.length) * 100
 })
 
 const currentType = computed(() => {
@@ -176,7 +172,7 @@ const currentType = computed(() => {
     default:
       break
   }
-  return localQuestions.value[currentIndex.value]?.questionType || ''
+  return questions.value[currentIndex.value]?.questionType || ''
 })
 
 const timer = ref('00:00')
@@ -203,21 +199,6 @@ onBeforeUnmount(() => {
   clearInterval(timerInterval)
 })
 
-watch(
-  () => props.questions,
-  (newQuestions) => {
-    localQuestions.value = newQuestions.map((q) => ({
-      ...q,
-      answerUrl: `/answers/${q.id}.jpg`,
-      answerText: '',
-      userAnswer: '',
-      isCorrect: null,
-      checked: false,
-    }))
-  },
-  { immediate: true }
-)
-
 function goBack() {
   emit('goBack')
 }
@@ -229,7 +210,7 @@ function prevQuestion() {
 }
 
 function checkAnswer() {
-  const q = localQuestions.value[currentIndex.value]
+  const q = props.questions[currentIndex.value]
 
   if (q.questionType !== 'open') {
     q.checked = true
@@ -240,20 +221,20 @@ function checkAnswer() {
 }
 
 function nextQuestion() {
-  if (currentIndex.value < localQuestions.value.length - 1) {
+  if (currentIndex.value < props.questions.length - 1) {
     currentIndex.value++
   }
 }
 
 function manualJudge(result) {
-  const q = localQuestions.value[currentIndex.value]
+  const q = props.questions[currentIndex.value]
   q.isCorrect = result
 }
 
 function finishPractice() {
   //待辦：更新至資料庫（錯題次數）
   const result = {
-    questions: localQuestions.value,
+    questions: props.questions,
     timeSpent: timer.value,
   }
 

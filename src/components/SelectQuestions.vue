@@ -71,6 +71,11 @@ const questions = ref([
     image: '/images/1.jpg',
     questionType: 'open',
     correctAnswer: 'B',
+    answerUrl: `/images/answers/1.jpg`,
+    answerText: '',
+    userAnswer: '',
+    isCorrect: null,
+    checked: false,
   },
   {
     id: 2,
@@ -79,6 +84,11 @@ const questions = ref([
     image: '/images/2.jpg',
     questionType: 'multiple123',
     correctAnswer: '是',
+    answerUrl: `/images/answers/2.jpg`,
+    answerText: '',
+    userAnswer: '',
+    isCorrect: null,
+    checked: false,
   },
   {
     id: 3,
@@ -87,6 +97,11 @@ const questions = ref([
     image: '/images/3.jpg',
     questionType: 'open',
     correctAnswer: '選項2',
+    answerUrl: `/images/answers/3.jpg`,
+    answerText: '',
+    userAnswer: '',
+    isCorrect: null,
+    checked: false,
   },
   {
     id: 4,
@@ -95,6 +110,11 @@ const questions = ref([
     image: '/images/4.jpg',
     questionType: 'open',
     correctAnswer: '丙',
+    answerUrl: `/images/answers/4.jpg`,
+    answerText: '',
+    userAnswer: '',
+    isCorrect: null,
+    checked: false,
   },
 ])
 
