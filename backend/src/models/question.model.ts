@@ -168,35 +168,35 @@ export const judgeAndUpdate = async (
 export const updateQuestion = async (
   id: number,
   data: {
-    content_pic?: string,
-    answer?: string,
-    answer_pic?: string,
-    detail_ans_pic?: string,
-    content?: string,
+    Content_pic?: string,
+    Answer?: string,
+    Answer_pic?: string,
+    DetailAns_pic?: string,
+    Content?: string,
   }
 ) => {
   const fields: string[] = [];
   const values: any[] = [];
 
-  if (data.content_pic !== undefined) {
+  if (data.Content_pic !== undefined) {
     fields.push('Content_pic = ?');
-    values.push(data.content_pic);
+    values.push(data.Content_pic);
   }
-  if (data.answer !== undefined) {
+  if (data.Answer !== undefined) {
     fields.push('Answer = ?');
-    values.push(data.answer);
+    values.push(data.Answer);
   }
-  if (data.answer_pic !== undefined) {
+  if (data.Answer_pic !== undefined) {
     fields.push('Answer_pic = ?');
-    values.push(data.answer_pic);
+    values.push(data.Answer_pic);
   }
-  if (data.detail_ans_pic !== undefined) {
-    fields.push('Detail_Ans_Pic = ?');
-    values.push(data.detail_ans_pic);
+  if (data.DetailAns_pic !== undefined) {
+    fields.push('DetailAns_Pic = ?');
+    values.push(data.DetailAns_pic);
   }
-  if (data.content !== undefined) {
+  if (data.Content !== undefined) {
     fields.push('Content = ?');
-    values.push(data.content);
+    values.push(data.Content);
   }
 
   if (fields.length === 0) return;

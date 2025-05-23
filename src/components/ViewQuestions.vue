@@ -68,6 +68,7 @@ import { deleteQuestionById } from '../api/questions'
 import { updateStarStatus } from '../api/questions'
 import { debounce } from 'lodash-es'
 import { updateNote } from '../api/questions'
+import { updateQuestionById } from '../api/questions'
 
 
 export default {
@@ -81,6 +82,7 @@ export default {
   components: { QuestionCard, AddCardModal },
   setup(props,{ emit }) {
     const cards = ref([])
+    const originalCards = ref([])
 
     const defaultCards = () => [
       {
@@ -174,28 +176,49 @@ export default {
       }
     })
 
-    function toggleEditMode() {
-      if (editMode.value) {
-        // 準備離開編輯模式，要驗證每張卡片
-        const invalidCard = cards.value.find((card) => {
-          const noQuestionImage = !card.questionImage
-          const noAnswer =
-            card.answer === null ||
-            card.answer === undefined ||
-            (Array.isArray(card.answer) && card.answer.length === 0) ||
-            (!Array.isArray(card.answer) && card.answer === '')
-          return noQuestionImage || noAnswer
-        })
+       async function toggleEditMode() {
+  if (editMode.value) {
+    // ----------- ① 原本的驗證 ---------- //
+    const invalidCard = cards.value.find((card) => {
+      const noQuestionImage = !card.questionImage
+      const noAnswer =
+        card.answer === null ||
+        card.answer === undefined ||
+        (Array.isArray(card.answer) && card.answer.length === 0) ||
+        (!Array.isArray(card.answer) && card.answer === '')
+      return noQuestionImage || noAnswer
+    })
+    if (invalidCard) {
+      alert('請確保每張卡片都有「題目圖片」且「答案」不為空')
+      return
+    }
 
+    // ----------- ② 送 PATCH ---------- //
+    for (const card of cards.value) {
+      const fd = new FormData()
+      // 文字欄位
+      fd.append('answer', Array.isArray(card.answer) ? card.answer.join('') : card.answer)
+      fd.append('note', card.note ?? '')
 
-        if (invalidCard) {
-          alert('請確保每張卡片都有「題目圖片」且「答案」不為空')
-          return
+      // 圖檔（使用 ← QuestionCard.vue 留下的 File 物件）
+      if (card.questionFile) fd.append('content_pic', card.questionFile)
+      if (card.answerFile)   fd.append('answer_pic',  card.answerFile)
+
+      // 若都沒異動不必呼叫
+      if ([...fd.keys()].length > 0) {
+        try {
+          await updateQuestionById(card.id, fd)
+        } catch (err) {
+          console.error('❌ 更新題目失敗：', err)
+          alert('有題目更新失敗，請稍後再試')
         }
       }
-      // 通過檢查，才切換模式
-      editMode.value = !editMode.value
     }
+  }
+  // ③ 切換模式
+  editMode.value = !editMode.value
+}
+
     function goBack() {
     emit('goBack')
     }
@@ -290,7 +313,9 @@ export default {
       addCard,
       deleteThisCard,
       saveNoteDebounced,
-      goBack
+      goBack,
+      originalCards,
+      loadCards,
     }
   }
 }

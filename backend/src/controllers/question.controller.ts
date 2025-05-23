@@ -380,11 +380,11 @@ export const updateQuestionHandler = async (req: AuthReq, res: Response): Promis
 
     const { answer, note } = req.body;
     await Question.updateQuestion(id, {
-      content_pic: uploads.content_pic,
-      answer,
-      answer_pic: uploads.answer_pic,
-      detail_ans_pic: uploads.detail_ans_pic,
-      content: note,    // 把筆記對應到 Content 欄
+      Content_pic: uploads.content_pic,
+      Answer: answer,
+      Answer_pic: uploads.answer_pic,
+      DetailAns_pic: uploads.detail_ans_pic,
+      Content: note,    // 把筆記對應到 Content 欄
     });
 
     res.status(200).json({ message: '題目已更新' });

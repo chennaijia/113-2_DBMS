@@ -30,7 +30,7 @@ questionRouter.get('/random-practice', auth, getRandomWrongQuestions)
 questionRouter.get('/most-wrong', auth, getMostWrongQuestions)
 questionRouter.get('/count/:bookId', auth, getQuestionCount)
 questionRouter.post('/:id/submit', auth, submitAnswer);
-questionRouter.patch('/:id',auth,updateQuestionHandler);
+questionRouter.patch('/:id',auth,upload, updateQuestionHandler);
 
 
 

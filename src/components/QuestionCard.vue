@@ -152,20 +152,27 @@ export default {
 
     // 圖片處理
     function handleFileChange(event, card, type) {
-      const file = event.target.files[0]
-      if (!file) return
-      if (file.size > 2 * 1024 * 1024) {
-        alert('圖片太大，請選擇小於 2MB 的檔案')
-        return
-      }
+  const file = event.target.files[0]
+  if (!file) return
+  if (file.size > 2 * 1024 * 1024) {
+    alert('圖片太大，請選擇小於 2MB 的檔案')
+    return
+  }
 
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        if (type === 'questionImage') card.questionImage = e.target.result
-        if (type === 'answerImage') card.answerImage = e.target.result
-      }
-      reader.readAsDataURL(file)
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    if (type === 'questionImage') {
+      card.questionImage = e.target.result        // 預覽
+      card.questionFile  = file                   // ★真正要上傳的檔案
     }
+    if (type === 'answerImage') {
+      card.answerImage   = e.target.result
+      card.answerFile    = file                   // ★
+    }
+  }
+  reader.readAsDataURL(file)
+}
+
 
     function uploadImage(type) {
       uploadingType.value = type
