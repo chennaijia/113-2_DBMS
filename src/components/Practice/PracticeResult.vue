@@ -160,9 +160,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { fetchMostWrongQuestions, fetchRandomQuestionsPractice
+ } from '@/api/questions'
 
 const props = defineProps({
   currentSubject: String,
+  currentBookID: Number,
   total: Number,
   correct: Number,
   accuracy: Number,

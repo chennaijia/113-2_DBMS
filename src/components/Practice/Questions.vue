@@ -17,9 +17,9 @@
         </button>
       </div>
 
-      <div v-for="(question, index) in props.questions" :key="question.Question_ID"
+      <div v-for="(question, index) in props.questions" :key="question.id"
         class="d-flex align-items-start mb-3 p-3 border rounded bg-light gap-3">
-        <input type="checkbox" class="form-check-input mt-1" :value="question.Question_ID"
+        <input type="checkbox" class="form-check-input mt-1" :value="question.id"
           v-model="selectedQuestionIds" />
         <div class="text-center">
           <span class="text-s fw-bold">{{ index + 1 }}.</span>
@@ -64,11 +64,6 @@ import { fetchQuestionCount } from '@/api/questions'
 const props = defineProps({
   selectedOption: String,
   questions: Array,
-  questionCount: Number,
-  currentSubject: String,
-  userId: { type: Number, required: true },
-  book: { type: Object, required: true },
-  bookId: { type: Number, required: true },
 })
 
 // ✅ 向父層回傳選取結果
@@ -79,19 +74,6 @@ const selectedQuestionIds = ref([])
 const localCount = ref(props.questionCount)
 const totalQuestionCount = ref(0) // 後端取得的總題數
 
-
-// ✅ 生命週期：一進來就向後端拿總題數
-onMounted(async () => {
-  try {
-    console.log('📦 傳入的 bookId:/Questions', props.bookId)
-
-    totalQuestionCount.value = await fetchQuestionCount(props.bookId)
-    console.log('👌 總題數載入成功：', totalQuestionCount.value)
-  } catch (err) {
-    console.error('❌ 載入總題數失敗：', err)
-    alert('載入題目數量失敗，請稍後再試！')
-  }
-})
 
 /**
  * ✅ 監聽 props 變化
@@ -118,12 +100,23 @@ const isAllSelected = computed(() => {
   return selectedQuestionIds.value.length === props.questions.length
 })
 
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedQuestionIds.value = []
+  } else {
+    selectedQuestionIds.value = props.questions.map((q) => q.id)
+  }
+}
+
+/*
 // 點擊全選／取消全選
 const toggleSelectAll = () => {
   selectedQuestionIds.value = isAllSelected.value
     ? []
-    : props.questions.map((q) => q.Question_ID)
+    : props.questions.map((q) => q.id)
 }
+*/
 
 // 加減按鈕行為（依據 totalQuestionCount 限制）
 const increaseCount = () => {
@@ -156,7 +149,7 @@ const filteredQuestions = computed(() => {
 function confirmSelection() {
   const selected =
     props.selectedOption === 'option1'
-      ? props.questions.filter((q) => selectedQuestionIds.value.includes(q.Question_ID))
+      ? props.questions.filter((q) => selectedQuestionIds.value.includes(q.id))
       : filteredQuestions.value
 
   emit('update-selected', selected)

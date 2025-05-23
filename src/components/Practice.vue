@@ -10,11 +10,11 @@
       </div>
 
       <div class="d-flex gap-3 align-items-center">
-        <span>{{ currentIndex + 1 }} / {{ props.questions.length }}</span>
+        <span>{{ currentIndex + 1 }} / {{ props.questions?.length || 0 }}</span>
         <span><i class="bi bi-clock"></i> {{ timer }}</span>
       </div>
     </div>
-    <div v-if="props.questions && props.questions.length" class="practice-content">
+    <div v-if="props.questions && currentLength.value" class="practice-content">
       <div class="progress mb-4">
         <div class="progress-bar" role="progressbar" :style="{ width: progressWidth + '%' }"
           :aria-valuenow="progressWidth" aria-valuemin="0" aria-valuemax="100"></div>
@@ -81,7 +81,7 @@
         </button>
 
         <button class="btn btn-outline-primary rounded-pill" @click="nextQuestion"
-          v-if="currentIndex < props.questions.length - 1">
+          v-if="currentIndex < currentLength.value - 1">
           下一題 <i class="bi bi-caret-right-fill"></i>
         </button>
         <button class="btn btn-outline-primary rounded-pill" @click="finishPractice" v-else>
@@ -91,14 +91,6 @@
     </div>
     <div v-else class="text-center mt-5 text-muted">尚未選擇題目，請回到上一頁選擇後開始練習</div>
   </div>
-
-  <Questions :selectedOption="props.mode" :questions="props.questions" :questionCount="props.count"
-    :currentSubject="props.currentSubject" :userId="props.userId" :book="props.book"
-    @update-selected="handleSelectedQuestion" />
-
-  <SelectQuestions :book="props.book" :userId="props.userId" :currentSubject="props.currentSubject"
-    @start-practice="handleStartPractice" />
-
 </template>
 
 <script setup>
@@ -111,23 +103,6 @@ const props = defineProps({
   currentSubject: String,
   questions: {
     type: Array,
-    required: false,
-    default: () => [],
-  },
-  mode: {
-    type: String,
-    required: true,
-  },
-  count: {
-    type: Number,
-    default: 5,
-  },
-  book:{
-    type: Object,
-    required: true,
-  },
-  userId: {
-    type: Number,
     required: true,
   },
 })
@@ -135,11 +110,13 @@ const props = defineProps({
 const emit = defineEmits(['change-page', 'goBack', 'finish-practice'])
 const currentQuestion = computed(() => props.questions[currentIndex.value] || {})
 const currentImage = computed(() => props.questions[currentIndex.value]?.image || '')
+const currentLength = ref('')
+
 
 const currentIndex = ref(0)
 
 const progressWidth = computed(() => {
-  return ((currentIndex.value + 1) / props.questions.length) * 100
+  return ((currentIndex.value + 1) / currentLength.value) * 100
 })
 
 const currentType = computed(() => {
@@ -179,10 +156,10 @@ function startStopwatch() {
 }
 
 onMounted(() => {
-  console.log('📘 book from props:/Practice', props.book)
-  console.log('👤 userId from props/Practice:', props.userId)
-  console.log('📦 問題數量:', props.questions.length)
-  if (props.questions && props.questions.length > 0) {
+  currentLength.value = props.length
+  console.log(props.questions)
+  console.log('📦 問題數量:', currentLength.value)
+  if (props.questions && currentLength.value > 0) {
     startStopwatch()
     currentIndex.value = 0
   }
@@ -214,7 +191,7 @@ function checkAnswer() {
 }
 
 function nextQuestion() {
-  if (currentIndex.value < props.questions.length - 1) {
+  if (currentIndex.value < currentLength.value - 1) {
     currentIndex.value++
   }
 }
@@ -225,7 +202,6 @@ function manualJudge(result) {
 }
 
 function finishPractice() {
-  //待辦：更新至資料庫（錯題次數）
   const result = {
     questions: props.questions,
     timeSpent: timer.value,

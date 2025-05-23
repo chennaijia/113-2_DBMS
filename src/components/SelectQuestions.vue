@@ -24,8 +24,10 @@
       <p class="text-s">{{ content[selectedOption] }}</p>
 
       <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
-        <Questions :selectedOption="selectedOption" :questions="questions" :bookId="bookId"
-          :questionCount="questionCount" @update-selected="handleSelectedQuestion" />
+        <Questions
+          :selectedOption="selectedOption"
+          :questions="questions"
+          @update-selected="handleSelectedQuestion" />
       </div>
     </div>
   </div>
@@ -47,7 +49,7 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  book: {
+  currentBookID: {
     type: Number,
     required: true,
   },
@@ -63,7 +65,7 @@ const content = {
   option3: '請在下方選取要練習的題目數!',
 }
 
-const bookId = ref(props.book.QuestionBook_ID)
+const bookId = ref(props.currentBookID)
 const questions = ref([])
 const totalQuestionCount = ref(0)
 
@@ -126,52 +128,43 @@ const totalQuestionCount = ref(0)
 
 const handleSelection = () => {
   selectedQuestions.value = []
-  handleSelectedQuestion()
 }
 
 
-
-
-const handleSelectedQuestion = async () => {
-  console.log('🚀 handleSelectedQueston開始載入題目')
-
-  selectedQuestions.value = []
-  questionCount.value = await fetchQuestionCount(bookId.value)
-  console.log('🚀 題目數量：', questionCount.value)
-
-  if (selectedOption.value === 'option1') {
-    // 自選題目：載入所有題目供使用者勾選
-    questions.value = await fetchQuestionsByBookPractice(bookId.value)
-    console.log('🚀 自選題目：', questions.value)
-  } else if (selectedOption.value === 'option2') {
-    // 隨機出題：從後端取得隨機題目
-    questions.value = await fetchRandomQuestionsPractice(bookId.value, questionCount.value)
-    selectedQuestions.value = questions.value
-    console.log('🚀 隨機出題：', questions.value)
-  } else if (selectedOption.value === 'option3') {
-    // 錯最多的題目：取得所有題目並排序
-    questions.value = await fetchMostWrongQuestionsPractice(bookId.value, questionCount.value)
-    selectedQuestions.value = questions.value
-    console.log('🚀 錯最多的題目：', questions.value)
-  }
-
+const handleSelectedQuestion = (questions) => {
+  selectedQuestions.value = questions
   if (selectedQuestions.value.length === 0) {
     alert('尚未選擇題目！')
     return
   }
-  emit('start-practice', {
-    mode: selectedOption.value,
-    questions: selectedQuestions.value,
-    count: questionCount.value,
-  })
+  emit('start-practice', selectedQuestions.value)
+  console.log('🚀 handleSelectedQueston開始練習', selectedQuestions.value)
+
 
 }
 
 
 onMounted(async () => {
-  console.log('📘 book from props:/SelectQuestions', props.book)
-  console.log('👤 userId from props:/SelectQuestons', props.userId)
-  console.log('📦 bookId from props:/SelectQuestions', props.book.QuestionBook_ID)
+
+  console.log('📦 bookId from props:/SelectQuestions', bookId.value)
+
+  try {
+    console.log('🚀 handleSelectedQueston開始載入題目')
+
+    selectedQuestions.value = []
+
+
+    // 自選題目：載入所有題目供使用者勾選
+    questions.value = await fetchQuestionsByBookPractice(bookId.value)
+    questions.value = questions.value.map((q, index) => ({
+      ...q,
+      id: index + 1, // 確保每個題目都有唯一的 ID
+    }))
+    console.log('🚀 自選題目：', questions.value)
+  } catch (error) {
+    console.error('載入題目時發生錯誤:', error)
+    alert('載入題目時發生錯誤，請稍後再試。')
+  }
 
 })
 
