@@ -324,7 +324,7 @@ export default {
   top: 0;
   left: 80px;
   right: 0;
-  width: 1200px;
+  width: 95%;
   background-color: #fff;
   z-index: 100;
   padding: 10px 20px;
