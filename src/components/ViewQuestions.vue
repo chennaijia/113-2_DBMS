@@ -136,8 +136,10 @@ export default {
           answerImage: q.Answer_pic || '',                    // ✅ 解答圖片
           note: q.Content || '',                                 // ✅ 筆記（如有）
           starred: q.isStar === 1,                            // ✅ 加星欄位轉換
-          wrongCount: q.wrong_count || 0,                     // ✅ 錯誤次數（如有統計）
-          rightCount: q.right_count || 0                      // ✅ 正確次數（如有統計）
+          wrongCount: q.errCount,
+          rightCount: q.practiceCount - q.errCount < 0
+               ? 0
+               : q.practiceCount - q.errCount
         }))
 
         console.log('✅ 題目卡載入完成：', cards.value)
