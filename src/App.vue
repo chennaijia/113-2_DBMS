@@ -7,12 +7,11 @@
       </div>
 
       <div v-else-if="currentPage === 'book'">
-        <ViewBooks :subjects="subjects" @change-page="handleChangePage"/>
+        <ViewBooks :subjects="subjects" @change-page="handleChangePage" />
       </div>
 
       <div v-else-if="currentPage === 'question'">
-        <ViewQuestions :currentSubject="currentSubject" :book="currentBook"  @goBack="goBack"/>
-
+        <ViewQuestions :currentSubject="currentSubject" :book="currentBook" @goBack="goBack" />
       </div>
 
       <div v-else-if="currentPage === 'practice'">
@@ -21,8 +20,8 @@
           :currentSubject="currentSubject"
           @change-page="handleChangePage"
           :questions="selectedQuestions.value"
-          :mode="selectedMode"
-          :count="questionCount"
+          :mode="selectedMode.value"
+          :count="questionCount.value"
           @goBack="goBack"
           @finish-practice="handleFinishPractice"
         />
@@ -78,6 +77,7 @@ import BackendTestQuestion from './components/BackendTestQuestion.vue'
 
 const subjects = ref(['高三國文', '高二數學'])
 const currentPage = ref('home')
+const questions = ref([])
 const currentSubject = ref('')
 const currentBook = ref(null)
 const startPractice = ref(false)
@@ -90,7 +90,6 @@ const userName = ref('')
 const selectedMode = ref('')
 const questionCount = ref(1)
 const userId = ref(1) // ✅ 不要是空字串
-
 
 if (localStorage.getItem('userName')) {
   isLoggedIn.value = true
@@ -121,9 +120,8 @@ provide('loginState', {
   isLoggedIn,
   userName,
   login: handleLogin,
-  logout: handleLogout
+  logout: handleLogout,
 })
-
 
 const practiceResult = ref({
   questions: [],
@@ -139,40 +137,36 @@ function handleChangePage(page, payload = '') {
     currentBook.value = payload
     currentSubject.value = payload.BName // 如果你想用名稱當 subject
 
-        console.log('App.vue: 收到 change-page 事件，頁面:', page, '選中的書本:', currentBook.value);
+    console.log('App.vue: 收到 change-page 事件，頁面:', page, '選中的書本:', currentBook.value)
   } else {
     currentSubject.value = payload
 
-        console.log('App.vue: 收到 change-page 事件，頁面:', page, '主題:', currentSubject.value);
+    console.log('App.vue: 收到 change-page 事件，頁面:', page, '主題:', currentSubject.value)
   }
 }
 
-
-function setQuestion({ mode, questions, count }) {
-  selectedMode.value = mode
-  selectedQuestions.value = questions
-  questionCount.value = count
+function setQuestion({ questions: selected }) {
+  if (!questions || !Array.isArray(questions) || questions.length === 0) {
+    console.log('傳入的題目為空或格式錯誤')
+    return
+  }
+  selectedQuestions.value = selected
   startPractice.value = true
 }
 
-
-
 function goBack() {
   if (currentPage.value === 'practice') {
-    // 練習模式的返回
     startPractice.value = false
     isFinished.value = false
     practiceResult.value = {
       questions: [],
       timeSpent: '00:00',
     }
-    currentPage.value = 'home'
   } else if (currentPage.value === 'question') {
     // 錯題瀏覽的返回（可回首頁或回書本）
-    currentPage.value = 'book'  // ✅ 改這裡，看你想返回哪一頁
+    currentPage.value = 'book' // ✅ 改這裡，看你想返回哪一頁
   }
 }
-
 
 function handleFinishPractice(result) {
   isFinished.value = true

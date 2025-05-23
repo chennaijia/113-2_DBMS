@@ -1,65 +1,74 @@
 <template>
   <!-- 上方按鈕列 -->
   <div class="toolbar d-flex justify-content-between align-items-center">
-  <!-- 返回鍵區 -->
-  <div class="d-flex align-items-center gap-3">
-  <button class="btn btn-outline-primary rounded-pill return-btn" @click="goBack">
-    <i class="bi bi-caret-left"></i>
-    <span class="ms-2">返回</span>
-  </button>
-  <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題瀏覽</div>
+    <!-- 返回鍵區 -->
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-outline-primary rounded-pill return-btn" @click="goBack">
+        <i class="bi bi-caret-left"></i>
+        <span class="ms-2">返回</span>
+      </button>
+      <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題瀏覽</div>
+    </div>
+
+    <!-- 其他內容 -->
+    <div class="toolbar-content d-flex flex-wrap align-items-center gap-3">
+      <select
+        @change="onFilterChange"
+        v-model="filterOption"
+        class="form-select rounded-pill border-primary text-primary"
+        style="width: auto"
+      >
+        <option value="">全部</option>
+        <option value="starred">加星號</option>
+        <option value="noAnswer">錯誤超過五次</option>
+        <option value="truefalse">是非題</option>
+        <option value="multiple123">選擇題(數字選項)</option>
+        <option value="multipleABC">選擇題(字母選項)</option>
+        <option value="open">問答題</option>
+      </select>
+
+      <button class="btn btn-outline-primary rounded-pill" @click="toggleEditMode">
+        {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
+      </button>
+
+      <button class="btn btn-outline-primary rounded-pill" @click="openAddCardModal">
+        ➕ 新增錯題
+      </button>
+
+      <button class="btn btn-outline-primary rounded-pill" @click="toggleShowAnswers">
+        {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
+      </button>
+    </div>
   </div>
-
-  <!-- 其他內容 -->
-  <div class="toolbar-content d-flex flex-wrap align-items-center gap-3">
-
-    <select @change="onFilterChange" v-model="filterOption" class="form-select rounded-pill border-primary text-primary" style="width: auto;">
-      <option value="">全部</option>
-      <option value="starred">加星號</option>
-      <option value="noAnswer">錯誤超過五次</option>
-      <option value="truefalse">是非題</option>
-      <option value="multiple123">選擇題(數字選項)</option>
-      <option value="multipleABC">選擇題(字母選項)</option>
-      <option value="open">問答題</option>
-    </select>
-
-    <button class="btn btn-outline-primary rounded-pill" @click="toggleEditMode">
-      {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
-    </button>
-
-    <button class="btn btn-outline-primary rounded-pill" @click="openAddCardModal">
-      ➕ 新增錯題
-    </button>
-
-    <button class="btn btn-outline-primary rounded-pill" @click="toggleShowAnswers">
-      {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
-    </button>
-  </div>
-</div>
-
 
   <!-- 題目列表 -->
   <div class="question-container">
     <div v-for="(card, index) in filteredCards" :key="card.id">
-      <QuestionCard :index="index + 1" :card="card" :editMode="editMode" :showAnswers="showAnswers"
-        @toggle-star="toggleStar(card.id)" @edit="openEditCardModal(card)" @delete-card="deleteThisCard"
-        @update-note="saveNoteDebounced" />
+      <QuestionCard
+        :index="index + 1"
+        :card="card"
+        :editMode="editMode"
+        :showAnswers="showAnswers"
+        @toggle-star="toggleStar(card.id)"
+        @edit="openEditCardModal(card)"
+        @delete-card="deleteThisCard"
+        @update-note="saveNoteDebounced"
+      />
     </div>
 
-
     <!-- 下方按鈕列 -->
-
   </div>
 
-
   <!-- Modal區域 -->
-  <AddCardModal :bookId="book.QuestionBook_ID" v-if="showAddModal" @close="showAddModal = false" @add-card="addCard" />
+  <AddCardModal
+    :bookId="book.QuestionBook_ID"
+    v-if="showAddModal"
+    @close="showAddModal = false"
+    @add-card="addCard"
+  />
 </template>
 
-
-
 <script>
-
 import { ref, computed, onMounted, watch } from 'vue'
 import QuestionCard from './QuestionCard.vue'
 import AddCardModal from './AddCardModal.vue'
@@ -68,7 +77,6 @@ import { deleteQuestionById } from '../api/questions'
 import { updateStarStatus } from '../api/questions'
 import { debounce } from 'lodash-es'
 import { updateNote } from '../api/questions'
-
 
 export default {
   props: {
@@ -79,7 +87,7 @@ export default {
     },
   },
   components: { QuestionCard, AddCardModal },
-  setup(props,{ emit }) {
+  setup(props, { emit }) {
     const cards = ref([])
 
     const defaultCards = () => [
@@ -106,7 +114,7 @@ export default {
         starred: false,
         wrongCount: 0,
         rightCount: 0,
-      }
+      },
     ]
     const loadCards = async () => {
       try {
@@ -128,15 +136,14 @@ export default {
 
         cards.value = data.map((q) => ({
           id: q.Question_ID || q.id,
-          questionType: q.QType || '',                        // ✅ 題型轉換
-          question: q.Content || '',                          // ✅ 題目文字（目前可能是空）
-          answer: q.Answer || '',                             // ✅ 答案內容
-          questionImage: q.Content_pic || '',                 // ✅ 題目圖片
-          answerImage: q.Answer_pic || '',                    // ✅ 解答圖片
-          note: q.Content || '',                                 // ✅ 筆記（如有）
-          starred: q.isStar === 1,                            // ✅ 加星欄位轉換
-          wrongCount: q.wrong_count || 0,                     // ✅ 錯誤次數（如有統計）
-          rightCount: q.right_count || 0                      // ✅ 正確次數（如有統計）
+          questionType: q.QType || '', // ✅ 題型轉換
+          answer: q.Answer || '', // ✅ 答案內容
+          questionImage: q.Content_pic || '', // ✅ 題目圖片
+          answerImage: q.Answer_pic || '', // ✅ 解答圖片
+          note: q.Content || '', // ✅ 筆記（如有）
+          starred: q.isStar === 1, // ✅ 加星欄位轉換
+          wrongCount: q.wrong_count || 0, // ✅ 錯誤次數（如有統計）
+          rightCount: q.right_count || 0, // ✅ 正確次數（如有統計）
         }))
 
         console.log('✅ 題目卡載入完成：', cards.value)
@@ -145,7 +152,6 @@ export default {
         cards.value = defaultCards()
       }
     }
-
 
     onMounted(loadCards)
 
@@ -162,14 +168,13 @@ export default {
     const showAnswers = ref(true)
     const filterOption = ref('')
 
-
     const filteredCards = computed(() => {
       if (filterOption.value === 'starred') {
-        return cards.value.filter(c => c.starred)
+        return cards.value.filter((c) => c.starred)
       } else if (filterOption.value === 'noAnswer') {
-        return cards.value.filter(c => c.wrongCount > 5)
+        return cards.value.filter((c) => c.wrongCount > 5)
       } else if (['truefalse', 'multiple123', 'multipleABC', 'open'].includes(filterOption.value)) {
-        return cards.value.filter(c => c.questionType === filterOption.value)
+        return cards.value.filter((c) => c.questionType === filterOption.value)
       } else {
         return cards.value
       }
@@ -188,7 +193,6 @@ export default {
           return noQuestionImage || noAnswer
         })
 
-
         if (invalidCard) {
           alert('請確保每張卡片都有「題目圖片」且「答案」不為空')
           return
@@ -198,34 +202,29 @@ export default {
       editMode.value = !editMode.value
     }
     function goBack() {
-    emit('goBack')
+      emit('goBack')
     }
-
 
     function onFilterChange(event) {
       filterOption.value = event.target.value
     }
 
-
     function openAddCardModal() {
       showAddModal.value = true
     }
-
 
     function openEditCardModal(card) {
       selectedCard.value = card
       showEditModal.value = true
     }
 
-
     function closeModals() {
       showAddModal.value = false
       showEditModal.value = false
     }
 
-
     async function toggleStar(cardId) {
-      const card = cards.value.find(c => c.id === cardId)
+      const card = cards.value.find((c) => c.id === cardId)
       if (!card) return
 
       try {
@@ -239,11 +238,9 @@ export default {
       }
     }
 
-
     function toggleShowAnswers() {
       showAnswers.value = !showAnswers.value
     }
-
 
     function addCard(newCard) {
       cards.value.push(newCard)
@@ -254,7 +251,7 @@ export default {
 
       try {
         await deleteQuestionById(id)
-        cards.value = cards.value.filter(card => card.id !== id)
+        cards.value = cards.value.filter((card) => card.id !== id)
         console.log('✅ 題目已從資料庫刪除')
       } catch (err) {
         console.error('❌ 刪除失敗:', err)
@@ -269,8 +266,6 @@ export default {
         .then(() => console.log('✅ 筆記儲存成功'))
         .catch((err) => console.error('❌ 筆記儲存失敗:', err))
     }, 1000)
-
-
 
     return {
       cards,
@@ -291,13 +286,11 @@ export default {
       addCard,
       deleteThisCard,
       saveNoteDebounced,
-      goBack
+      goBack,
     }
-  }
+  },
 }
-
 </script>
-
 
 <style scoped>
 .toolbar {
@@ -326,5 +319,4 @@ export default {
 .question-container {
   padding-top: 30px; /* 根據 .toolbar 的高度調整 */
 }
-
 </style>

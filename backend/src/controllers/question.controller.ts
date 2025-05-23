@@ -338,4 +338,57 @@ export const submitAnswer = async (req: AuthReq, res: Response): Promise<void> =
     console.error('❌ 提交答案失敗:', err);
     res.status(500).json({ message: '提交答案失敗' });
   }
+}
+
+export const updateQuestionHandler = async (req: AuthReq, res: Response): Promise<void> => {
+  try {
+    const id = +req.params.id;
+    const userId = req.user!.id;
+
+    // 權限檢查
+    const [rows]: any = await pool.query(
+      'SELECT Creator_ID FROM QUESTION WHERE Question_ID = ?',
+      [id]
+    );
+    if (rows.length === 0 || rows[0].Creator_ID !== userId) {
+      res.status(403).json({ message: '無權限修改此題' });
+      return;
+    }
+
+    // 處理圖片上傳 (同 uploadQuestion)
+    const uploads: Partial<{
+      content_pic: string;
+      answer_pic: string;
+      detail_ans_pic: string;
+    }> = {};
+    const files = req.files as Record<string, Express.Multer.File[]>;
+
+    for (const field of ['content_pic','answer_pic','detail_ans_pic'] as const) {
+      if (files?.[field]?.[0]) {
+        const stream = streamifier.createReadStream(files[field][0].buffer);
+        const uploadResult: any = await new Promise((resolve, reject) => {
+          const cld_upload_stream = cloudinary.uploader.upload_stream(
+            { folder: 'questions' },
+            (error, result) => error ? reject(error) : resolve(result)
+          );
+          stream.pipe(cld_upload_stream);
+        });
+        uploads[field] = (uploadResult as any).secure_url;
+      }
+    }
+
+    const { answer, note } = req.body;
+    await Question.updateQuestion(id, {
+      content_pic: uploads.content_pic,
+      answer,
+      answer_pic: uploads.answer_pic,
+      detail_ans_pic: uploads.detail_ans_pic,
+      content: note,    // 把筆記對應到 Content 欄
+    });
+
+    res.status(200).json({ message: '題目已更新' });
+  } catch (err) {
+    console.error('❌ 題目更新失敗:', err);
+    res.status(500).json({ message: '更新題目失敗' });
+  }
 };

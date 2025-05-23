@@ -9,6 +9,10 @@
         <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題練習</div>
       </div>
     </div>
+    <div>
+      <!--刪-->
+      <CanvasRPG :answerResult="true" :questionIndex="1" />
+    </div>
 
     <div class="container d-flex flex-column align-items-center mt-5 gap-3">
       <div class="dropdown-container text-center">
@@ -32,6 +36,8 @@
           :selectedOption="selectedOption"
           :questions="questions"
           :questionCount="questionCount"
+          :userId="props.userId"
+          :bookId="1"
           @update-selected="handleSelectedQuestion"
         />
       </div>
@@ -42,6 +48,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import Questions from './Practice/Questions.vue'
+import CanvasRPG from './Practice/CanvasRPG.vue'
 
 const selectedOption = ref('option0')
 const questionCount = ref(1)
@@ -62,11 +69,10 @@ const content = {
   option3: '請在下方選取要練習的題目數!',
 }
 
-//待辦：改成從錯題本抓！
+//待辦：改成從錯題本抓！（應該有）
 const questions = ref([
   {
     id: 1,
-    question: '問題1',
     wrongCount: 8,
     image: '/images/1.jpg',
     questionType: 'open',
@@ -79,7 +85,6 @@ const questions = ref([
   },
   {
     id: 2,
-    question: '問題2',
     wrongCount: 0,
     image: '/images/2.jpg',
     questionType: 'multiple123',
@@ -92,7 +97,6 @@ const questions = ref([
   },
   {
     id: 3,
-    question: '問題3',
     wrongCount: 3,
     image: '/images/3.jpg',
     questionType: 'open',
@@ -105,7 +109,6 @@ const questions = ref([
   },
   {
     id: 4,
-    question: '問題4',
     wrongCount: 5,
     image: '/images/4.jpg',
     questionType: 'open',
@@ -130,9 +133,7 @@ function handleSelectedQuestion(questions) {
   }
 
   emit('start-practice', {
-    mode: selectedOption.value,
-    questions: selected,
-    count: questionCount.value,
+    questions: selectedQuestions.value,
   })
 }
 

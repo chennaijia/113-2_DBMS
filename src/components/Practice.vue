@@ -14,7 +14,13 @@
         <span><i class="bi bi-clock"></i> {{ timer }}</span>
       </div>
     </div>
+
     <div v-if="props.questions && props.questions.length" class="practice-content">
+      <CanvasRPG
+        :answerResult="props.questions[currentIndex]?.isCorrect"
+        :questionIndex="currentIndex"
+      />
+
       <div class="progress mb-4">
         <div
           class="progress-bar"
@@ -138,16 +144,12 @@ const props = defineProps({
   currentSubject: String,
   questions: {
     type: Array,
-    required: false,
-    default: () => [],
   },
   mode: {
     type: String,
-    required: true,
   },
   count: {
     type: Number,
-    default: 5,
   },
 })
 
