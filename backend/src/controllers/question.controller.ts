@@ -4,7 +4,7 @@ import { AuthReq } from '../middleware/auth';
 import cloudinary from '../config/cloudinary';
 import streamifier from 'streamifier';
 import { pool } from '../config/database'; // 確保這裡的 pool 是正確的
-import { listQuestionsByBook as getByBook,
+import { listQuestionsByBook as listQuestionsByBookModel,
         getRandomPracticeQuestions,
         getMostWrongQuestions as getMostWrongQuestionsModel,
         getQuestionCount as getQuestionCountModel,
@@ -67,6 +67,8 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
       level: 1,
       creator_id: req.user!.id,
       isStar: 0,
+      practiceCount: 0,
+      errCount: 0
     };
 
     console.log('📤 準備存入資料庫的題目：', newQuestion);
@@ -107,17 +109,41 @@ export const listQuestions = async (req: AuthReq, res: Response) => {
 };
 
 //viewQuestion取得題本中的題目
-export const listQuestionsByBook = async (req: AuthReq, res: Response) => {
+export const listQuestionsByBook = async (
+  req: AuthReq,
+  res: Response
+): Promise<void> => {
   try {
-    const bookId = +req.params.bookId
+    const bookId = Number(req.params.bookId)
     const userId = req.user!.id
-    const rows = await getByBook(bookId, userId)
-    res.status(200).json(rows)
+
+    // 1️⃣ 參數檢查 ─── 提早回應就立刻 return
+    if (Number.isNaN(bookId)) {
+      res.status(400).json({ message: 'bookId 必須是數字' })
+      return
+    }
+
+    // 2️⃣ 撈資料
+    const rows = await listQuestionsByBookModel(bookId, userId)
+
+    // 3️⃣ 若找不到題目，可選擇回 404
+    if (!rows.length) {
+      res.status(404).json({ message: '這本書目前沒有題目' })
+      return
+    }
+
+    // 4️⃣ ✅ 唯一一次正常回傳
+     res.status(200).json(rows)
   } catch (err) {
     console.error('❌ listQuestionsByBook 失敗：', err)
-    res.status(500).json({ message: '讀取題目失敗' })
+
+    // 5️⃣ 只要沒回傳過才送 500，避免重複送
+    if (!res.headersSent) {
+      res.status(500).json({ message: '讀取題目失敗' })
+    }
   }
 }
+
 
 //viewQuestion刪除題目
 export const deleteQuestion = async (req: AuthReq, res: Response): Promise<void> => {

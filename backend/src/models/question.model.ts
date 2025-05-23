@@ -13,6 +13,8 @@ export interface QuestionInput {
   level: number;
   creator_id: number;
   isStar?: number; // 是否為收藏題目，預設值為 0
+  practiceCount: number;
+  errCount:     number
 }
 
 
@@ -26,8 +28,8 @@ export const createQuestion = async (
 ): Promise<number> => {
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO question
-     (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar, practiceCount, errCount)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       q.qtype,
       q.content || '',
@@ -40,6 +42,8 @@ export const createQuestion = async (
       q.level,
       q.creator_id,
       q.isStar || 0,
+      q.practiceCount || 0,
+      q.errCount || 0
     ]
   );
 
