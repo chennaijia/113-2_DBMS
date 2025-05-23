@@ -18,6 +18,7 @@
 
 
     <button @click="testClick">點我測試</button>
+
   </div>
 
 
@@ -96,9 +97,15 @@
 </template>
 <script setup>
 
+import { fetchQuestionsByBook, fetchQuestionCount } from '@/api/questions';
+
 
 const testClick = () => {
+  const count = fetchQuestionCount(2);
+  const questions = fetchQuestionsByBook(2);
   console.log('✅ 測試按鈕有反應！');
+  console.log('📥 測試按鈕回傳的資料：', count);
+  console.log('📌 測試按鈕回傳的資料：', questions);
 }
 
 

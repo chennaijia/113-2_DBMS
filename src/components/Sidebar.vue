@@ -78,24 +78,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted,  inject} from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { Icon } from '@iconify/vue'
 import Login from './Login.vue'
 
-// ✅ 確保注入的是響應式變數本身，而不是它們的 .value
-const {
-  isLoggedIn, // 直接使用從 App.vue 注入的 isLoggedIn ref
-  userName,   // 直接使用從 App.vue 注入的 userName ref
-  login: handleLoginFromParent,
-  logout: handleLogoutFromParent
-} = inject('loginState')
-
 const isSidebarOpen = ref(false)
-/*
 const isLoggedIn = ref(false)
 const userName = ref('')
-*/
 const showLoginModal = ref(false)
 const books = ref([])
 
@@ -116,21 +106,20 @@ function openLoginModal() {
 function closeLoginModal() {
   showLoginModal.value = false
 }
-// ✅ 調用父組件提供的 handleLogin 函式
 function handleLogin(newUserName) {
-  handleLoginFromParent(newUserName) // App.vue 會更新 isLoggedIn 和 userName
-  fetchBooks() // 登入成功後重新抓取題本
+  isLoggedIn.value = true
+  userName.value = newUserName
+  localStorage.setItem('userName', newUserName)
+  fetchBooks()
   closeLoginModal()
   closeSidebar()
 }
-
-// ✅ 調用父組件提供的 logout 函式
 function logout() {
-  handleLogoutFromParent() // App.vue 會更新 isLoggedIn 和 userName，並清空 books
-  books.value = [] // 這裡可以清空本地的 books 列表
+  isLoggedIn.value = false
+  userName.value = ''
+  localStorage.removeItem('userName')
   closeSidebar()
 }
-
 function handleLoginClick() {
   if (isLoggedIn.value) {
     logout()
@@ -141,11 +130,6 @@ function handleLoginClick() {
 
 // 從後端抓題本
 async function fetchBooks() {
-  // ✅ 這裡也直接檢查注入的 isLoggedIn.value
-  if (!isLoggedIn.value) {
-    books.value = []; // 未登入時清空列表
-    return;
-  }
   try {
     const token = localStorage.getItem('token')
     const res = await axios.get('http://localhost:3000/api/books', {
@@ -161,20 +145,11 @@ async function fetchBooks() {
 }
 
 // 初次載入
-/*
 onMounted(() => {
   const savedUser = localStorage.getItem('userName')
   if (savedUser) {
     isLoggedIn.value = true
     userName.value = savedUser
-    fetchBooks()
-  }
-
-  window.addEventListener('refresh-books', fetchBooks)
-})
-  */
- onMounted(() => {
-  if (isLoggedIn.value) {
     fetchBooks()
   }
 

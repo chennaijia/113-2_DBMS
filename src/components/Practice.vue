@@ -10,17 +10,11 @@
       </div>
 
       <div class="d-flex gap-3 align-items-center">
-        <span>{{ currentIndex + 1 }} / {{ props.questions.length }}</span>
+        <span>{{ currentIndex + 1 }} / {{ props.questions?.length || 0 }}</span>
         <span><i class="bi bi-clock"></i> {{ timer }}</span>
       </div>
     </div>
-
-    <div v-if="props.questions && props.questions.length" class="practice-content">
-      <CanvasRPG
-        :answerResult="props.questions[currentIndex]?.isCorrect"
-        :questionIndex="currentIndex"
-      />
-
+    <div v-if="props.questions && currentLength.value" class="practice-content">
       <div class="progress mb-4">
         <div
           class="progress-bar"
@@ -124,7 +118,7 @@
         <button
           class="btn btn-outline-primary rounded-pill"
           @click="nextQuestion"
-          v-if="currentIndex < props.questions.length - 1"
+          v-if="currentIndex < currentLength.value - 1"
         >
           下一題 <i class="bi bi-caret-right-fill"></i>
         </button>
@@ -139,28 +133,25 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import Questions from './Practice/Questions.vue'
 
 const props = defineProps({
   currentSubject: String,
   questions: {
     type: Array,
-  },
-  mode: {
-    type: String,
-  },
-  count: {
-    type: Number,
+    required: true,
   },
 })
 
 const emit = defineEmits(['change-page', 'goBack', 'finish-practice'])
 const currentQuestion = computed(() => props.questions[currentIndex.value] || {})
 const currentImage = computed(() => props.questions[currentIndex.value]?.image || '')
+const currentLength = ref('')
 
 const currentIndex = ref(0)
 
 const progressWidth = computed(() => {
-  return ((currentIndex.value + 1) / props.questions.length) * 100
+  return ((currentIndex.value + 1) / currentLength.value) * 100
 })
 
 const currentType = computed(() => {
@@ -200,7 +191,10 @@ function startStopwatch() {
 }
 
 onMounted(() => {
-  if (props.questions && props.questions.length > 0) {
+  currentLength.value = props.length
+  console.log(props.questions)
+  console.log('📦 問題數量:', currentLength.value)
+  if (props.questions && currentLength.value > 0) {
     startStopwatch()
     currentIndex.value = 0
   }
@@ -232,7 +226,7 @@ function checkAnswer() {
 }
 
 function nextQuestion() {
-  if (currentIndex.value < props.questions.length - 1) {
+  if (currentIndex.value < currentLength.value - 1) {
     currentIndex.value++
   }
 }
@@ -243,7 +237,6 @@ function manualJudge(result) {
 }
 
 function finishPractice() {
-  //待辦：更新至資料庫（錯題次數）
   const result = {
     questions: props.questions,
     timeSpent: timer.value,

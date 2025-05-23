@@ -35,9 +35,6 @@
         <Questions
           :selectedOption="selectedOption"
           :questions="questions"
-          :questionCount="questionCount"
-          :userId="props.userId"
-          :bookId="1"
           @update-selected="handleSelectedQuestion"
         />
       </div>
@@ -46,9 +43,13 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import Questions from './Practice/Questions.vue'
-import CanvasRPG from './Practice/CanvasRPG.vue'
+import {
+  fetchQuestionsByBookPractice,
+  fetchRandomQuestionsPractice,
+  fetchQuestionCount,
+} from '@/api/questions'
 
 const selectedOption = ref('option0')
 const questionCount = ref(1)
@@ -61,6 +62,14 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  currentBookID: {
+    type: Number,
+    required: true,
+  },
+  userId: {
+    type: Number,
+    required: true,
+  },
 })
 
 const content = {
@@ -69,8 +78,12 @@ const content = {
   option3: '請在下方選取要練習的題目數!',
 }
 
-//待辦：改成從錯題本抓！（應該有）
-const questions = ref([
+const bookId = ref(props.currentBookID)
+const questions = ref([])
+const totalQuestionCount = ref(0)
+
+//改好了
+/*const questions = ref([
   {
     id: 1,
     wrongCount: 8,
@@ -120,22 +133,42 @@ const questions = ref([
     checked: false,
   },
 ])
+*/
 
 const handleSelection = () => {
   selectedQuestions.value = []
 }
 
-function handleSelectedQuestion(questions) {
+const handleSelectedQuestion = (questions) => {
   selectedQuestions.value = questions
   if (selectedQuestions.value.length === 0) {
     alert('尚未選擇題目！')
     return
   }
-
-  emit('start-practice', {
-    questions: selectedQuestions.value,
-  })
+  emit('start-practice', selectedQuestions.value)
+  console.log('🚀 handleSelectedQueston開始練習', selectedQuestions.value)
 }
+
+onMounted(async () => {
+  console.log('📦 bookId from props:/SelectQuestions', bookId.value)
+
+  try {
+    console.log('🚀 handleSelectedQueston開始載入題目')
+
+    selectedQuestions.value = []
+
+    // 自選題目：載入所有題目供使用者勾選
+    questions.value = await fetchQuestionsByBookPractice(bookId.value)
+    questions.value = questions.value.map((q, index) => ({
+      ...q,
+      id: index + 1, // 確保每個題目都有唯一的 ID
+    }))
+    console.log('🚀 自選題目：', questions.value)
+  } catch (error) {
+    console.error('載入題目時發生錯誤:', error)
+    alert('載入題目時發生錯誤，請稍後再試。')
+  }
+})
 
 // ✅ 點擊返回
 function goBack() {

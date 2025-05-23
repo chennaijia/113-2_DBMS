@@ -94,9 +94,6 @@ import { fetchQuestionCount } from '@/api/questions'
 const props = defineProps({
   selectedOption: String,
   questions: Array,
-  questionCount: Number,
-  userId: { type: Number, required: true },
-  bookId: { type: Number, required: true },
 })
 
 // ✅ 向父層回傳選取結果
@@ -106,17 +103,6 @@ const emit = defineEmits(['update-selected'])
 const selectedQuestionIds = ref([])
 const localCount = ref(props.questionCount)
 const totalQuestionCount = ref(0) // 後端取得的總題數
-
-// ✅ 生命週期：一進來就向後端拿總題數
-onMounted(async () => {
-  try {
-    totalQuestionCount.value = await fetchQuestionCount(props.bookId)
-    console.log('👌 總題數載入成功：', totalQuestionCount.value)
-  } catch (err) {
-    console.error('❌ 載入總題數失敗：', err)
-    alert('載入題目數量失敗，請稍後再試！')
-  }
-})
 
 /**
  * ✅ 監聽 props 變化
@@ -149,7 +135,6 @@ const isAllSelected = computed(() => {
   return selectedQuestionIds.value.length === props.questions.length
 })
 
-// 點擊全選／取消全選
 const toggleSelectAll = () => {
   if (isAllSelected.value) {
     selectedQuestionIds.value = []
@@ -157,6 +142,15 @@ const toggleSelectAll = () => {
     selectedQuestionIds.value = props.questions.map((q) => q.id)
   }
 }
+
+/*
+// 點擊全選／取消全選
+const toggleSelectAll = () => {
+  selectedQuestionIds.value = isAllSelected.value
+    ? []
+    : props.questions.map((q) => q.id)
+}
+*/
 
 // 加減按鈕行為（依據 totalQuestionCount 限制）
 const increaseCount = () => {

@@ -3,33 +3,17 @@
     <!-- 顯示模式 -->
     <div v-if="!editMode">
       <div class="card-header d-flex align-items-center gap-2 flex-wrap">
-        <!-- 題號 -->
         <span>{{ index }}.</span>
-
-        <!-- 星號靠近題號 -->
-        <button class="star ms-1" @click="$emit('toggle-star')">
-          {{ card.starred ? '★' : '☆' }}
-        </button>
-
-        <!-- 題型標籤 -->
+        <button class="star ms-1" @click="$emit('toggle-star')">{{ card.starred ? '★' : '☆' }}</button>
         <span class="type-pill">
           {{
-            card.questionType === 'truefalse'
-              ? '是非題'
-              : card.questionType === 'multipleABC'
-              ? '選擇題（字母選項）'
-              : card.questionType === 'multiple123'
-              ? '選擇題（數字選項）'
-              : card.questionType === 'open'
-              ? '問答題'
-              : '未知題型'
+            card.questionType === 'truefalse' ? '是非題' :
+            card.questionType === 'multipleABC' ? '選擇題（字母選項）' :
+            card.questionType === 'multiple123' ? '選擇題（數字選項）' :
+            card.questionType === 'open' ? '問答題' : '未知題型'
           }}
         </span>
-
-        <!-- 答對答錯統計 -->
-        <span class="stats ms-auto">
-          ❌: {{ card.wrongCount }} 次 ✔️: {{ card.rightCount }} 次
-        </span>
+        <span class="stats ms-auto">❌: {{ card.wrongCount }} 次 ✔️: {{ card.rightCount }} 次</span>
       </div>
 
       <div class="card-content">
@@ -38,44 +22,41 @@
           <img v-if="card.questionImage" :src="card.questionImage" class="preview-image" />
         </div>
         <div class="box" :class="{ hidden: !showAnswers }">
-          <div>{{ card.answer }}</div>
+          <div v-if="Array.isArray(card.answer)">{{ card.answer.join(', ') }}</div>
+          <div v-else>{{ card.answer }}</div>
           <img v-if="card.answerImage" :src="card.answerImage" class="preview-image" />
           <div v-if="!showAnswers" class="overlay"></div>
         </div>
       </div>
 
-      <!-- ✏️ 筆記應該綁定資料 -->
-      <textarea v-model="noteText" rows="3" class="note" placeholder="輸入筆記...">
-      </textarea>
+      <textarea v-model="noteText" rows="3" class="note" placeholder="輸入筆記..."></textarea>
     </div>
 
     <!-- 編輯模式 -->
     <div v-else>
       <div class="card-header">
         <span>{{ index }}.</span>
-        <span class="type-label">【{{ card.questionType === 'truefalse' ? '是非題' : card.questionType === 'multiple' ?
-          '選擇題' : '問答題' }}】</span>
+        <span class="type-label">【{{ card.questionType === 'truefalse' ? '是非題' : card.questionType.includes('multiple') ? '選擇題' : '問答題' }}】</span>
       </div>
 
       <p>題目圖片:</p>
       <input type="file" @change="(e) => handleFileChange(e, card, 'questionImage')" />
       <img v-if="card.questionImage" :src="card.questionImage" class="preview-image" />
 
-
-      <!-- 題型處理 -->
       <div v-if="card.questionType === 'truefalse'">
-        <label><input type="radio" value='T' v-model="card.answer" />T</label>
-        <label><input type="radio" value='F' v-model="card.answer" />F</label>
+        <label><input type="radio" value="T" v-model="card.answer" />T</label>
+        <label><input type="radio" value="F" v-model="card.answer" />F</label>
       </div>
 
       <div v-else-if="card.questionType === 'multipleABC'">
         <label v-for="opt in ['A', 'B', 'C', 'D', 'E']" :key="opt">
-          <input type="radio" :name="'opt-' + card.id" :value="opt" v-model="card.answer" />{{ opt }}
+          <input type="checkbox" :value="opt" :checked="card.answer.includes(opt)" @change="toggleMultipleAnswer(opt)" />{{ opt }}
         </label>
       </div>
+
       <div v-else-if="card.questionType === 'multiple123'">
         <label v-for="opt in ['1', '2', '3', '4', '5']" :key="opt">
-          <input type="radio" :name="'opt-' + card.id" :value="opt" v-model="card.answer" />{{ opt }}
+          <input type="checkbox" :value="opt" :checked="card.answer.includes(opt)" @change="toggleMultipleAnswer(opt)" />{{ opt }}
         </label>
       </div>
 
@@ -84,12 +65,10 @@
         <input v-model="card.answer" />
       </div>
 
-      <!-- 圖片上傳 -->
       <p>詳解圖片:</p>
       <input type="file" @change="(e) => handleFileChange(e, card, 'answerImage')" />
       <img v-if="card.answerImage" :src="card.answerImage" class="preview-image" />
 
-      <!-- 編輯模式中也能修改筆記 -->
       <textarea v-model="noteText" rows="3" class="note" placeholder="輸入筆記..."></textarea>
       <span v-if="savingNote">儲存中...</span>
 
@@ -97,7 +76,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
@@ -114,7 +92,6 @@ export default {
     const uploadingType = ref(null)
     const fileInput = ref(null)
 
-    // 筆記綁定
     const noteText = computed({
       get: () => props.card.note,
       set: (val) => {
@@ -122,14 +99,11 @@ export default {
       }
     })
 
-    // ⭐ 重要：確保多選題答案是陣列格式
     const normalizeAnswerFormat = () => {
       if ((props.card.questionType === 'multipleABC' || props.card.questionType === 'multiple123')) {
-        const ans = props.card.answer
-        // 如果是字串，轉成陣列；如果是 undefined/null 就給空陣列
-        if (!Array.isArray(ans)) {
-          if (typeof ans === 'string' && ans.length > 0) {
-            props.card.answer = [ans]
+        if (!Array.isArray(props.card.answer)) {
+          if (typeof props.card.answer === 'string') {
+            props.card.answer = props.card.answer.split(',').map(s => s.trim()).filter(Boolean)
           } else {
             props.card.answer = []
           }
@@ -137,21 +111,25 @@ export default {
       }
     }
 
-    // 在組件載入時與題型變化時都呼叫一次
-    onMounted(() => {
-      normalizeAnswerFormat()
-    })
+    const toggleMultipleAnswer = (opt) => {
+      const index = props.card.answer.indexOf(opt)
+      if (index === -1) {
+        props.card.answer.push(opt)
+      } else {
+        props.card.answer.splice(index, 1)
+      }
+    }
+
+    onMounted(() => normalizeAnswerFormat())
     watch(() => props.card.questionType, normalizeAnswerFormat, { immediate: true })
 
-    // 刪除卡片
-    function deleteThisCard() {
+    const deleteThisCard = () => {
       if (confirm('確定要刪除這張卡片嗎？')) {
         emit('delete-card', props.card.id)
       }
     }
 
-    // 圖片處理
-    function handleFileChange(event, card, type) {
+    const handleFileChange = (event, card, type) => {
       const file = event.target.files[0]
       if (!file) return
       if (file.size > 2 * 1024 * 1024) {
@@ -161,34 +139,30 @@ export default {
 
       const reader = new FileReader()
       reader.onload = (e) => {
-        if (type === 'questionImage') card.questionImage = e.target.result
-        if (type === 'answerImage') card.answerImage = e.target.result
+        if (type === 'questionImage') {
+          card.questionImage = e.target.result
+          card.questionFile = file
+        }
+        if (type === 'answerImage') {
+          card.answerImage = e.target.result
+          card.answerFile = file
+        }
       }
       reader.readAsDataURL(file)
-    }
-
-    function uploadImage(type) {
-      uploadingType.value = type
-      fileInput.value.click()
-    }
-
-    function removeImage(type) {
-      if (type === 'question') props.card.questionImage = null
-      if (type === 'answer') props.card.answerImage = null
     }
 
     return {
       uploadingType,
       fileInput,
       deleteThisCard,
-      uploadImage,
       handleFileChange,
-      removeImage,
-      noteText
+      noteText,
+      toggleMultipleAnswer
     }
   }
 }
 </script>
+
 
 
 <style scoped>

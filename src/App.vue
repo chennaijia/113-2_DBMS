@@ -20,8 +20,6 @@
           :currentSubject="currentSubject"
           @change-page="handleChangePage"
           :questions="selectedQuestions.value"
-          :mode="selectedMode.value"
-          :count="questionCount.value"
           @goBack="goBack"
           @finish-practice="handleFinishPractice"
         />
@@ -32,6 +30,7 @@
           :timeSpent="practiceResult.timeSpent"
           :total="practiceResult.questions.length"
           :correct="practiceResult.questions.filter((q) => q.isCorrect).length"
+          :currentBookID="currentBookID"
           :accuracy="
             Math.round(
               (practiceResult.questions.filter((q) => q.isCorrect).length /
@@ -45,7 +44,7 @@
         <SelectQuestions
           v-else
           :currentSubject="currentSubject"
-          :book="currentBook"
+          :currentBookID="currentBookID"
           :userId="userId.value"
           @start="start"
           @start-practice="setQuestion"
@@ -80,15 +79,14 @@ const currentPage = ref('home')
 const questions = ref([])
 const currentSubject = ref('')
 const currentBook = ref(null)
+const currentBookID = ref(null)
 const startPractice = ref(false)
-const selectedQuestions = ref([])
+const selectedQuestions = ref()
 const isFinished = ref(false)
 
 const isLoggedIn = ref(false)
 const userName = ref('')
 
-const selectedMode = ref('')
-const questionCount = ref(1)
 const userId = ref(1) // ✅ 不要是空字串
 
 if (localStorage.getItem('userName')) {
@@ -135,21 +133,14 @@ function handleChangePage(page, payload = '') {
   // 如果 payload 是物件（代表是 book），記錄它
   if (typeof payload === 'object') {
     currentBook.value = payload
-    currentSubject.value = payload.BName // 如果你想用名稱當 subject
-
+    currentBookID.value = payload.QuestionBook_ID
+    currentSubject.value = payload.BName
     console.log('App.vue: 收到 change-page 事件，頁面:', page, '選中的書本:', currentBook.value)
-  } else {
-    currentSubject.value = payload
-
-    console.log('App.vue: 收到 change-page 事件，頁面:', page, '主題:', currentSubject.value)
   }
 }
 
-function setQuestion({ questions: selected }) {
-  if (!questions || !Array.isArray(questions) || questions.length === 0) {
-    console.log('傳入的題目為空或格式錯誤')
-    return
-  }
+function setQuestion(selected) {
+  console.log('App.vue: 收到 setQuestion 事件，選中的題目:', selected)
   selectedQuestions.value = selected
   startPractice.value = true
 }
