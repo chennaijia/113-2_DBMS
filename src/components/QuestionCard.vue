@@ -191,7 +191,7 @@ export default {
 
 <style scoped>
 .card {
-  width: 100%;
+  width: 95%;
   margin: 20px auto;
   background-color: #f5f9fd;
   /* 淡藍灰背景 */
