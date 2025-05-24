@@ -9,11 +9,19 @@
         <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題練習</div>
       </div>
     </div>
+    <div>
+      <!--刪-->
+      <CanvasRPG :answerResult="true" :questionIndex="1" />
+    </div>
 
     <div class="container d-flex flex-column align-items-center mt-5 gap-3">
       <div class="dropdown-container text-center">
-        <select id="dropdown" class="form-select custom-dropdown text-center" v-model="selectedOption"
-          @change="handleSelection">
+        <select
+          id="dropdown"
+          class="form-select custom-dropdown text-center"
+          v-model="selectedOption"
+          @change="handleSelection"
+        >
           <option value="option0">選擇模式</option>
           <option value="option1">自選題目</option>
           <option value="option2">隨機出題</option>
@@ -24,7 +32,11 @@
       <p class="text-s">{{ content[selectedOption] }}</p>
 
       <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
-        <Questions :selectedOption="selectedOption" :questions="questions" @update-selected="handleSelectedQuestion" />
+        <Questions
+          :selectedOption="selectedOption"
+          :questions="questions"
+          @update-selected="handleSelectedQuestion"
+        />
       </div>
     </div>
   </div>
@@ -33,7 +45,11 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import Questions from './Practice/Questions.vue'
-import { fetchQuestionsByBookPractice, fetchRandomQuestionsPractice, fetchQuestionCount } from '@/api/questions'
+import {
+  fetchQuestionsByBookPractice,
+  fetchRandomQuestionsPractice,
+  fetchQuestionCount,
+} from '@/api/questions'
 
 const selectedOption = ref('option0')
 const questionCount = ref(1)
@@ -70,7 +86,6 @@ const totalQuestionCount = ref(0)
 /*const questions = ref([
   {
     id: 1,
-    question: '問題1',
     wrongCount: 8,
     image: '/images/1.jpg',
     questionType: 'open',
@@ -83,7 +98,6 @@ const totalQuestionCount = ref(0)
   },
   {
     id: 2,
-    question: '問題2',
     wrongCount: 0,
     image: '/images/2.jpg',
     questionType: 'multiple123',
@@ -96,7 +110,6 @@ const totalQuestionCount = ref(0)
   },
   {
     id: 3,
-    question: '問題3',
     wrongCount: 3,
     image: '/images/3.jpg',
     questionType: 'open',
@@ -109,7 +122,6 @@ const totalQuestionCount = ref(0)
   },
   {
     id: 4,
-    question: '問題4',
     wrongCount: 5,
     image: '/images/4.jpg',
     questionType: 'open',
@@ -127,7 +139,6 @@ const handleSelection = () => {
   selectedQuestions.value = []
 }
 
-
 const handleSelectedQuestion = (questions) => {
   console.log('📥 進來的 questions:', questions)
   console.log('✅ 類型檢查:', Array.isArray(questions))
@@ -141,20 +152,15 @@ const handleSelectedQuestion = (questions) => {
   }
   emit('start-practice', selectedQuestions.value)
   console.log('🚀 handleSelectedQueston開始練習', selectedQuestions.value)
-
-
 }
 
-
 onMounted(async () => {
-
   console.log('📦 bookId from props:/SelectQuestions', bookId.value)
 
   try {
     console.log('🚀 handleSelectedQueston開始載入題目')
 
     selectedQuestions.value = []
-
 
     // 自選題目：載入所有題目供使用者勾選
     questions.value = await fetchQuestionsByBookPractice(bookId.value)
@@ -167,7 +173,6 @@ onMounted(async () => {
     console.error('載入題目時發生錯誤:', error)
     alert('載入題目時發生錯誤，請稍後再試。')
   }
-
 })
 
 // ✅ 點擊返回

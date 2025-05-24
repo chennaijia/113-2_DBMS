@@ -92,9 +92,6 @@ export default {
           this.showError('兩次密碼不一致', 'confirmPassword')
           return
         }
-        // 待辦：聯註冊的API
-      } else {
-        // 待辦：聯登入的API
       }
 
       setTimeout(() => {

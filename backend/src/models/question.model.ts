@@ -29,7 +29,7 @@ export const createQuestion = async (
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO question
      (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar, practiceCount, errCount)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       q.qtype,
       q.content || '',

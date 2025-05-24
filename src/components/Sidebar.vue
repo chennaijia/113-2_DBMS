@@ -113,6 +113,7 @@ function handleLogin(newUserName) {
   fetchBooks()
   closeLoginModal()
   closeSidebar()
+  window.location.reload()
 }
 function logout() {
   isLoggedIn.value = false
@@ -123,6 +124,7 @@ function logout() {
 function handleLoginClick() {
   if (isLoggedIn.value) {
     logout()
+    window.location.reload()
   } else {
     openLoginModal()
   }
