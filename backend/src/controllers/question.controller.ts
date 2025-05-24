@@ -1,39 +1,39 @@
-import { Request, Response } from 'express';
-import * as Question from '../models/question.model';
-import { AuthReq } from '../middleware/auth';
-import cloudinary from '../config/cloudinary';
-import streamifier from 'streamifier';
-import { pool } from '../config/database'; // 確保這裡的 pool 是正確的
-import { listQuestionsByBook as listQuestionsByBookModel,
-        getRandomPracticeQuestions,
-        getMostWrongQuestions as getMostWrongQuestionsModel,
-        getQuestionCount as getQuestionCountModel,
-        judgeAndUpdate
-      } from '../models/question.model'
+import { Request, Response } from 'express'
+import * as Question from '../models/question.model'
+import { AuthReq } from '../middleware/auth'
+import cloudinary from '../config/cloudinary'
+import streamifier from 'streamifier'
+import { pool } from '../config/database' // 確保這裡的 pool 是正確的
+import {
+  listQuestionsByBook as getByBook,
+  getRandomPracticeQuestions,
+  getMostWrongQuestions as getMostWrongQuestionsModel,
+  getQuestionCount as getQuestionCountModel,
+  judgeAndUpdate,
+} from '../models/question.model'
 
 export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   try {
-    console.log('📥 接收到的表單資料:', req.body);
-    console.log('🖼️ 接收到的檔案:', req.files);
+    console.log('📥 接收到的表單資料:', req.body)
+    console.log('🖼️ 接收到的檔案:', req.files)
 
-    const questionBookId = Number(req.body.QuestionBook_ID);
+    const questionBookId = Number(req.body.QuestionBook_ID)
     if (!questionBookId) {
-      res.status(400).json({ message: '缺少題本 ID (questionBookId)' });
-      return;
+      res.status(400).json({ message: '缺少題本 ID (questionBookId)' })
+      return
     }
 
     // ✅ 檢查題本是否存在
-    const [check] = await pool.query(
-      'SELECT 1 FROM question_book WHERE QuestionBook_ID = ?',
-      [questionBookId]
-    );
+    const [check] = await pool.query('SELECT 1 FROM question_book WHERE QuestionBook_ID = ?', [
+      questionBookId,
+    ])
     if ((check as any[]).length === 0) {
-      res.status(400).json({ message: '指定的題本不存在，請重新選擇 📘❌' });
-      return;
+      res.status(400).json({ message: '指定的題本不存在，請重新選擇 📘❌' })
+      return
     }
 
-    const contentFile = req.files?.['content_pic']?.[0];
-    const answerFile = req.files?.['answer_pic']?.[0];
+    const contentFile = req.files?.['content_pic']?.[0]
+    const answerFile = req.files?.['answer_pic']?.[0]
 
     const uploadToCloudinary = (file: Express.Multer.File): Promise<string> => {
       return new Promise((resolve, reject) => {
@@ -41,19 +41,19 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
           { folder: 'questions' },
           (error, result) => {
             if (error || !result) {
-              console.error('❌ Cloudinary 上傳失敗:', error);
-              return reject(error);
+              console.error('❌ Cloudinary 上傳失敗:', error)
+              return reject(error)
             }
-            console.log('✅ 圖片成功上傳至 Cloudinary：', result.secure_url);
-            resolve(result.secure_url);
+            console.log('✅ 圖片成功上傳至 Cloudinary：', result.secure_url)
+            resolve(result.secure_url)
           }
-        );
-        streamifier.createReadStream(file.buffer).pipe(uploadStream);
-      });
-    };
+        )
+        streamifier.createReadStream(file.buffer).pipe(uploadStream)
+      })
+    }
 
-    const contentPicUrl = contentFile ? await uploadToCloudinary(contentFile) : '';
-    const answerPicUrl = answerFile ? await uploadToCloudinary(answerFile) : '';
+    const contentPicUrl = contentFile ? await uploadToCloudinary(contentFile) : ''
+    const answerPicUrl = answerFile ? await uploadToCloudinary(answerFile) : ''
 
     const newQuestion = {
       qtype: req.body.qtype,
@@ -67,14 +67,12 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
       level: 1,
       creator_id: req.user!.id,
       isStar: 0,
-      practiceCount: 0,
-      errCount: 0
-    };
+    }
 
-    console.log('📤 準備存入資料庫的題目：', newQuestion);
+    console.log('📤 準備存入資料庫的題目：', newQuestion)
 
-    const id = await Question.createQuestion(newQuestion, questionBookId, req.user!.id); // ✅ 連同題本 ID 傳入
-    console.log('✅ 題目成功存入資料庫，ID:', id);
+    const id = await Question.createQuestion(newQuestion, questionBookId, req.user!.id) // ✅ 連同題本 ID 傳入
+    console.log('✅ 題目成功存入資料庫，ID:', id)
 
     res.status(201).json({
       id,
@@ -86,64 +84,39 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
       question: '',
       starred: false,
       wrongCount: 0,
-      rightCount: 0
+      rightCount: 0,
     })
-
   } catch (error) {
-    console.error('❌ 上傳題目錯誤:', error);
-    res.status(500).json({ message: '新增題目失敗', error });
+    console.error('❌ 上傳題目錯誤:', error)
+    res.status(500).json({ message: '新增題目失敗', error })
   }
-};
+}
 
 //viewQuestion取得該使用者題目列表
 export const listQuestions = async (req: AuthReq, res: Response) => {
   try {
-    console.log('✅ 抓資料使用者 ID:', req.user?.id);
+    console.log('✅ 抓資料使用者 ID:', req.user?.id)
 
-    const questions = await Question.listQuestions(req.user!.id); // ⬅️ 拿使用者 ID
-    res.status(200).json(questions); // ⬅️ status 改成 200
+    const questions = await Question.listQuestions(req.user!.id) // ⬅️ 拿使用者 ID
+    res.status(200).json(questions) // ⬅️ status 改成 200
   } catch (err) {
-    console.error('❌ 抓題目列表錯誤:', err);
-    res.status(500).json({ message: '讀取失敗' });
-  }
-};
-
-//viewQuestion取得題本中的題目
-export const listQuestionsByBook = async (
-  req: AuthReq,
-  res: Response
-): Promise<void> => {
-  try {
-    const bookId = Number(req.params.bookId)
-    const userId = req.user!.id
-
-    // 1️⃣ 參數檢查 ─── 提早回應就立刻 return
-    if (Number.isNaN(bookId)) {
-      res.status(400).json({ message: 'bookId 必須是數字' })
-      return
-    }
-
-    // 2️⃣ 撈資料
-    const rows = await listQuestionsByBookModel(bookId, userId)
-
-    // 3️⃣ 若找不到題目，可選擇回 404
-    if (!rows.length) {
-      res.status(404).json({ message: '這本書目前沒有題目' })
-      return
-    }
-
-    // 4️⃣ ✅ 唯一一次正常回傳
-     res.status(200).json(rows)
-  } catch (err) {
-    console.error('❌ listQuestionsByBook 失敗：', err)
-
-    // 5️⃣ 只要沒回傳過才送 500，避免重複送
-    if (!res.headersSent) {
-      res.status(500).json({ message: '讀取題目失敗' })
-    }
+    console.error('❌ 抓題目列表錯誤:', err)
+    res.status(500).json({ message: '讀取失敗' })
   }
 }
 
+//viewQuestion取得題本中的題目
+export const listQuestionsByBook = async (req: AuthReq, res: Response) => {
+  try {
+    const bookId = +req.params.bookId
+    const userId = req.user!.id
+    const rows = await getByBook(bookId, userId)
+    res.status(200).json(rows)
+  } catch (err) {
+    console.error('❌ listQuestionsByBook 失敗：', err)
+    res.status(500).json({ message: '讀取題目失敗' })
+  }
+}
 
 //viewQuestion刪除題目
 export const deleteQuestion = async (req: AuthReq, res: Response): Promise<void> => {
@@ -201,10 +174,7 @@ export const toggleStar = async (req: AuthReq, res: Response): Promise<void> => 
       return
     }
 
-    await pool.query(
-      'UPDATE QUESTION SET isStar = ? WHERE Question_ID = ?',
-      [isStar ? 1 : 0, id]
-    )
+    await pool.query('UPDATE QUESTION SET isStar = ? WHERE Question_ID = ?', [isStar ? 1 : 0, id])
 
     res.status(200).json({ message: '已更新星號狀態', isStar })
   } catch (err) {
@@ -232,10 +202,7 @@ export const updateNote = async (req: AuthReq, res: Response): Promise<void> => 
     }
 
     // ✅ 正確更新 Content 欄位
-    await pool.query(
-      'UPDATE QUESTION SET Content = ? WHERE Question_ID = ?',
-      [note, id]
-    )
+    await pool.query('UPDATE QUESTION SET Content = ? WHERE Question_ID = ?', [note, id])
 
     res.status(200).json({ message: '筆記已更新', note })
   } catch (err) {
@@ -247,7 +214,6 @@ export const updateNote = async (req: AuthReq, res: Response): Promise<void> => 
 //主頁面每日題目練習
 export const getRandomQuestion = async (req: AuthReq, res: Response): Promise<void> => {
   const userId = req.user!.id
-
 
   try {
     const [rows]: any = await pool.query(
@@ -275,7 +241,7 @@ export const getRandomQuestion = async (req: AuthReq, res: Response): Promise<vo
 //練習錯題隨機錯題模式
 export const getRandomWrongQuestions = async (req: AuthReq, res: Response): Promise<void> => {
   try {
-    console.log('✅ 抓資料使用者 ID:', req.user?.id);
+    console.log('✅ 抓資料使用者 ID:', req.user?.id)
 
     const { bookId, count } = req.query
     const userId = req.user!.id // ✅ 從 token 中取 userId
@@ -285,11 +251,7 @@ export const getRandomWrongQuestions = async (req: AuthReq, res: Response): Prom
       return
     }
 
-    const questions = await getRandomPracticeQuestions(
-      Number(bookId),
-      userId,
-      Number(count)
-    )
+    const questions = await getRandomPracticeQuestions(Number(bookId), userId, Number(count))
 
     res.json(questions) // ✅ 不要 return
   } catch (error) {
@@ -309,11 +271,7 @@ export const getMostWrongQuestions = async (req: AuthReq, res: Response): Promis
       return
     }
 
-    const questions = await getMostWrongQuestionsModel(
-      Number(bookId),
-      userId,
-      Number(count)
-    )
+    const questions = await getMostWrongQuestionsModel(Number(bookId), userId, Number(count))
 
     res.status(200).json(questions)
   } catch (error) {
@@ -324,9 +282,8 @@ export const getMostWrongQuestions = async (req: AuthReq, res: Response): Promis
 
 //該使用者練習題本題目數量
 export const getQuestionCount = async (req: AuthReq, res: Response): Promise<void> => {
-
   try {
-    console.log('✅ 抓資料使用者 ID:', req.user?.id);
+    console.log('✅ 抓資料使用者 ID:', req.user?.id)
 
     const bookId = +req.params.bookId
     const userId = req.user!.id
@@ -345,77 +302,76 @@ export const getQuestionCount = async (req: AuthReq, res: Response): Promise<voi
 }
 
 export const submitAnswer = async (req: AuthReq, res: Response): Promise<void> => {
-  const qid   = Number(req.params.id);
-  const ans   = (req.body.answer ?? '').toString().trim();
-  const uid   = req.user!.id;          // middleware 已驗證
+  const qid = Number(req.params.id)
+  const ans = (req.body.answer ?? '').toString().trim()
+  const uid = req.user!.id // middleware 已驗證
 
   if (!qid || !ans) {
-   res.status(400).json({ message: '缺少題號或答案' });
+    res.status(400).json({ message: '缺少題號或答案' })
   }
 
   try {
-    const { correct, practice, wrong } = await judgeAndUpdate(qid, ans, uid);
+    const { correct, practice, wrong } = await judgeAndUpdate(qid, ans, uid)
     res.status(200).json({
       message: correct ? '答對 🎉' : '答錯 😢',
       correct,
       practiceCount: practice,
-      errCount: wrong
-    });
+      errCount: wrong,
+    })
   } catch (err) {
-    console.error('❌ 提交答案失敗:', err);
-    res.status(500).json({ message: '提交答案失敗' });
+    console.error('❌ 提交答案失敗:', err)
+    res.status(500).json({ message: '提交答案失敗' })
   }
 }
 
 export const updateQuestionHandler = async (req: AuthReq, res: Response): Promise<void> => {
   try {
-    const id = +req.params.id;
-    const userId = req.user!.id;
+    const id = +req.params.id
+    const userId = req.user!.id
 
     // 權限檢查
-    const [rows]: any = await pool.query(
-      'SELECT Creator_ID FROM QUESTION WHERE Question_ID = ?',
-      [id]
-    );
+    const [rows]: any = await pool.query('SELECT Creator_ID FROM QUESTION WHERE Question_ID = ?', [
+      id,
+    ])
     if (rows.length === 0 || rows[0].Creator_ID !== userId) {
-      res.status(403).json({ message: '無權限修改此題' });
-      return;
+      res.status(403).json({ message: '無權限修改此題' })
+      return
     }
 
     // 處理圖片上傳 (同 uploadQuestion)
     const uploads: Partial<{
-      content_pic: string;
-      answer_pic: string;
-      detail_ans_pic: string;
-    }> = {};
-    const files = req.files as Record<string, Express.Multer.File[]>;
+      content_pic: string
+      answer_pic: string
+      detail_ans_pic: string
+    }> = {}
+    const files = req.files as Record<string, Express.Multer.File[]>
 
-    for (const field of ['content_pic','answer_pic','detail_ans_pic'] as const) {
+    for (const field of ['content_pic', 'answer_pic', 'detail_ans_pic'] as const) {
       if (files?.[field]?.[0]) {
-        const stream = streamifier.createReadStream(files[field][0].buffer);
+        const stream = streamifier.createReadStream(files[field][0].buffer)
         const uploadResult: any = await new Promise((resolve, reject) => {
           const cld_upload_stream = cloudinary.uploader.upload_stream(
             { folder: 'questions' },
-            (error, result) => error ? reject(error) : resolve(result)
-          );
-          stream.pipe(cld_upload_stream);
-        });
-        uploads[field] = (uploadResult as any).secure_url;
+            (error, result) => (error ? reject(error) : resolve(result))
+          )
+          stream.pipe(cld_upload_stream)
+        })
+        uploads[field] = (uploadResult as any).secure_url
       }
     }
 
-    const { answer, note } = req.body;
+    const { answer, note } = req.body
     await Question.updateQuestion(id, {
-      Content_pic: uploads.content_pic,
-      Answer: answer,
-      Answer_pic: uploads.answer_pic,
-      DetailAns_pic: uploads.detail_ans_pic,
-      Content: note,    // 把筆記對應到 Content 欄
-    });
+      content_pic: uploads.content_pic,
+      answer,
+      answer_pic: uploads.answer_pic,
+      detail_ans_pic: uploads.detail_ans_pic,
+      content: note, // 把筆記對應到 Content 欄
+    })
 
-    res.status(200).json({ message: '題目已更新' });
+    res.status(200).json({ message: '題目已更新' })
   } catch (err) {
-    console.error('❌ 題目更新失敗:', err);
-    res.status(500).json({ message: '更新題目失敗' });
+    console.error('❌ 題目更新失敗:', err)
+    res.status(500).json({ message: '更新題目失敗' })
   }
-};
+}
