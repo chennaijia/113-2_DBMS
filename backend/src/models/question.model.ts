@@ -25,13 +25,8 @@ export const createQuestion = async (
 ): Promise<number> => {
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO question
-<<<<<<< HEAD
-     (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-=======
      (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar, practiceCount, errCount)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
->>>>>>> a7f9dadf733163abaef51f32bd274b854a23c00f
     [
       q.qtype,
       q.content || '',

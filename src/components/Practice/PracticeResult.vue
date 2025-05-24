@@ -46,23 +46,27 @@
         </button>
       </div>
       <ul class="list-group mt-3">
-        <li class="list-group-item ..." v-for="(q, index) in visibleQuestions" :key="q.id">
+        <li
+          class="list-group-item ..."
+          v-for="(questions, index) in visibleQuestions"
+          :key="questions.id"
+        >
           <div
             class="d-flex justify-content-between align-items-center question-header px-1 py-2 text-dark-dark-m"
             @click="toggle(index)"
           >
             <div>
-              <strong>第 {{ q.id }} 題：</strong>
+              <strong>第 {{ questions.id }} 題：</strong>
               <span
                 :class="{
-                  'text-success': q.isCorrect === true,
-                  'text-danger fw-bold': q.isCorrect === false,
-                  'text-secondary': q.questionType === 'open' && !q.checked,
+                  'text-success': questions.isCorrect === true,
+                  'text-danger fw-bold': questions.isCorrect === false,
+                  'text-secondary': questions.QType === 'open' && !questions.checked,
                 }"
                 v-html="
-                  q.questionType === 'open' && !q.checked
+                  questions.questionType === 'open' && !questions.checked
                     ? '<i class=\'bi bi-emoji-neutral\'></i> 待確認'
-                    : q.isCorrect
+                    : questions.isCorrect
                     ? '<i class=\'bi bi-emoji-smile\'></i> 正確'
                     : '<i class=\'bi bi-emoji-dizzy\'></i> 錯誤'
                 "
@@ -71,7 +75,7 @@
             </div>
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-secondary-subtle text-dark">{{
-                typeLabel(q.questionType)
+                typeLabel(questions.QType)
               }}</span>
               <i
                 class="bi"
@@ -88,7 +92,7 @@
               <div class="mb-3">
                 <strong><i class="bi bi-image"></i> 題目圖片：</strong><br />
                 <img
-                  :src="q.image"
+                  :src="questions.Content_pic"
                   class="img-fluid rounded mt-2 shadow-sm"
                   style="max-height: 650px; object-fit: contain"
                 />
@@ -97,15 +101,15 @@
               <div class="mb-3">
                 <strong><i class="bi bi-pen"></i> 你的答案：</strong><br />
                 <div class="badge bg-light text-dark border px-3 py-2 mt-1">
-                  {{ q.userAnswer || '（未作答）' }}
+                  {{ questions.userAnswer || '（未作答）' }}
                 </div>
               </div>
 
-              <div v-if="q.questionType === 'open'">
-                <div v-if="q.checked && q.isCorrect !== null">
+              <div v-if="questions.QType === 'open'">
+                <div v-if="questions.checked && questions.isCorrect !== null">
                   <strong><i class="bi bi-check-circle"></i> 判定結果：</strong>
-                  <span :class="q.isCorrect ? 'text-success' : 'text-danger'">
-                    {{ q.isCorrect ? '你標示為答對' : '你標示為答錯' }}
+                  <span :class="questions.isCorrect ? 'text-success' : 'text-danger'">
+                    {{ questions.isCorrect ? '你標示為答對' : '你標示為答錯' }}
                   </span>
                 </div>
 
@@ -124,13 +128,13 @@
                 <div class="mb-2">
                   <strong><i class="bi bi-fonts"></i> 正確答案文字：</strong><br />
                   <span class="badge bg-success-subtle text-dark px-3 py-2 mt-1">
-                    {{ q.correctAnswer }}
+                    {{ questions.Answer }}
                   </span>
                 </div>
                 <div class="mb-2">
                   <strong><i class="bi bi-image"></i> 正確答案圖片：</strong><br />
                   <img
-                    :src="q.answerUrl"
+                    :src="questions.Answer_pic"
                     class="img-fluid rounded mt-2 shadow-sm"
                     style="max-height: 250px; object-fit: contain"
                   />
@@ -160,8 +164,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { fetchMostWrongQuestions, fetchRandomQuestionsPractice
- } from '@/api/questions'
+import { fetchMostWrongQuestions, fetchRandomQuestionsPractice } from '@/api/questions'
 
 const props = defineProps({
   currentSubject: String,
@@ -185,9 +188,18 @@ const visibleQuestions = computed(() =>
 
 onMounted(() => {
   props.questions.forEach((q) => {
-    if (q.questionType !== 'open' && q.isCorrect === null && q.checked !== true) {
-      q.isCorrect = normalizeAnswer(q.userAnswer) === normalizeAnswer(q.correctAnswer)
-      q.checked = true
+    q.checked = true
+    if (q.QType !== 'open') {
+      const correctRaw = q.Answer ?? q.answer ?? q.correctAnswer ?? ''
+      const correct = normalizeAnswer(correctRaw, q.QType)
+      const user = normalizeAnswer(q.userAnswer, q.QType)
+      if (q.userAnswer === '') {
+        q.isCorrect = false
+        return
+      }
+      q.isCorrect = user !== '' && user === correct
+    } else {
+      q.isCorrect = null
     }
   })
 })
@@ -223,18 +235,20 @@ function typeLabel(type) {
   }
 }
 
-function normalizeAnswer(ans) {
+function normalizeAnswer(ans, qType = '') {
   if (!ans) return ''
-  const cleaned = ans
+
+  let cleaned = ans
     .toString()
     .trim()
     .replace(/\s+/g, '')
     .toLowerCase()
     .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
     .replace(/[\u3000]/g, '')
+    .replace(/[，,、;；．.]/g, '')
 
-  if (cleaned.includes(',')) {
-    return cleaned.split(',').sort().join(',')
+  if (qType === 'multipleABC' || qType === 'multiple123') {
+    cleaned = cleaned.split('').sort().join('')
   }
   return cleaned
 }

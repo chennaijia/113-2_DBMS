@@ -15,8 +15,13 @@
       <!-- 題目圖片 -->
       <label>題目圖片:</label>
       <div>
-        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'question')" ref="questionInput"
-          style="display: none" />
+        <input
+          type="file"
+          accept="image/*"
+          @change="(e) => handleFileChange(e, 'question')"
+          ref="questionInput"
+          style="display: none"
+        />
         <button type="button" @click="triggerInput('question')">
           {{ questionImage ? '更換圖片' : '上傳圖片' }}
         </button>
@@ -29,8 +34,8 @@
       <!-- 題型條件渲染 -->
       <template v-if="questionType === 'truefalse'">
         <label>選擇正確答案:</label>
-        <label><input type="radio" value='T' v-model="answer" />T</label>
-        <label><input type="radio" value='F' v-model="answer" />F</label>
+        <label><input type="radio" value="T" v-model="answer" />T</label>
+        <label><input type="radio" value="F" v-model="answer" />F</label>
       </template>
 
       <template v-else-if="questionType === 'multipleABC'">
@@ -59,8 +64,13 @@
       <!-- 詳解圖片 -->
       <label>詳解圖片:</label>
       <div>
-        <input type="file" accept="image/*" @change="(e) => handleFileChange(e, 'answer')" ref="answerInput"
-          style="display: none" />
+        <input
+          type="file"
+          accept="image/*"
+          @change="(e) => handleFileChange(e, 'answer')"
+          ref="answerInput"
+          style="display: none"
+        />
         <button type="button" @click="triggerInput('answer')">
           {{ answerImage ? '更換圖片' : '上傳圖片' }}
         </button>
@@ -85,11 +95,9 @@ import axios from 'axios'
 
 const emit = defineEmits(['add-card', 'close'])
 
-
 const props = defineProps<{
   bookId: number
-}>();
-
+}>()
 
 const questionType = ref('truefalse')
 const questionImage = ref<string | null>(null)
@@ -102,7 +110,6 @@ const answerInput = ref<HTMLInputElement | null>(null)
 
 const questionImageFile = ref<File | null>(null)
 const answerImageFile = ref<File | null>(null)
-
 
 function triggerInput(type: 'question' | 'answer') {
   if (type === 'question') {
@@ -136,8 +143,6 @@ const handleFileChange = (event: Event, type: 'question' | 'answer') => {
   }
 }
 
-
-
 const submitCard = async () => {
   console.log('🚀 開始送出卡片')
 
@@ -148,10 +153,11 @@ const submitCard = async () => {
   }
 
   const resolvedAnswer =
-    questionType.value === 'open' ? answerText.value :
-      (questionType.value === 'multipleABC' || questionType.value === 'multiple123')
-        ? [...answer.value].sort()
-        : answer.value
+    questionType.value === 'open'
+      ? answerText.value
+      : questionType.value === 'multipleABC' || questionType.value === 'multiple123'
+      ? [...answer.value].sort()
+      : answer.value
 
   if (
     (questionType.value === 'open' && !answerText.value) ||
@@ -165,7 +171,10 @@ const submitCard = async () => {
   const formData = new FormData()
   formData.append('qtype', questionType.value)
   formData.append('content', '') // 可加入題目文字
-  formData.append('answer', Array.isArray(resolvedAnswer) ? resolvedAnswer.join(',') : resolvedAnswer)
+  formData.append(
+    'answer',
+    Array.isArray(resolvedAnswer) ? resolvedAnswer.join(',') : resolvedAnswer
+  )
   formData.append('level', '1') // 難度
   formData.append('subject', '') // 暫時空，之後可加上科目分類
 
@@ -177,9 +186,6 @@ const submitCard = async () => {
   // 👈 取得當前本子ID
   //formData.append('questionBookId', 1);
   formData.append('QuestionBook_ID', String(props.bookId))
-
-
-
 
   console.log('📦 準備送出的表單資料：', {
     qtype: questionType.value,
@@ -195,8 +201,8 @@ const submitCard = async () => {
     const res = await axios.post('http://localhost:3000/api/question/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
 
     console.log('✅ 後端回傳成功：', res.data)
@@ -214,17 +220,13 @@ const submitCard = async () => {
     alert('✅ 新增成功！')
     console.log('🔄 資料已重置，流程完成')
   } catch (error: any) {
-    console.error('❌ 新增題目失敗:', error);
+    console.error('❌ 新增題目失敗:', error)
 
-    const message = error.response?.data?.message || '新增題目失敗，請稍後再試';
-    alert(`❌ 錯誤：${message}`);
+    const message = error.response?.data?.message || '新增題目失敗，請稍後再試'
+    alert(`❌ 錯誤：${message}`)
   }
 }
-
-
-
 </script>
-
 
 <style scoped>
 .modal {
@@ -265,8 +267,8 @@ label {
 }
 
 select,
-input[type="text"],
-input[type="file"] {
+input[type='text'],
+input[type='file'] {
   width: 100%;
   padding: 8px;
   margin-bottom: 12px;
@@ -276,8 +278,8 @@ input[type="file"] {
   background-color: white;
 }
 
-input[type="radio"],
-input[type="checkbox"] {
+input[type='radio'],
+input[type='checkbox'] {
   margin-right: 6px;
 }
 
@@ -315,7 +317,7 @@ button:disabled {
   gap: 12px;
 }
 
-button[type="submit"],
+button[type='submit'],
 .button-group button:first-child {
   background-color: #1976d2;
   color: white;
