@@ -68,7 +68,13 @@ function submitAnswer() {
   answered.value = true
   const normalizedInput = normalize(userAnswer.value)
   const normalizedAnswer = normalize(props.question.Answer)
-  isCorrect.value = normalizedInput === normalizedAnswer
+
+  console.log('👤 使用者答案:', normalizedInput)
+  console.log('✅ 正確答案:', normalizedAnswer)
+
+  console.log('🔒 是否正確:', normalizedInput === normalizedAnswer)
+
+  isCorrect.value = (normalizedInput === normalizedAnswer)
 
   emit('answered', {
     isCorrect: isCorrect.value,
@@ -80,11 +86,27 @@ function submitAnswer() {
 function normalize(text) {
   return (
     text
+      ?.toString()
+      .trim()
+      .replace(/\s+/g, '') // 去掉所有空白
+      .replace(/[\uFF01-\uFF5E]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0)) // 全形轉半形
+      .replace(/[\u3000]/g, '') // 去掉全形空格
+      .toLowerCase()
+  ) || ''
+}
+
+
+
+/*
+function normalize(text) {
+  return (
+    text
       ?.trim()
       .replace(/[\uFF01-\uFF5E]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
       .toLowerCase() || ''
   )
 }
+  */
 
 // 👇 提供給父層呼叫（未鎖定情況下）
 defineExpose({

@@ -11,6 +11,7 @@
 
       <div class="d-flex gap-3 align-items-center">
         <span>{{ currentIndex + 1 }} / {{ props.questions?.length || 0 }}</span>
+
         <span><i class="bi bi-clock"></i> {{ timer }}</span>
       </div>
     </div>
@@ -35,7 +36,7 @@
 
       <div v-if="
         props.questions[currentIndex]?.checked &&
-        props.questions[currentIndex]?.questionType !== 'open'
+        props.questions[currentIndex]?.qType !== 'open'
       " class="mt-2">
         <span :class="props.questions[currentIndex]?.isCorrect ? 'text-success' : 'text-danger'">
           {{
@@ -51,7 +52,7 @@
 
       <div v-if="
         props.questions[currentIndex]?.checked &&
-        props.questions[currentIndex]?.QTypee === 'open'
+        props.questions[currentIndex]?.QType === 'open'
       " class="mt-3">
         <img :src="props.questions[currentIndex]?.Answer_pic" alt="答案圖片" class="img-fluid rounded shadow-sm mb-3"
           style="width: 100%; max-height: 60vh; object-fit: contain" />
@@ -81,7 +82,7 @@
         </button>
 
         <button class="btn btn-outline-primary rounded-pill" @click="nextQuestion"
-          v-if="currentIndex < currentLength.value - 1">
+          v-if="currentIndex < currentLength - 1">
           下一題 <i class="bi bi-caret-right-fill"></i>
         </button>
         <button class="btn btn-outline-primary rounded-pill" @click="finishPractice" v-else>
@@ -140,7 +141,7 @@ const currentType = computed(() => {
       break
   }
   //return props.questions[currentIndex.value]?.questionType || ''
-  return props.questions[currentIndex.value]?.questionType || ''
+  return props.questions[currentIndex.value]?.QType || ''
 
 })
 
@@ -208,12 +209,24 @@ function prevQuestion() {
   }
 }
 
+function normalize(text) {
+  return (
+    text
+      ?.trim()
+      .replace(/[\uFF01-\uFF5E]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
+      .toLowerCase()
+      .replace(/\s+/g, '') || ''
+  )
+}
+
 function checkAnswer() {
   const q = props.questions[currentIndex.value]
 
-  if (q.questionType !== 'open') {
+  if (q.QType !== 'open') {
     q.checked = true
-    q.isCorrect = q.userAnswer === q.correctAnswer
+    q.isCorrect = normalize(q.userAnswer) === normalize(q.Answer)
+    console.log('🔍 檢查答案:', normalize(q.userAnswer), '對比:', normalize(q.Answer), '結果:', q.isCorrect)
+
   } else {
     q.checked = true
   }

@@ -47,51 +47,36 @@
       </div>
       <ul class="list-group mt-3">
         <li class="list-group-item ..." v-for="(q, index) in visibleQuestions" :key="q.id">
-          <div
-            class="d-flex justify-content-between align-items-center question-header px-1 py-2 text-dark-dark-m"
-            @click="toggle(index)"
-          >
+          <div class="d-flex justify-content-between align-items-center question-header px-1 py-2 text-dark-dark-m"
+            @click="toggle(index)">
             <div>
               <strong>第 {{ q.id }} 題：</strong>
-              <span
-                :class="{
-                  'text-success': q.isCorrect === true,
-                  'text-danger fw-bold': q.isCorrect === false,
-                  'text-secondary': q.questionType === 'open' && !q.checked,
-                }"
-                v-html="
-                  q.questionType === 'open' && !q.checked
+              <span :class="{
+                'text-success': q.isCorrect === true,
+                'text-danger fw-bold': q.isCorrect === false,
+                'text-secondary': q.QType === 'open' && !q.checked,
+              }" v-html="q.QType === 'open' && !q.checked
                     ? '<i class=\'bi bi-emoji-neutral\'></i> 待確認'
                     : q.isCorrect
-                    ? '<i class=\'bi bi-emoji-smile\'></i> 正確'
-                    : '<i class=\'bi bi-emoji-dizzy\'></i> 錯誤'
-                "
-              >
+                      ? '<i class=\'bi bi-emoji-smile\'></i> 正確'
+                      : '<i class=\'bi bi-emoji-dizzy\'></i> 錯誤'
+                  ">
               </span>
             </div>
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-secondary-subtle text-dark">{{
-                typeLabel(q.questionType)
-              }}</span>
-              <i
-                class="bi"
-                :class="expandedIndex === index ? 'bi-chevron-down' : 'bi-chevron-right'"
-              ></i>
+                typeLabel(q.QType)
+                }}</span>
+              <i class="bi" :class="expandedIndex === index ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
             </div>
           </div>
 
           <transition name="fade">
-            <div
-              v-if="expandedIndex === index"
-              class="question-detail mt-3 px-2 pb-2 pt-1 border-top text-dark-s"
-            >
+            <div v-if="expandedIndex === index" class="question-detail mt-3 px-2 pb-2 pt-1 border-top text-dark-s">
               <div class="mb-3">
                 <strong><i class="bi bi-image"></i> 題目圖片：</strong><br />
-                <img
-                  :src="q.image"
-                  class="img-fluid rounded mt-2 shadow-sm"
-                  style="max-height: 650px; object-fit: contain"
-                />
+                <img :src="q.Content_pic" class="img-fluid rounded mt-2 shadow-sm"
+                  style="max-height: 650px; object-fit: contain" />
               </div>
 
               <div class="mb-3">
@@ -101,7 +86,7 @@
                 </div>
               </div>
 
-              <div v-if="q.questionType === 'open'">
+              <div v-if="q.QType === 'open'">
                 <div v-if="q.checked && q.isCorrect !== null">
                   <strong><i class="bi bi-check-circle"></i> 判定結果：</strong>
                   <span :class="q.isCorrect ? 'text-success' : 'text-danger'">
@@ -124,16 +109,13 @@
                 <div class="mb-2">
                   <strong><i class="bi bi-fonts"></i> 正確答案文字：</strong><br />
                   <span class="badge bg-success-subtle text-dark px-3 py-2 mt-1">
-                    {{ q.correctAnswer }}
+                    {{ q.Answer }}
                   </span>
                 </div>
                 <div class="mb-2">
                   <strong><i class="bi bi-image"></i> 正確答案圖片：</strong><br />
-                  <img
-                    :src="q.answerUrl"
-                    class="img-fluid rounded mt-2 shadow-sm"
-                    style="max-height: 250px; object-fit: contain"
-                  />
+                  <img :src="q.Answer_pic" class="img-fluid rounded mt-2 shadow-sm"
+                    style="max-height: 250px; object-fit: contain" />
                 </div>
               </div>
             </div>
@@ -143,10 +125,7 @@
     </div>
 
     <div class="d-flex justify-content-center gap-3 mt-5 flex-wrap">
-      <button
-        class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
-        @click="restart"
-      >
+      <button class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill" @click="restart">
         <i class="bi bi-crosshair"></i>
         <span class="ms-2">再練一次</span>
       </button>
@@ -160,8 +139,9 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { fetchMostWrongQuestions, fetchRandomQuestionsPractice
- } from '@/api/questions'
+import {
+  fetchMostWrongQuestions, fetchRandomQuestionsPractice
+} from '@/api/questions'
 
 const props = defineProps({
   currentSubject: String,
@@ -184,11 +164,36 @@ const visibleQuestions = computed(() =>
 )
 
 onMounted(() => {
+
+  console.log('🧪 練習結算初始化')
+
   props.questions.forEach((q) => {
-    if (q.questionType !== 'open' && q.isCorrect === null && q.checked !== true) {
-      q.isCorrect = normalizeAnswer(q.userAnswer) === normalizeAnswer(q.correctAnswer)
+
+    console.log('🔍 檢查題目:', q)
+
+    /*
+    if (!q.userAnswer) q.userAnswer = ''
+    if (!(q.isCorrect)) q.isCorrect = null
+    if (!(q.checked)) q.checked = false
+    */
+
+    console.log('🔍 檢查條件: Qtype:', q.QType, 'isCorrect:', q.isCorrect, 'checked:', q.checked)
+
+
+
+    if (q.QType !== 'open' && q.isCorrect === null && q.checked !== true) {
+
+
+      q.isCorrect = normalizeAnswer(q.userAnswer) === normalizeAnswer(q.Answer)
       q.checked = true
+
+
+      console.log('🔍 userAns:', userAns)
+      console.log('✅ correctAns:', correctAns)
+
     }
+
+
   })
 })
 
@@ -263,23 +268,28 @@ function restart() {
   flex-direction: column;
   justify-content: center;
 }
+
 .question-header {
   cursor: pointer;
   user-select: none;
   transition: background-color 0.2s;
 }
+
 .question-header:hover {
   background-color: #f7f9fb;
 }
+
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.3s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
   max-height: 0;
 }
+
 .question-detail {
   font-size: 0.95rem;
   color: #333;
