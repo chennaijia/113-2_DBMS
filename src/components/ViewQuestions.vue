@@ -79,6 +79,8 @@ import { debounce } from 'lodash-es'
 import { updateNote } from '../api/questions'
 import { updateQuestionById } from '../api/questions'
 
+const orderABC  = ['A', 'B', 'C', 'D', 'E']
+const order123 = ['1', '2', '3', '4', '5']
 export default {
   props: {
     currentSubject: String,
