@@ -24,10 +24,7 @@
       <p class="text-s">{{ content[selectedOption] }}</p>
 
       <div v-if="selectedOption" class="content-box border p-4 shadow text-center mb-4">
-        <Questions
-          :selectedOption="selectedOption"
-          :questions="questions"
-          @update-selected="handleSelectedQuestion" />
+        <Questions :selectedOption="selectedOption" :questions="questions" @update-selected="handleSelectedQuestion" />
       </div>
     </div>
   </div>
@@ -42,7 +39,7 @@ const selectedOption = ref('option0')
 const questionCount = ref(1)
 const selectedQuestions = ref([])
 
-const emit = defineEmits('start-practice', 'change-page')
+const emit = defineEmits(['start-practice', 'change-page'])
 
 const props = defineProps({
   currentSubject: {
@@ -132,7 +129,12 @@ const handleSelection = () => {
 
 
 const handleSelectedQuestion = (questions) => {
+  console.log('📥 進來的 questions:', questions)
+  console.log('✅ 類型檢查:', Array.isArray(questions))
+
+
   selectedQuestions.value = questions
+  console.log('🚀 handleSelectedQueston', selectedQuestions.value)
   if (selectedQuestions.value.length === 0) {
     alert('尚未選擇題目！')
     return

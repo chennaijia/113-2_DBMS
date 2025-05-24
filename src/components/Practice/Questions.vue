@@ -148,7 +148,10 @@ const filteredQuestions = computed(() => {
 // 點擊「開始練習」
 function confirmSelection() {
   const selected =
-    props.selectedOption === 'option1'
+
+  //meimeielin: 從 props.questions改value 中選取的題目
+    props.selectedOption.value === 'option1'
+
       ? props.questions.filter((q) => selectedQuestionIds.value.includes(q.id))
       : filteredQuestions.value
 

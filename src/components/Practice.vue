@@ -111,6 +111,7 @@ const emit = defineEmits(['change-page', 'goBack', 'finish-practice'])
 const currentQuestion = computed(() => props.questions[currentIndex.value] || {})
 const currentImage = computed(() => props.questions[currentIndex.value]?.image || '')
 const currentLength = ref('')
+//const currentLength = computed(() => props.questions.length)
 
 
 const currentIndex = ref(0)
@@ -156,8 +157,9 @@ function startStopwatch() {
 }
 
 onMounted(() => {
+  console.log('❤️', props.questions)
   currentLength.value = props.length
-  console.log(props.questions)
+
   console.log('📦 問題數量:', currentLength.value)
   if (props.questions && currentLength.value > 0) {
     startStopwatch()
