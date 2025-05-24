@@ -32,3 +32,5 @@ coverage
 .env
 .env.*
 /backend/.env
+node_modules
+.gitignore
