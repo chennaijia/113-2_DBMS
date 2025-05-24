@@ -79,6 +79,8 @@ import { debounce } from 'lodash-es'
 import { updateNote } from '../api/questions'
 import { updateQuestionById } from '../api/questions'
 
+const orderABC  = ['A', 'B', 'C', 'D', 'E']
+const order123 = ['1', '2', '3', '4', '5']
 export default {
   props: {
     currentSubject: String,
@@ -202,9 +204,16 @@ export default {
         // ----------- ② 送 PATCH ---------- //
         for (const card of cards.value) {
           const fd = new FormData()
-          // 文字欄位
-          fd.append('answer', Array.isArray(card.answer) ? card.answer.join('') : card.answer)
-          fd.append('note', card.note ?? '')
+          if (Array.isArray(card.answer)) {
+
+          const sorted = card.questionType.includes('multipleABC')
+          ? [...card.answer].sort((a,b)=> orderABC.indexOf(a)-orderABC.indexOf(b))
+           : [...card.answer].sort((a,b)=> order123.indexOf(a)-order123.indexOf(b))
+          fd.append('answer', sorted.join(''))
+        } else {
+        fd.append('answer', card.answer)
+        }
+          // fd.append('note', card.note ?? '')
 
           // 圖檔（使用 ← QuestionCard.vue 留下的 File 物件）
           if (card.questionFile) fd.append('content_pic', card.questionFile)
@@ -324,7 +333,7 @@ export default {
   top: 0;
   left: 80px;
   right: 0;
-  width: 1200px;
+  width: 95%;
   background-color: #fff;
   z-index: 100;
   padding: 10px 20px;

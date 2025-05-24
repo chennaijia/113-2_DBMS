@@ -22,8 +22,7 @@
           <img v-if="card.questionImage" :src="card.questionImage" class="preview-image" />
         </div>
         <div class="box" :class="{ hidden: !showAnswers }">
-          <div v-if="Array.isArray(card.answer)">{{ card.answer.join(', ') }}</div>
-          <div v-else>{{ card.answer }}</div>
+         <div>{{ sortedAnswer }}</div>
           <img v-if="card.answerImage" :src="card.answerImage" class="preview-image" />
           <div v-if="!showAnswers" class="overlay"></div>
         </div>
@@ -79,6 +78,8 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
+const orderABC  = ['A', 'B', 'C', 'D', 'E']
+ const order123 = ['1', '2', '3', '4', '5']
 
 export default {
   props: {
@@ -89,6 +90,7 @@ export default {
   },
   emits: ['delete-card', 'update-note'],
   setup(props, { emit }) {
+
     const uploadingType = ref(null)
     const fileInput = ref(null)
 
@@ -99,13 +101,34 @@ export default {
       }
     })
 
+     const sortedAnswer = computed(() => {
+    // 1️⃣ 先取得「純陣列」格式
+    let arr = Array.isArray(props.card.answer)
+      ? props.card.answer
+      : typeof props.card.answer === 'string'
+        ? [...new Set(props.card.answer.trim().split(''))]
+        : []
+
+    // 2️⃣ 排序
+    arr = props.card.questionType === 'multipleABC'
+      ? [...arr].sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
+      : props.card.questionType === 'multiple123'
+        ? [...arr].sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
+        : arr
+
+    // 3️⃣ 回傳顯示字串
+    return arr.join(', ')
+  })
+
     const normalizeAnswerFormat = () => {
       if ((props.card.questionType === 'multipleABC' || props.card.questionType === 'multiple123')) {
         if (!Array.isArray(props.card.answer)) {
           if (typeof props.card.answer === 'string') {
-            props.card.answer = props.card.answer.split(',').map(s => s.trim()).filter(Boolean)
-          } else {
-            props.card.answer = []
+              const raw = [...new Set(props.card.answer.trim().split(''))]
+              props.card.answer =
+                  props.card.questionType === 'multipleABC'
+                    ? raw.sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
+                    : raw.sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
           }
         }
       }
@@ -153,6 +176,7 @@ export default {
 
     return {
       uploadingType,
+      sortedAnswer,
       fileInput,
       deleteThisCard,
       handleFileChange,
@@ -167,7 +191,7 @@ export default {
 
 <style scoped>
 .card {
-  width: 100%;
+  width: 95%;
   margin: 20px auto;
   background-color: #f5f9fd;
   /* 淡藍灰背景 */
