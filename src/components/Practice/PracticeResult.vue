@@ -64,7 +64,7 @@
                   'text-secondary': questions.QType === 'open' && !questions.checked,
                 }"
                 v-html="
-                  questions.questionType === 'open' && !questions.checked
+                  questions.QType === 'open' && !questions.checked
                     ? '<i class=\'bi bi-emoji-neutral\'></i> 待確認'
                     : questions.isCorrect
                     ? '<i class=\'bi bi-emoji-smile\'></i> 正確'
@@ -116,30 +116,35 @@
                 <div v-else class="d-flex gap-3 align-items-center flex-wrap mt-2">
                   <strong><i class="bi bi-question-circle"></i> 你覺得答對嗎？</strong>
                   <button class="btn btn-outline-success btn-sm" @click="judgeCorrect(q)">
-                    我答對了 😄
+                    我答對了&gt;:D
                   </button>
                   <button class="btn btn-outline-danger btn-sm" @click="judgeWrong(q)">
-                    我答錯了 😢
+                    我答錯了&gt;:(
                   </button>
                 </div>
               </div>
 
-              <div v-else>
-                <div class="mb-2">
-                  <strong><i class="bi bi-fonts"></i> 正確答案文字：</strong><br />
-                  <span class="badge bg-success-subtle text-dark px-3 py-2 mt-1">
-                    {{ questions.Answer }}
-                  </span>
-                </div>
-                <div class="mb-2">
-                  <strong><i class="bi bi-image"></i> 正確答案圖片：</strong><br />
-                  <img
-                    :src="questions.Answer_pic"
-                    class="img-fluid rounded mt-2 shadow-sm"
-                    style="max-height: 250px; object-fit: contain"
-                  />
-                </div>
+              <div v-if="questions.Answer" class="mb-2">
+                <strong><i class="bi bi-fonts"></i> 正確答案文字：</strong><br />
+                <span class="badge bg-success-subtle text-dark px-3 py-2 mt-1">
+                  {{ questions.Answer }}
+                </span>
               </div>
+              <div class="mb-2">
+                <strong><i class="bi bi-image"></i> 正確答案圖片：</strong><br />
+                <img
+                  :src="questions.Answer_pic"
+                  class="img-fluid rounded mt-2 shadow-sm"
+                  style="max-height: 250px; object-fit: contain"
+                />
+              </div>
+              <textarea
+                v-model="questions.noteText"
+                rows="3"
+                class="w-100"
+                placeholder="輸入筆記..."
+                @blur="saveNote(questions)"
+              ></textarea>
             </div>
           </transition>
         </li>
@@ -154,9 +159,9 @@
         <i class="bi bi-crosshair"></i>
         <span class="ms-2">再練一次</span>
       </button>
-      <button class="btn btn-outline-primary rounded-pill px-4 py-2" @click="goBack">
+      <button class="btn btn-outline-primary rounded-pill px-4 py-2" @click="goViewQuestion">
         <i class="bi bi-house"></i>
-        <span class="ms-2">回首頁</span>
+        <span class="ms-2">回錯題瀏覽</span>
       </button>
     </div>
   </div>
@@ -165,10 +170,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { fetchMostWrongQuestions, fetchRandomQuestionsPractice } from '@/api/questions'
+import { updateNote } from '@/api/questions'
 
 const props = defineProps({
   currentSubject: String,
-  currentBookID: Number,
+  book: Object,
   total: Number,
   correct: Number,
   accuracy: Number,
@@ -176,7 +182,7 @@ const props = defineProps({
   questions: Array,
 })
 
-defineEmits(['restart', 'change-page'])
+const emit = defineEmits(['restart', 'goBack', 'change-page'])
 
 const expandedIndex = ref(null)
 
@@ -186,20 +192,32 @@ const visibleQuestions = computed(() =>
   showOnlyWrong.value ? props.questions.filter((q) => q.isCorrect === false) : props.questions
 )
 
+async function saveNote(questions) {
+  await updateNote(questions.Question_ID, questions.noteText)
+}
+
+//給怡玲
 onMounted(() => {
   props.questions.forEach((q) => {
-    q.checked = true
+    q.noteText = q.Content || ''
     if (q.QType !== 'open') {
+      q.checked = true
       const correctRaw = q.Answer ?? q.answer ?? q.correctAnswer ?? ''
       const correct = normalizeAnswer(correctRaw, q.QType)
       const user = normalizeAnswer(q.userAnswer, q.QType)
       if (q.userAnswer === '') {
         q.isCorrect = false
-        return
+      } else {
+        q.isCorrect = user !== '' && user === correct
       }
-      q.isCorrect = user !== '' && user === correct
+      if (q.isCorrect === false) {
+        // 非開放題且對過答案+錯誤，後端綁這裡1 q.Question_ID
+      }
+      return
     } else {
-      q.isCorrect = null
+      if (q.checked && q.isCorrect === false) {
+        // 開放題且對過答案＋錯誤，後端綁這裡2 q.Question_ID
+      }
     }
   })
 })
@@ -216,6 +234,7 @@ function judgeCorrect(q) {
 function judgeWrong(q) {
   q.isCorrect = false
   q.checked = true
+  // 開放題且對答案錯誤，後端綁這裡3 q.Question_ID
 }
 
 function typeLabel(type) {
@@ -254,13 +273,15 @@ function normalizeAnswer(ans, qType = '') {
 }
 
 function goBack() {
-  //待辦：清空Array(還是在Practice清？)&跳出警告
-  emit('change-page', 'book', props.currentSubject)
+  emit('goBack')
 }
 
 function restart() {
-  //待辦：清空Array&跳出警告
-  emit('restart')
+  emit('rePractice')
+}
+
+function goViewQuestion() {
+  emit('change-page', 'question', props.currentSubject)
 }
 </script>
 

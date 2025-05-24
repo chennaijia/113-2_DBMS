@@ -70,7 +70,6 @@
           />
         </div>
 
-        <!-- —— 判題結果（開放題） —— -->
         <div v-else-if="currentQuestion?.checked && currentQuestion?.QType === 'open'" class="mt-3">
           <div class="question-box mb-1">
             <img
@@ -260,9 +259,12 @@ function checkAnswer() {
     const user = normalizeAnswer(q.userAnswer, q.QType)
     if (q.userAnswer === '') {
       q.isCorrect = false
+
       return
     }
     q.isCorrect = user !== '' && user === correct
+    if (!q.isCorrect) {
+    }
   } else {
     q.isCorrect = null
   }

@@ -16,7 +16,7 @@
 
       <div v-else-if="currentPage === 'practice'">
         <Practice
-           v-if="startPractice && isFinished === false "
+          v-if="startPractice && isFinished === false"
           :currentSubject="currentSubject"
           @change-page="handleChangePage"
           :questions="selectedQuestions"
@@ -30,7 +30,7 @@
           :timeSpent="practiceResult.timeSpent"
           :total="practiceResult.questions.length"
           :correct="practiceResult.questions.filter((q) => q.isCorrect).length"
-          :currentBookID="currentBookID"
+          :book="currentBook"
           :accuracy="
             Math.round(
               (practiceResult.questions.filter((q) => q.isCorrect).length /
@@ -38,7 +38,8 @@
                 100
             )
           "
-          @restart="goBack"
+          @rePractice="rePractice"
+          @goBack="goBack"
           @change-page="handleChangePage"
         />
         <SelectQuestions
@@ -135,6 +136,12 @@ function handleChangePage(page, payload = '') {
     currentBookID.value = payload.QuestionBook_ID
     currentSubject.value = payload.BName
 
+    startPractice.value = false
+    isFinished.value = false
+    practiceResult.value = {
+      questions: [],
+      timeSpent: '00:00',
+    }
     console.log('App.vue: 收到 change-page 事件，頁面:', page, '選中的書本:', currentBook.value)
   }
 }
@@ -165,6 +172,14 @@ function goBack() {
     // 錯題瀏覽的返回（可回首頁或回書本）
     currentPage.value = 'book' // ✅ 改這裡，看你想返回哪一頁
   }
+}
+
+function rePractice() {
+  isFinished.value = false
+}
+
+function goViewQuestion() {
+  currentPage.value = 'question'
 }
 
 function handleFinishPractice(result) {
