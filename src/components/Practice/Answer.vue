@@ -67,7 +67,7 @@ watch(
 function submitAnswer() {
   answered.value = true
   const normalizedInput = normalize(userAnswer.value)
-  const normalizedAnswer = normalize(props.question.correctAnswer)
+  const normalizedAnswer = normalize(props.question.Answer)
   isCorrect.value = normalizedInput === normalizedAnswer
 
   emit('answered', {
