@@ -16,31 +16,18 @@
         </button>
       </div>
 
-      <div
-        v-for="(question, index) in props.questions"
-        :key="question.id"
-        class="d-flex align-items-start mb-3 p-3 border rounded bg-light gap-3"
-      >
-        <input
-          type="checkbox"
-          class="form-check-input mt-1"
-          :value="question.id"
-          v-model="selectedQuestionIds"
-        />
+      <div v-for="(question, index) in props.questions" :key="question.id"
+        class="d-flex align-items-start mb-3 p-3 border rounded bg-light gap-3">
+        <input type="checkbox" class="form-check-input mt-1" :value="question.id" v-model="selectedQuestionIds" />
         <div class="text-center">
           <span class="text-s fw-bold">{{ index + 1 }}.</span>
         </div>
 
         <div class="d-flex flex-column w-100">
-          <img
-            v-if="question.image"
-            :src="question.image"
-            class="img-fluid rounded"
-            style="width: 100%; height: auto; object-fit: contain"
-            alt="題目圖片"
-          />
+          <img v-if="question.Content_pic" :src="question.Content_pic" class="img-fluid rounded"
+            style="width: 100%; height: auto; object-fit: contain" alt="題目圖片" />
           <div class="mt-2">
-            <span class="text-red-s text-start">錯誤次數：{{ question.wrongCount }} 次</span>
+            <span class="text-red-s text-start">錯誤次數：{{ question.errCount }} 次</span>
           </div>
         </div>
       </div>
@@ -48,26 +35,13 @@
 
     <div v-else>
       <div class="mt-3">
-        <button
-          class="btn btn-outline-primary me-2"
-          @click="decreaseCount"
-          :disabled="localCount <= 1"
-        >
+        <button class="btn btn-outline-primary me-2" @click="decreaseCount" :disabled="localCount <= 1">
           -
         </button>
-        <input
-          type="number"
-          class="form-control d-inline-block text-center"
-          style="width: 60px"
-          v-model.number="localCount"
-          min="1"
-          :max="totalQuestionCount"
-        />
-        <button
-          class="btn btn-outline-primary ms-2"
-          @click="increaseCount"
-          :disabled="localCount >= totalQuestionCount"
-        >
+        <input type="number" class="form-control d-inline-block text-center" style="width: 60px"
+          v-model.number="localCount" min="1" :max="totalQuestionCount" />
+        <button class="btn btn-outline-primary ms-2" @click="increaseCount"
+          :disabled="localCount >= totalQuestionCount">
           +
         </button>
         <span class="ms-2">/ {{ props.questions.length }} 題</span>
@@ -75,10 +49,8 @@
     </div>
 
     <div v-if="selectedOption !== 'option0'" class="fixed-bottom-end mt-4">
-      <button
-        class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
-        @click="confirmSelection"
-      >
+      <button class="btn btn-outline-primary d-flex align-items-center px-3 py-2 rounded-pill"
+        @click="confirmSelection">
         <i class="bi bi-check"></i>
         <span class="ms-2">開始練習</span>
       </button>
@@ -101,12 +73,20 @@ const emit = defineEmits(['update-selected'])
 
 // ✅ 本地狀態變數
 const selectedQuestionIds = ref([])
-const localCount = ref(props.questionCount)
-const totalQuestionCount = ref(0) // 後端取得的總題數
+const localCount = ref(1) // ✅ 一開始就設為最小值
+//const totalQuestionCount = ref(0) // 後端取得的總題數
+const totalQuestionCount = computed(() => props.questions.length)
+
 
 /**
  * ✅ 監聽 props 變化
  */
+
+
+onMounted(() => {
+  totalQuestionCount.value = props.questions.length
+  console.log('💕 問題數量/questions.vue:', totalQuestionCount.value)
+})
 
 // 如果外層變更題數，更新 localCount
 watch(
@@ -182,7 +162,10 @@ const filteredQuestions = computed(() => {
 // 點擊「開始練習」
 function confirmSelection() {
   const selected =
+
+    //meimeielin: 從 props.questions改value 中選取的題目
     props.selectedOption === 'option1'
+
       ? props.questions.filter((q) => selectedQuestionIds.value.includes(q.id))
       : filteredQuestions.value
 

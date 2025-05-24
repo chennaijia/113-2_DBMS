@@ -14,75 +14,47 @@
         <span><i class="bi bi-clock"></i> {{ timer }}</span>
       </div>
     </div>
-    <div v-if="props.questions && currentLength.value" class="practice-content">
+    <div v-if="props.questions && props.questions.length" class="practice-content">
       <div class="progress mb-4">
-        <div
-          class="progress-bar"
-          role="progressbar"
-          :style="{ width: progressWidth + '%' }"
-          :aria-valuenow="progressWidth"
-          aria-valuemin="0"
-          aria-valuemax="100"
-        ></div>
+        <div class="progress-bar" role="progressbar" :style="{ width: progressWidth + '%' }"
+          :aria-valuenow="progressWidth" aria-valuemin="0" aria-valuemax="100"></div>
       </div>
 
       <div class="question-box mb-1">
-        <img
-          :src="currentImage"
-          class="img-fluid rounded shadow-sm"
-          style="width: 100%; max-height: 60vh; object-fit: contain"
-          alt="題目圖片"
-        />
+        <img :src="currentImage" class="img-fluid rounded shadow-sm"
+          style="width: 100%; max-height: 60vh; object-fit: contain" alt="題目圖片" />
       </div>
 
       <div class="text-s">題目類型 {{ currentType }}</div>
 
       <div class="mb-4 d-flex flex-column align-items-start">
         <label for="userInput" class="form-label text-m">答案：</label>
-        <input
-          id="userInput"
-          v-model="currentQuestion.userAnswer"
-          class="form-control"
-          :disabled="currentQuestion.checked"
-        />
+        <input id="userInput" v-model="currentQuestion.userAnswer" class="form-control"
+          :disabled="currentQuestion.checked" />
       </div>
 
-      <div
-        v-if="
-          props.questions[currentIndex]?.checked &&
-          props.questions[currentIndex]?.questionType !== 'open'
-        "
-        class="mt-2"
-      >
+      <div v-if="
+        props.questions[currentIndex]?.checked &&
+        props.questions[currentIndex]?.questionType !== 'open'
+      " class="mt-2">
         <span :class="props.questions[currentIndex]?.isCorrect ? 'text-success' : 'text-danger'">
           {{
             props.questions[currentIndex]?.isCorrect
               ? '答對了！'
-              : '答錯了！正確答案是：' + props.questions[currentIndex]?.correctAnswer
+              : '答錯了！正確答案是：' + props.questions[currentIndex]?.Answer
           }}
         </span>
         <!-- maybe 詳解？-->
-        <img
-          :src="props.questions[currentIndex]?.answerUrl"
-          alt="答案圖片"
-          class="img-fluid rounded shadow-sm mb-3"
-          style="width: 100%; max-height: 60vh; object-fit: contain"
-        />
+        <img :src="props.questions[currentIndex]?.Answer_pic" alt="答案圖片" class="img-fluid rounded shadow-sm mb-3"
+          style="width: 100%; max-height: 60vh; object-fit: contain" />
       </div>
 
-      <div
-        v-if="
-          props.questions[currentIndex]?.checked &&
-          props.questions[currentIndex]?.questionType === 'open'
-        "
-        class="mt-3"
-      >
-        <img
-          :src="props.questions[currentIndex]?.answerUrl"
-          alt="答案圖片"
-          class="img-fluid rounded shadow-sm mb-3"
-          style="width: 100%; max-height: 60vh; object-fit: contain"
-        />
+      <div v-if="
+        props.questions[currentIndex]?.checked &&
+        props.questions[currentIndex]?.QTypee === 'open'
+      " class="mt-3">
+        <img :src="props.questions[currentIndex]?.Answer_pic" alt="答案圖片" class="img-fluid rounded shadow-sm mb-3"
+          style="width: 100%; max-height: 60vh; object-fit: contain" />
         <div v-if="props.questions[currentIndex]?.isCorrect !== null">
           <div class="text-m text-center">
             {{ props.questions[currentIndex]?.isCorrect ? '恭喜答對！' : '再接再厲 加油！' }}
@@ -100,26 +72,16 @@
       </div>
 
       <div class="d-flex justify-content-center gap-3 mt-5">
-        <button
-          class="btn btn-outline-secondary rounded-pill"
-          @click="prevQuestion"
-          :disabled="currentIndex === 0"
-        >
+        <button class="btn btn-outline-secondary rounded-pill" @click="prevQuestion" :disabled="currentIndex === 0">
           <i class="bi bi-caret-left-fill"></i> 上一題
         </button>
-        <button
-          class="btn btn-outline-warning rounded-pill"
-          :disabled="props.questions[currentIndex].checked"
-          @click="checkAnswer"
-        >
+        <button class="btn btn-outline-warning rounded-pill" :disabled="props.questions[currentIndex].checked"
+          @click="checkAnswer">
           <i class="bi bi-bug"></i> 對答案
         </button>
 
-        <button
-          class="btn btn-outline-primary rounded-pill"
-          @click="nextQuestion"
-          v-if="currentIndex < currentLength.value - 1"
-        >
+        <button class="btn btn-outline-primary rounded-pill" @click="nextQuestion"
+          v-if="currentIndex < currentLength.value - 1">
           下一題 <i class="bi bi-caret-right-fill"></i>
         </button>
         <button class="btn btn-outline-primary rounded-pill" @click="finishPractice" v-else>
@@ -145,8 +107,11 @@ const props = defineProps({
 
 const emit = defineEmits(['change-page', 'goBack', 'finish-practice'])
 const currentQuestion = computed(() => props.questions[currentIndex.value] || {})
-const currentImage = computed(() => props.questions[currentIndex.value]?.image || '')
-const currentLength = ref('')
+const currentImage = computed(() => props.questions[currentIndex.value]?.Content_pic || '')
+
+//const currentImage = computed(() => props.questions[currentIndex.value]?.Contentpic || '')
+//const currentLength = ref('')
+const currentLength = computed(() => props.questions.length)
 
 const currentIndex = ref(0)
 
@@ -155,7 +120,7 @@ const progressWidth = computed(() => {
 })
 
 const currentType = computed(() => {
-  switch (currentQuestion.value.questionType) {
+  switch (currentQuestion.value.QType) {
     case 'open':
       return '開放題'
       break
@@ -174,7 +139,9 @@ const currentType = computed(() => {
     default:
       break
   }
-  return questions.value[currentIndex.value]?.questionType || ''
+  //return props.questions[currentIndex.value]?.questionType || ''
+  return props.questions[currentIndex.value]?.questionType || ''
+
 })
 
 const timer = ref('00:00')
@@ -190,15 +157,42 @@ function startStopwatch() {
   }, 1000)
 }
 
+
 onMounted(() => {
-  currentLength.value = props.length
-  console.log(props.questions)
-  console.log('📦 問題數量:', currentLength.value)
+  if (props.questions && props.questions.length > 0) {
+    console.log('❤️ 題目載入成功:', props.questions)
+    //currentLength.value = props.questions.length
+    console.log('📦 問題數量:', currentLength.value)
+
+    console.log('🚀 currentType', currentType)
+    console.log('👀 顯示條件：', props.questions, currentLength.value)
+
+    console.log('🧠 currentQuestion:', currentQuestion.value)
+    console.log('🖼 currentImage:', currentImage.value)
+    console.log('📏 currentLength:', currentLength.value)
+    console.log('📊 progressWidth:', progressWidth.value)
+    console.log('🧾 currentType:', currentType.value)
+
+
+    startStopwatch()
+    currentIndex.value = 0
+  } else {
+    console.warn('⚠️ 未選擇題目或題目為空！')
+  }
+})
+
+/*
+onMounted(() => {
+  console.log('❤️', props.questions)
+  currentLength.value = props.questions.length
+
+  console.log('📦 問題數量currentLength.value:', currentLength.value)
   if (props.questions && currentLength.value > 0) {
     startStopwatch()
     currentIndex.value = 0
   }
 })
+*/
 
 onBeforeUnmount(() => {
   clearInterval(timerInterval)

@@ -16,10 +16,10 @@
 
       <div v-else-if="currentPage === 'practice'">
         <Practice
-          v-if="startPractice && isFinished === false"
+           v-if="startPractice && isFinished === false "
           :currentSubject="currentSubject"
           @change-page="handleChangePage"
-          :questions="selectedQuestions.value"
+          :questions="selectedQuestions"
           @goBack="goBack"
           @finish-practice="handleFinishPractice"
         />
@@ -45,8 +45,7 @@
           v-else
           :currentSubject="currentSubject"
           :currentBookID="currentBookID"
-          :userId="userId.value"
-          @start="start"
+          :userId="userId"
           @start-practice="setQuestion"
           @change-page="handleChangePage"
         />
@@ -62,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, provide } from 'vue'
+import { ref, provide, nextTick } from 'vue'
 
 import Sidebar from './components/Sidebar.vue'
 import HomePage from './components/HomePage.vue'
@@ -81,7 +80,7 @@ const currentSubject = ref('')
 const currentBook = ref(null)
 const currentBookID = ref(null)
 const startPractice = ref(false)
-const selectedQuestions = ref()
+const selectedQuestions = ref([])
 const isFinished = ref(false)
 
 const isLoggedIn = ref(false)
@@ -135,15 +134,24 @@ function handleChangePage(page, payload = '') {
     currentBook.value = payload
     currentBookID.value = payload.QuestionBook_ID
     currentSubject.value = payload.BName
+
     console.log('App.vue: 收到 change-page 事件，頁面:', page, '選中的書本:', currentBook.value)
   }
 }
 
+function setQuestion(questions) {
+  console.log('App.vue: 收到 setQuestion 事件，選中的題目:', questions)
+  selectedQuestions.value = questions
+  startPractice.value = true
+}
+
+/*
 function setQuestion(selected) {
   console.log('App.vue: 收到 setQuestion 事件，選中的題目:', selected)
   selectedQuestions.value = selected
   startPractice.value = true
 }
+  */
 
 function goBack() {
   if (currentPage.value === 'practice') {

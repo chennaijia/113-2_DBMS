@@ -35,6 +35,7 @@
         <Questions
           :selectedOption="selectedOption"
           :questions="questions"
+          :questionCount="questionCount"
           @update-selected="handleSelectedQuestion"
         />
       </div>
@@ -55,7 +56,7 @@ const selectedOption = ref('option0')
 const questionCount = ref(1)
 const selectedQuestions = ref([])
 
-const emit = defineEmits('start-practice', 'change-page')
+const emit = defineEmits(['start-practice', 'change-page'])
 
 const props = defineProps({
   currentSubject: {
@@ -140,7 +141,11 @@ const handleSelection = () => {
 }
 
 const handleSelectedQuestion = (questions) => {
+  console.log('📥 進來的 questions:', questions)
+  console.log('✅ 類型檢查:', Array.isArray(questions))
+
   selectedQuestions.value = questions
+  console.log('🚀 handleSelectedQueston', selectedQuestions.value)
   if (selectedQuestions.value.length === 0) {
     alert('尚未選擇題目！')
     return
@@ -163,7 +168,10 @@ onMounted(async () => {
       ...q,
       id: index + 1, // 確保每個題目都有唯一的 ID
     }))
+
+    questionCount.value = questions.value.length
     console.log('🚀 自選題目：', questions.value)
+    console.log('💕 問題數量/selectedQuestion', questionCount.value)
   } catch (error) {
     console.error('載入題目時發生錯誤:', error)
     alert('載入題目時發生錯誤，請稍後再試。')
