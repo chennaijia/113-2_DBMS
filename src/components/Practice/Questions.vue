@@ -74,7 +74,9 @@ const emit = defineEmits(['update-selected'])
 // ✅ 本地狀態變數
 const selectedQuestionIds = ref([])
 const localCount = ref(1) // ✅ 一開始就設為最小值
-const totalQuestionCount = ref(0) // 後端取得的總題數
+//const totalQuestionCount = ref(0) // 後端取得的總題數
+const totalQuestionCount = computed(() => props.questions.length)
+
 
 /**
  * ✅ 監聽 props 變化
