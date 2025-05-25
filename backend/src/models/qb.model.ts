@@ -117,6 +117,7 @@ export const copyQB = async (id: number, owner: number) => {
     await conn.beginTransaction();
 
     // 1️⃣  取原始題本
+    console.log('🔍 取得題本資訊:', id, owner);
     const [rows]: any = await conn.query(
       'SELECT BName, Icon FROM QUESTION_BOOK WHERE QuestionBook_ID = ? AND Creator_ID = ?',
       [id, owner],
@@ -124,6 +125,7 @@ export const copyQB = async (id: number, owner: number) => {
     if (!rows.length) { await conn.rollback(); return null; }
 
     // 2️⃣  插入新題本
+    console.log('📦 複製題本:', rows[0]);
     const [r] = await conn.execute<ResultSetHeader>(
       `INSERT INTO QUESTION_BOOK (BName, Icon, Creator_ID)
        VALUES (?, ?, ?)`,
@@ -132,6 +134,7 @@ export const copyQB = async (id: number, owner: number) => {
     const newId = (r as ResultSetHeader).insertId;
 
     // 3️⃣  複製原本的題目資料
+    console.log('🔄 複製題目資料，原始題本 ID:', id);
     const [originalQuestions]: any = await conn.query(
       `SELECT * FROM QUESTION
        WHERE Question_ID IN (
@@ -142,6 +145,7 @@ export const copyQB = async (id: number, owner: number) => {
     );
 
     const idMap = new Map<number, number>();
+    console.log('🗺️ 建立題目 ID 映射表');
     for (const q of originalQuestions) {
       const [insertResult] = await conn.query(
         `INSERT INTO QUESTION (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar, practiceCount, errCount)
@@ -157,6 +161,7 @@ export const copyQB = async (id: number, owner: number) => {
     }
 
     // 4️⃣  建立新的關聯
+    console.log('🔗 建立新的關聯表');
     const [originalLinks]: any = await conn.query(
       `SELECT Question_ID, Error_Count
        FROM QUESTION_COLLECTION
@@ -167,16 +172,19 @@ export const copyQB = async (id: number, owner: number) => {
     for (const link of originalLinks) {
       const newQId = idMap.get(link.Question_ID);
       if (!newQId) continue;
+      console.log(`🔗 插入關聯: 新題目 ID ${newQId} 與新題本 ID ${newId}`);
 
       await conn.query(
         `INSERT INTO QUESTION_COLLECTION
          (QuestionBook_ID, Question_ID, User_ID, Error_Count)
-         VALUES (?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?)`,
         [newId, newQId, owner, link.Error_Count]
       );
     }
 
+
     // 5️⃣  更新題本的題數
+    console.log('📊 更新題本的題數', idMap.size);
     await conn.execute(
       `UPDATE QUESTION_BOOK
          SET Question_Count = ?
