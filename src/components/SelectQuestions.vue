@@ -83,58 +83,6 @@ const bookId = ref(props.currentBookID)
 const questions = ref([])
 const totalQuestionCount = ref(0)
 
-//改好了
-/*const questions = ref([
-  {
-    id: 1,
-    wrongCount: 8,
-    image: '/images/1.jpg',
-    questionType: 'open',
-    correctAnswer: 'B',
-    answerUrl: `/images/answers/1.jpg`,
-    answerText: '',
-    userAnswer: '',
-    isCorrect: null,
-    checked: false,
-  },
-  {
-    id: 2,
-    wrongCount: 0,
-    image: '/images/2.jpg',
-    questionType: 'multiple123',
-    correctAnswer: '是',
-    answerUrl: `/images/answers/2.jpg`,
-    answerText: '',
-    userAnswer: '',
-    isCorrect: null,
-    checked: false,
-  },
-  {
-    id: 3,
-    wrongCount: 3,
-    image: '/images/3.jpg',
-    questionType: 'open',
-    correctAnswer: '選項2',
-    answerUrl: `/images/answers/3.jpg`,
-    answerText: '',
-    userAnswer: '',
-    isCorrect: null,
-    checked: false,
-  },
-  {
-    id: 4,
-    wrongCount: 5,
-    image: '/images/4.jpg',
-    questionType: 'open',
-    correctAnswer: '丙',
-    answerUrl: `/images/answers/4.jpg`,
-    answerText: '',
-    userAnswer: '',
-    isCorrect: null,
-    checked: false,
-  },
-])
-*/
 
 const handleSelection = () => {
   selectedQuestions.value = []
