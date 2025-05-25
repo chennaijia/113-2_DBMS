@@ -24,7 +24,7 @@ export const createQuestion = async (
   userId: number
 ): Promise<number> => {
   const [result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO question
+    `INSERT INTO QUESTION
      (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar, practiceCount, errCount)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
@@ -67,7 +67,7 @@ export const createQuestion = async (
 export const listQuestions = async (creatorId: number) => {
   const [rows]: any = await pool.query(
     `
-    SELECT * FROM question WHERE Creator_id = ? ORDER BY question_id DESC
+    SELECT * FROM QUESTION WHERE Creator_id = ? ORDER BY question_id DESC
   `,
     [creatorId]
   )

@@ -19,12 +19,12 @@ export const uploadQuestion = async (req: AuthReq, res: Response): Promise<void>
 
     const questionBookId = Number(req.body.QuestionBook_ID)
     if (!questionBookId) {
-      res.status(400).json({ message: '缺少題本 ID (questionBookId)' })
+      res.status(400).json({ message: '缺少題本 ID (QuestionBookId)' })
       return
     }
 
     // ✅ 檢查題本是否存在
-    const [check] = await pool.query('SELECT 1 FROM question_book WHERE QuestionBook_ID = ?', [
+    const [check] = await pool.query('SELECT 1 FROM QUESTION_BOOK WHERE QuestionBook_ID = ?', [
       questionBookId,
     ])
     if ((check as any[]).length === 0) {

@@ -25,7 +25,7 @@ export async function createQB(input: QBInput) {
 export const listQBByUser = async (userId: number) => {
   console.log('🎒userId:', userId);
   const [rows] = await pool.query(
-    'SELECT * FROM Question_Book WHERE Creator_ID = ?',
+    'SELECT * FROM QUESTION_BOOK WHERE Creator_ID = ?',
     [userId] // ✅ 傳入參數
   );
   return rows;
@@ -33,7 +33,7 @@ export const listQBByUser = async (userId: number) => {
 
 
 export const getQB = async (id: number) => {
-  const [rows]: any = await pool.query('SELECT * FROM Question_Book WHERE Questionbook_ID = ?', [id]);
+  const [rows]: any = await pool.query('SELECT * FROM QUESTION_BOOK WHERE QuestionBook_ID = ?', [id]);
   return rows[0];
 };
 
@@ -67,7 +67,7 @@ export const updateQB = async (
 
 export const deleteQB = async (id: number, owner: number) => {
   const [r]: any = await pool.execute(
-    'DELETE FROM Question_Book WHERE Questionbook_ID = ? AND Creator_ID = ?',
+    'DELETE FROM QUESTION_BOOK WHERE QuestionBook_ID = ? AND Creator_ID = ?',
     [id, owner],
   );
   return r.affectedRows === 1;

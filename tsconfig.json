@@ -13,7 +13,9 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "types": ["vue-router"]
+    "types": ["vue-router"],
+    "target": "ES2015",
+    "lib": ["ES2015", "DOM"],
   }
   
 }

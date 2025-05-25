@@ -2,9 +2,9 @@ import { app } from './app';
 import { env } from './config/env';
 import { pool } from './config/database';
 
-import * as dotenv from 'dotenv';
-dotenv.config();
-
+//import * as dotenv from 'dotenv';
+//dotenv.config(); // 使用 .env.cloud 檔案
+console.log('🧪 資料庫設定:', env);
 
 // 測試連線（送出一個簡單的 SQL）
 pool.query('SELECT * FROM TAG')
