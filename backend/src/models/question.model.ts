@@ -41,8 +41,8 @@ export const createQuestion = async (
     const questionId = (result as ResultSetHeader).insertId;
 
     await conn.query(
-      `INSERT INTO QUESTION_COLLECTION (QuestionBook_ID, Question_ID, User_ID, Error_Count, isReview)
-       VALUES (?, ?, ?, 0, 0)`,
+      `INSERT INTO QUESTION_COLLECTION (QuestionBook_ID, Question_ID, User_ID, Error_Count)
+       VALUES (?, ?, ?, 0)`,
       [questionBookId, questionId, userId]
     );
 

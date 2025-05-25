@@ -158,7 +158,7 @@ export const copyQB = async (id: number, owner: number) => {
 
     // 4️⃣  建立新的關聯
     const [originalLinks]: any = await conn.query(
-      `SELECT Question_ID, Error_Count, isReview
+      `SELECT Question_ID, Error_Count
        FROM QUESTION_COLLECTION
        WHERE QuestionBook_ID = ? AND User_ID = ?`,
       [id, owner]
@@ -170,9 +170,9 @@ export const copyQB = async (id: number, owner: number) => {
 
       await conn.query(
         `INSERT INTO QUESTION_COLLECTION
-         (QuestionBook_ID, Question_ID, User_ID, Error_Count, isReview)
+         (QuestionBook_ID, Question_ID, User_ID, Error_Count)
          VALUES (?, ?, ?, ?, ?)`,
-        [newId, newQId, owner, link.Error_Count, link.isReview]
+        [newId, newQId, owner, link.Error_Count]
       );
     }
 
