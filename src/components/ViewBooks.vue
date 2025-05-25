@@ -2,7 +2,7 @@
 <template>
   <!-- === (原樣保留 - 你提供的整段 template 內容) === -->
   <!--問題：直接登入還不能跟sidebar同步(要refresh)，要不要把登入資訊放在App.vue中統一控制？-->
-<div>
+  <div>
     <!--導覽-->
     <div>
       <div
@@ -35,22 +35,20 @@
           <div class="accordion accordion-flush">
             <div class="accordion-item">
               <h2 class="accordion-header">
-                <button class="sidebar_accordion accordion-button collapsed">
-                  主頁
-                </button>
+                <button class="sidebar_accordion accordion-button collapsed">主頁</button>
               </h2>
             </div>
             <div class="accordion-item">
               <h2 class="accordion-header">
-                <button class="sidebar_accordion accordion-button collapsed">
-                  我的錯題本
-                </button>
+                <button class="sidebar_accordion accordion-button collapsed">我的錯題本</button>
               </h2>
             </div>
-          </div> <div class="login-footer d-flex justify-content-center">
+          </div>
+          <div class="login-footer d-flex justify-content-center">
             <div>
               <h2>登入</h2>
-            </div> </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -59,13 +57,7 @@
     <div
       v-if="showGuide && currentSlideIndex === 2"
       class="guide-highlight-add guide-ghost-button"
-      style="
-        position: absolute;
-        left: 10%;
-        top: 3%;
-        pointer-events: none;
-        z-index: 1060;
-      "
+      style="position: absolute; left: 10%; top: 3%; pointer-events: none; z-index: 1060"
       aria-hidden="true"
     >
       <button
@@ -77,7 +69,8 @@
           cursor: default;
         "
         class="btn btn-outline-primary rounded-pill"
-        disabled="true" >
+        disabled="true"
+      >
         <Icon icon="material-symbols:add-rounded" width="40" height="40" />
         <div>創建新的錯題本</div>
       </button>
@@ -108,16 +101,29 @@
     <!-- 登入提示 (未登入時顯示) -->
     <div v-if="!isLoggedIn">
       <div class="login-overlay"></div>
-      <div style="position: absolute; left: 10%; padding: 50px; top: 40%; text-align: center; width: 80%;">
-        <div style="
+      <div
+        style="
           position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-55%, -20%);
+          left: 10%;
+          padding: 50px;
+          top: 40%;
           text-align: center;
-          font-size: 24px;
-          color: black;">
-          請先登入<br/>以查看您的錯題本</div>
+          width: 80%;
+        "
+      >
+        <div
+          style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-55%, -20%);
+            text-align: center;
+            font-size: 24px;
+            color: black;
+          "
+        >
+          請先登入<br />以查看您的錯題本
+        </div>
       </div>
     </div>
 
@@ -157,11 +163,22 @@
               cursor: pointer;
             "
           >
-            <Icon icon="mdi:trash-can" width="24" height="24" style="color: #cc5050; cursor: pointer;" />
+            <Icon
+              icon="mdi:trash-can"
+              width="24"
+              height="24"
+              style="color: #cc5050; cursor: pointer"
+            />
           </button>
 
           <!-- 書本 icon -->
-          <Icon :icon="book.icon" width="190px" height="190px" style="color: #ffbf69; cursor: pointer;" @click="$emit('change-page', 'question', book)"/>
+          <Icon
+            :icon="book.icon"
+            width="190px"
+            height="190px"
+            style="color: #ffbf69; cursor: pointer"
+            @click="openBookOptions(book)"
+          />
 
           <!-- 複製按鈕 -->
           <button
@@ -251,7 +268,8 @@
           cursor: default;
         "
         class="btn btn-outline-primary rounded-pill"
-        disabled="true" >
+        disabled="true"
+      >
         <Icon icon="bx:edit-alt" width="40" height="40" />
         <div>編輯</div>
       </button>
@@ -270,12 +288,7 @@
     >
       <button
         v-if="!editMode"
-        style="
-          padding: 12px 24px;
-          font-size: 30px;
-          display: flex;
-          align-items: center;
-        "
+        style="padding: 12px 24px; font-size: 30px; display: flex; align-items: center"
         class="btn btn-outline-primary rounded-pill"
         :disabled="showGuide"
         @click="toggleEditMode"
@@ -394,6 +407,33 @@
       />
     </div>
   </div>
+  <!-- 書本選單 Modal -->
+  <div
+    class="modal fade"
+    id="bookOptionsModal"
+    tabindex="-1"
+    aria-labelledby="bookOptionsModalLabel"
+    aria-hidden="true"
+    ref="bookOptionsModalRef"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <!-- <h5 class="modal-title" id="bookOptionsModalLabel">選擇操作</h5> -->
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="關閉"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          <button class="btn btn-outline-primary me-3" @click="goToQuestion">前往錯題瀏覽</button>
+          <button class="btn btn-outline-success" @click="goToPractice">前往錯題練習</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -407,6 +447,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import * as bootstrap from 'bootstrap'
 
+const emit = defineEmits(['change-page'])
 
 /* ------------ 型別 ------------ */
 interface BookUI {
@@ -431,9 +472,9 @@ interface LoginState {
 // ✅ 確保注入的是響應式變數本身，而不是它們的 .value
 const {
   isLoggedIn, // 直接使用從 App.vue 注入的 isLoggedIn ref
-  userName,   // 直接使用從 App.vue 注入的 userName ref
+  userName, // 直接使用從 App.vue 注入的 userName ref
   login: handleLoginFromParent,
-  logout: handleLogoutFromParent
+  logout: handleLogoutFromParent,
 } = inject('loginState') as LoginState
 
 /* ------------ reactive 狀態 ------------ */
@@ -447,6 +488,10 @@ const userName = ref('')
 */
 const currentSlideIndex = ref(0)
 const books = ref<BookUI[]>([])
+
+const selectedBook = ref<BookUI | null>(null)
+const bookOptionsModalRef = ref<HTMLElement | null>(null)
+let modalInstance: bootstrap.Modal | null = null
 
 /* ------------ 生命週期 ------------ */
 onMounted(async () => {
@@ -470,13 +515,19 @@ onMounted(async () => {
       const carousel = new bootstrap.Carousel(carouselEl, { interval: false, wrap: false })
       carouselEl.addEventListener('slide.bs.carousel', (event: any) => {
         console.log('slide event:', currentSlideIndex.value)
-        if (currentSlideIndex.value === 0 && event.direction === 'right'){ event.preventDefault(); return;}
-        if (currentSlideIndex.value === 3 && event.direction === 'left') {event.preventDefault(); return;}
-        currentSlideIndex.value = event.to;
-      });
+        if (currentSlideIndex.value === 0 && event.direction === 'right') {
+          event.preventDefault()
+          return
+        }
+        if (currentSlideIndex.value === 3 && event.direction === 'left') {
+          event.preventDefault()
+          return
+        }
+        currentSlideIndex.value = event.to
+      })
       carouselEl.addEventListener('slid.bs.carousel', handleSlide)
     }
-  });
+  })
 
   // 註冊重新整理題本的事件監聽器
   window.addEventListener('refresh-books', loadBooks)
@@ -576,7 +627,7 @@ async function copyBook(idx: number) {
   const src = books.value[idx]
 
   try {
-    console.log('🟢開始複製題本');
+    console.log('🟢開始複製題本')
 
     /* 1️⃣ 先呼叫後端，拿到新 ID */
     const { data } = await copyQB(src.QuestionBook_ID) // { QuestionBook_ID: 123 }
@@ -662,6 +713,29 @@ function handleSlide(event: any) {
 function endGuide() {
   showGuide.value = false
 }
+
+function openBookOptions(book: BookUI) {
+  selectedBook.value = book
+  if (bookOptionsModalRef.value) {
+    modalInstance = new bootstrap.Modal(bookOptionsModalRef.value)
+    modalInstance.show()
+  }
+}
+
+function goToQuestion() {
+  if (selectedBook.value) {
+    modalInstance?.hide()
+    // ⬇️ Emit 到父元件
+    emit('change-page', 'question', selectedBook.value)
+  }
+}
+
+function goToPractice() {
+  if (selectedBook.value) {
+    modalInstance?.hide()
+    emit('change-page', 'practice', selectedBook.value)
+  }
+}
 </script>
 
 <style scoped>
@@ -708,20 +782,19 @@ button[disabled] {
 }
 
 .login-overlay {
- position: absolute;
- top: 50%;
- left: 50%;
- width: 90vw;
- height: 90vh;
- background-image: url('/fav.PNG');
- background-size: contain;
- background-repeat: no-repeat;
- background-position: center;
- opacity: 0.1;
- filter: brightness(80%);
- transform: translate(-50%, -50%); /* 確保真正置中 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90vw;
+  height: 90vh;
+  background-image: url('/fav.PNG');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.1;
+  filter: brightness(80%);
+  transform: translate(-50%, -50%); /* 確保真正置中 */
 }
-
 
 /* 側邊欄的樣式 */
 .offcanvas-custom {

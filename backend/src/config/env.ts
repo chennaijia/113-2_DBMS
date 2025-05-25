@@ -1,7 +1,7 @@
-import * as dotenv from 'dotenv';
+import * as dotenv from 'dotenv'
 
 //dotenv.config();
-dotenv.config({ path: '.env.cloud' });
+dotenv.config({ path: '.env.cloud' })
 
 export const env = {
   PORT: +(process.env.PORT || 3000),
@@ -11,7 +11,7 @@ export const env = {
   DB_USER: process.env.DB_USER || 'root',
   DB_PASS: process.env.DB_PASS || '',
   DB_NAME: process.env.DB_NAME || 'wrongbook',
-};
+}
 
 //console.log('✅ env.DB_PASS', env.DB_PASS);
-console.log('✅ 正在使用 .env.cloud 設定', env);
+console.log('✅ 正在使用 .env.cloud 設定', env)
