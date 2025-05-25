@@ -17,16 +17,39 @@ interface ReviewTestInput {
   questions: PracticeQuestionRecord[];
 }
 
+
+export const createReviewTestWithRecords = async (data: ReviewTestInput) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const review_test_id = await insertReviewTest(data, conn);
+    await insertReviewQuestionRecords(review_test_id, data.questions, conn);
+    await updateQuestionStats(data.questions, conn);
+
+    await conn.commit();
+    return { review_test_id };
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+};
+
+
+/*
 export const createReviewTestWithRecords = async (data: ReviewTestInput) => {
   const review_test_id = await insertReviewTest(data);
   await insertReviewQuestionRecords(review_test_id, data.questions);
   await updateQuestionStats(data.questions);
   return { review_test_id };
 };
+*/
 
 
 //插入一筆review_test記錄
-export const insertReviewTest = async (data: ReviewTestInput) => {
+export const insertReviewTest = async (data: ReviewTestInput, conn: any) => {
   const [result] = await pool.query(
     `INSERT INTO REVIEW_TEST (total_qCount, err_qCount, accuracy, time_spent, practiced_at)
      VALUES (?, ?, ?, ?, ?)`,
@@ -44,7 +67,8 @@ export const insertReviewTest = async (data: ReviewTestInput) => {
 //插入多筆review_question_record記錄
 export const insertReviewQuestionRecords = async (
   review_test_id: number,
-  questions: PracticeQuestionRecord[]
+  questions: PracticeQuestionRecord[],
+  conn: any
 ) => {
   const values = questions.map((q) => [
     review_test_id,
@@ -61,7 +85,7 @@ export const insertReviewQuestionRecords = async (
 };
 
 // 更新題目的練習次數和錯誤次數
-export const updateQuestionStats = async (questions: PracticeQuestionRecord[]) => {
+export const updateQuestionStats = async (questions: PracticeQuestionRecord[], conn: any) => {
   const allIds = questions.map((q) => q.Rquestion_Id);
   const wrongIds = questions.filter(q => q.is_correct === false).map(q => q.Rquestion_Id);
 

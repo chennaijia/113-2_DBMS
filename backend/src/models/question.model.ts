@@ -23,6 +23,53 @@ export const createQuestion = async (
   questionBookId: number,
   userId: number
 ): Promise<number> => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [result] = await conn.execute<ResultSetHeader>(
+      `INSERT INTO QUESTION
+       (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar, practiceCount, errCount)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        q.qtype, q.content || '', q.content_pic || null, q.answer || '', q.answer_pic || null,
+        q.detail_ans || '', q.detail_ans_pic || null, q.subject || '', q.level,
+        q.creator_id, q.isStar || 0, 0, 0
+      ]
+    );
+
+    const questionId = (result as ResultSetHeader).insertId;
+
+    await conn.query(
+      `INSERT INTO QUESTION_COLLECTION (QuestionBook_ID, Question_ID, User_ID, Error_Count, isReview)
+       VALUES (?, ?, ?, 0, 0)`,
+      [questionBookId, questionId, userId]
+    );
+
+    await conn.query(
+      `UPDATE QUESTION_BOOK
+       SET Question_Count = Question_Count + 1
+       WHERE QuestionBook_ID = ? AND Creator_ID = ?`,
+      [questionBookId, userId]
+    );
+
+    await conn.commit();
+    return questionId;
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+};
+
+
+/*
+export const createQuestion = async (
+  q: QuestionInput,
+  questionBookId: number,
+  userId: number
+): Promise<number> => {
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO QUESTION
      (QType, Content, Content_pic, Answer, Answer_pic, DetailAns, DetailAns_pic, Subject, Level, Creator_id, isStar, practiceCount, errCount)
@@ -63,7 +110,7 @@ export const createQuestion = async (
 
   return questionId
 }
-
+*/
 export const listQuestions = async (creatorId: number) => {
   const [rows]: any = await pool.query(
     `
