@@ -16,6 +16,7 @@
         <span class="stats ms-auto">❌: {{ card.wrongCount }} 次 ✔️: {{ card.rightCount }} 次</span>
       </div>
 
+
       <div class="card-content">
         <div class="box">
           <div>{{ card.question }}</div>
@@ -28,8 +29,10 @@
         </div>
       </div>
 
+
       <textarea v-model="noteText" rows="3" class="note" placeholder="輸入筆記..."></textarea>
     </div>
+
 
     <!-- 編輯模式 -->
     <div v-else>
@@ -38,14 +41,17 @@
         <span class="type-label">【{{ card.questionType === 'truefalse' ? '是非題' : card.questionType.includes('multiple') ? '選擇題' : '問答題' }}】</span>
       </div>
 
+
       <p>題目圖片:</p>
       <input type="file" @change="(e) => handleFileChange(e, card, 'questionImage')" />
       <img v-if="card.questionImage" :src="card.questionImage" class="preview-image" />
+
 
       <div v-if="card.questionType === 'truefalse'">
         <label><input type="radio" value="T" v-model="card.answer" />T</label>
         <label><input type="radio" value="F" v-model="card.answer" />F</label>
       </div>
+
 
       <div v-else-if="card.questionType === 'multipleABC'">
         <label v-for="opt in ['A', 'B', 'C', 'D', 'E']" :key="opt">
@@ -53,33 +59,38 @@
         </label>
       </div>
 
+
       <div v-else-if="card.questionType === 'multiple123'">
         <label v-for="opt in ['1', '2', '3', '4', '5']" :key="opt">
           <input type="checkbox" :value="opt" :checked="card.answer.includes(opt)" @change="toggleMultipleAnswer(opt)" />{{ opt }}
         </label>
       </div>
 
+
       <div v-else-if="card.questionType === 'open'">
         <label>答案文字:</label>
         <input v-model="card.answer" />
       </div>
 
+
       <p>詳解圖片:</p>
       <input type="file" @change="(e) => handleFileChange(e, card, 'answerImage')" />
       <img v-if="card.answerImage" :src="card.answerImage" class="preview-image" />
 
-      <textarea v-model="noteText" rows="3" class="note" placeholder="輸入筆記..."></textarea>
-      <span v-if="savingNote">儲存中...</span>
+
+
 
       <button class="delete-button" @click="deleteThisCard">刪了吧破防了💔</button>
     </div>
   </div>
 </template>
 
+
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
 const orderABC  = ['A', 'B', 'C', 'D', 'E']
  const order123 = ['1', '2', '3', '4', '5']
+
 
 export default {
   props: {
@@ -91,8 +102,10 @@ export default {
   emits: ['delete-card', 'update-note'],
   setup(props, { emit }) {
 
+
     const uploadingType = ref(null)
     const fileInput = ref(null)
+
 
     const noteText = computed({
       get: () => props.card.note,
@@ -101,25 +114,32 @@ export default {
       }
     })
 
-     const sortedAnswer = computed(() => {
-    // 1️⃣ 先取得「純陣列」格式
-    let arr = Array.isArray(props.card.answer)
+
+    const sortedAnswer = computed(() => {
+  // 1️⃣ 轉成「純陣列」格式（多選題才需要）
+  let arr = Array.isArray(props.card.answer)
+    ? props.card.answer
+    : typeof props.card.answer === 'string'
+      ? [...new Set(props.card.answer.trim().split(''))]
+      : []
+
+
+  // 2️⃣ 排序（只針對多選題）
+  if (props.card.questionType === 'multipleABC') {
+    arr = [...arr].sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
+  } else if (props.card.questionType === 'multiple123') {
+    arr = [...arr].sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
+  }
+
+
+
+
+  return props.card.questionType.includes('multiple')
+    ? arr.join(', ')
+    : typeof props.card.answer === 'string'
       ? props.card.answer
-      : typeof props.card.answer === 'string'
-        ? [...new Set(props.card.answer.trim().split(''))]
-        : []
-
-    // 2️⃣ 排序
-    arr = props.card.questionType === 'multipleABC'
-      ? [...arr].sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
-      : props.card.questionType === 'multiple123'
-        ? [...arr].sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
-        : arr
-
-    // 3️⃣ 回傳顯示字串
-    return arr.join(', ')
-  })
-
+      : ''
+})
     const normalizeAnswerFormat = () => {
       if ((props.card.questionType === 'multipleABC' || props.card.questionType === 'multiple123')) {
         if (!Array.isArray(props.card.answer)) {
@@ -134,6 +154,7 @@ export default {
       }
     }
 
+
     const toggleMultipleAnswer = (opt) => {
       const index = props.card.answer.indexOf(opt)
       if (index === -1) {
@@ -143,14 +164,17 @@ export default {
       }
     }
 
+
     onMounted(() => normalizeAnswerFormat())
     watch(() => props.card.questionType, normalizeAnswerFormat, { immediate: true })
+
 
     const deleteThisCard = () => {
       if (confirm('確定要刪除這張卡片嗎？')) {
         emit('delete-card', props.card.id)
       }
     }
+
 
     const handleFileChange = (event, card, type) => {
       const file = event.target.files[0]
@@ -159,6 +183,7 @@ export default {
         alert('圖片太大，請選擇小於 2MB 的檔案')
         return
       }
+
 
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -173,6 +198,7 @@ export default {
       }
       reader.readAsDataURL(file)
     }
+
 
     return {
       uploadingType,
@@ -189,6 +215,9 @@ export default {
 
 
 
+
+
+
 <style scoped>
 .card {
   width: 95%;
@@ -201,6 +230,7 @@ export default {
   border: 1px solid #cfd8dc;
 }
 
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -211,9 +241,11 @@ export default {
   /* 深藍字 */
 }
 
+
 .type-label {
   color: #1976d2;
 }
+
 
 .star {
   background: none;
@@ -239,6 +271,7 @@ export default {
   flex-wrap: wrap;
 }
 
+
 .box {
   flex: 1;
   background-color: #e3f2fd;
@@ -250,6 +283,7 @@ export default {
   color: #263238;
 }
 
+
 .preview-image {
   margin-top: 10px;
   max-width: 100%;
@@ -258,9 +292,11 @@ export default {
   border: 1px solid #b0bec5;
 }
 
+
 .hidden .overlay {
   display: block;
 }
+
 
 .overlay {
   position: absolute;
@@ -272,6 +308,7 @@ export default {
   z-index: 10;
   border-radius: 8px;
 }
+
 
 .note {
   width: 100%;
@@ -286,6 +323,8 @@ export default {
 }
 
 
+
+
 .delete-button {
   background-color: #f6d7d4;
   color: rgb(171, 4, 4);
@@ -296,24 +335,29 @@ export default {
   margin-top: 10px;
 }
 
+
 .delete-button:hover {
   background-color: #d76154;
 }
+
 
 input[type="file"] {
   margin-top: 8px;
   margin-bottom: 8px;
 }
 
+
 label {
   margin-right: 10px;
   color: #37474f;
 }
 
+
 input[type="radio"],
 input[type="checkbox"] {
   margin-right: 4px;
 }
+
 
 .edit-input {
   display: block;
@@ -324,3 +368,6 @@ input[type="checkbox"] {
   border: 1px solid #90a4ae;
 }
 </style>
+
+
+

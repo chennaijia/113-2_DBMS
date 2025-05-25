@@ -10,6 +10,7 @@
       <div class="fw-bold text-primary fs-4">{{ currentSubject }} - 錯題瀏覽</div>
     </div>
 
+
     <!-- 其他內容 -->
     <div class="toolbar-content d-flex flex-wrap align-items-center gap-3">
       <select
@@ -27,19 +28,23 @@
         <option value="open">問答題</option>
       </select>
 
+
       <button class="btn btn-outline-primary rounded-pill" @click="toggleEditMode">
         {{ editMode ? '❌ 離開編輯模式' : '✏️ 進入編輯模式' }}
       </button>
 
+
       <button class="btn btn-outline-primary rounded-pill" @click="openAddCardModal">
         ➕ 新增錯題
       </button>
+
 
       <button class="btn btn-outline-primary rounded-pill" @click="toggleShowAnswers">
         {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
       </button>
     </div>
   </div>
+
 
   <!-- 題目列表 -->
   <div class="question-container">
@@ -56,8 +61,10 @@
       />
     </div>
 
+
     <!-- 下方按鈕列 -->
   </div>
+
 
   <!-- Modal區域 -->
   <AddCardModal
@@ -67,6 +74,7 @@
     @add-card="addCard"
   />
 </template>
+
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
@@ -78,6 +86,7 @@ import { updateStarStatus } from '../api/questions'
 import { debounce } from 'lodash-es'
 import { updateNote } from '../api/questions'
 import { updateQuestionById } from '../api/questions'
+
 
 const orderABC  = ['A', 'B', 'C', 'D', 'E']
 const order123 = ['1', '2', '3', '4', '5']
@@ -93,6 +102,7 @@ export default {
   setup(props, { emit }) {
     const cards = ref([])
     const originalCards = ref([])
+
 
     const defaultCards = () => [
       {
@@ -124,7 +134,9 @@ export default {
       try {
         if (!props.book?.QuestionBook_ID) return
 
+
         const { data } = await fetchQuestionsByBook(props.book.QuestionBook_ID)
+
 
         if (!Array.isArray(data)) {
           console.warn('⚠️ 回傳格式錯誤：', data)
@@ -132,11 +144,13 @@ export default {
           return
         }
 
+
         if (data.length === 0) {
           console.log('📭 該題本還沒有題目，載入預設介紹卡')
           cards.value = defaultCards()
           return
         }
+
 
         cards.value = data.map((q) => ({
           id: q.Question_ID || q.id,
@@ -150,6 +164,7 @@ export default {
           rightCount: q.practiceCount - q.errCount < 0 ? 0 : q.practiceCount - q.errCount,
         }))
 
+
         console.log('✅ 題目卡載入完成：', cards.value)
       } catch (err) {
         console.error('❌ 讀題目失敗：', err)
@@ -157,7 +172,9 @@ export default {
       }
     }
 
+
     onMounted(loadCards)
+
 
     // 切換到別本書時自動重新抓+
     watch(
@@ -165,12 +182,14 @@ export default {
       () => loadCards()
     )
 
+
     const editMode = ref(false)
     const showAddModal = ref(false)
     const showEditModal = ref(false)
     const selectedCard = ref(null)
     const showAnswers = ref(true)
     const filterOption = ref('')
+
 
     const filteredCards = computed(() => {
       if (filterOption.value === 'starred') {
@@ -183,6 +202,7 @@ export default {
         return cards.value
       }
     })
+
 
     async function toggleEditMode() {
       if (editMode.value) {
@@ -201,10 +221,12 @@ export default {
           return
         }
 
+
         // ----------- ② 送 PATCH ---------- //
         for (const card of cards.value) {
           const fd = new FormData()
           if (Array.isArray(card.answer)) {
+
 
           const sorted = card.questionType.includes('multipleABC')
           ? [...card.answer].sort((a,b)=> orderABC.indexOf(a)-orderABC.indexOf(b))
@@ -215,9 +237,11 @@ export default {
         }
           // fd.append('note', card.note ?? '')
 
+
           // 圖檔（使用 ← QuestionCard.vue 留下的 File 物件）
           if (card.questionFile) fd.append('content_pic', card.questionFile)
           if (card.answerFile) fd.append('answer_pic', card.answerFile)
+
 
           // 若都沒異動不必呼叫
           if ([...fd.keys()].length > 0) {
@@ -234,31 +258,38 @@ export default {
       editMode.value = !editMode.value
     }
 
+
     function goBack() {
       emit('goBack')
     }
+
 
     function onFilterChange(event) {
       filterOption.value = event.target.value
     }
 
+
     function openAddCardModal() {
       showAddModal.value = true
     }
+
 
     function openEditCardModal(card) {
       selectedCard.value = card
       showEditModal.value = true
     }
 
+
     function closeModals() {
       showAddModal.value = false
       showEditModal.value = false
     }
 
+
     async function toggleStar(cardId) {
       const card = cards.value.find((c) => c.id === cardId)
       if (!card) return
+
 
       try {
         const newStatus = !card.starred
@@ -271,16 +302,20 @@ export default {
       }
     }
 
+
     function toggleShowAnswers() {
       showAnswers.value = !showAnswers.value
     }
+
 
     function addCard(newCard) {
       cards.value.push(newCard)
     }
 
+
     async function deleteThisCard(id) {
       if (!confirm('確定要刪除這張題目卡嗎？')) return
+
 
       try {
         await deleteQuestionById(id)
@@ -292,13 +327,16 @@ export default {
       }
     }
 
+
     const saveNoteDebounced = debounce(({ id, note }) => {
       console.log('🚀 發送更新筆記請求：', id, note)
+
 
       updateNote(id, note)
         .then(() => console.log('✅ 筆記儲存成功'))
         .catch((err) => console.error('❌ 筆記儲存失敗:', err))
     }, 1000)
+
 
     return {
       cards,
@@ -327,6 +365,7 @@ export default {
 }
 </script>
 
+
 <style scoped>
 .toolbar {
   position: fixed;
@@ -344,6 +383,7 @@ export default {
   align-items: center;
 }
 
+
 .toolbar-content {
   display: flex;
   flex-wrap: wrap;
@@ -351,7 +391,11 @@ export default {
   align-items: center;
 }
 
+
 .question-container {
   padding-top: 30px; /* 根據 .toolbar 的高度調整 */
 }
 </style>
+
+
+
