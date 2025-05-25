@@ -39,6 +39,8 @@ export const createQuestion = async (
       q.level,
       q.creator_id,
       q.isStar || 0,
+      0,
+      0,
     ]
   )
 
