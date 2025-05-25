@@ -13,12 +13,8 @@
 
     <!-- 其他內容 -->
     <div class="toolbar-content d-flex flex-wrap align-items-center gap-3">
-      <select
-        @change="onFilterChange"
-        v-model="filterOption"
-        class="form-select rounded-pill border-primary text-primary"
-        style="width: auto"
-      >
+      <select @change="onFilterChange" v-model="filterOption"
+        class="form-select rounded-pill border-primary text-primary" style="width: auto">
         <option value="">全部</option>
         <option value="starred">加星號</option>
         <option value="noAnswer">錯誤超過五次</option>
@@ -42,6 +38,11 @@
       <button class="btn btn-outline-primary rounded-pill" @click="toggleShowAnswers">
         {{ showAnswers ? '🙈 隱藏答案' : '👀 顯示答案' }}
       </button>
+
+      <button v-if="book.Question_Count > 0" class="btn btn-outline-primary rounded-pill" @click="goToPractice">
+        <i class="bi bi-crosshair"></i>
+        <span>⮑去練習</span>
+      </button>
     </div>
   </div>
 
@@ -49,16 +50,9 @@
   <!-- 題目列表 -->
   <div class="question-container">
     <div v-for="(card, index) in filteredCards" :key="card.id">
-      <QuestionCard
-        :index="index + 1"
-        :card="card"
-        :editMode="editMode"
-        :showAnswers="showAnswers"
-        @toggle-star="toggleStar(card.id)"
-        @edit="openEditCardModal(card)"
-        @delete-card="deleteThisCard"
-        @update-note="saveNoteDebounced"
-      />
+      <QuestionCard :index="index + 1" :card="card" :editMode="editMode" :showAnswers="showAnswers"
+        @toggle-star="toggleStar(card.id)" @edit="openEditCardModal(card)" @delete-card="deleteThisCard"
+        @update-note="saveNoteDebounced" />
     </div>
 
 
@@ -67,12 +61,7 @@
 
 
   <!-- Modal區域 -->
-  <AddCardModal
-    :bookId="book.QuestionBook_ID"
-    v-if="showAddModal"
-    @close="showAddModal = false"
-    @add-card="addCard"
-  />
+  <AddCardModal :bookId="book.QuestionBook_ID" v-if="showAddModal" @close="showAddModal = false" @add-card="addCard" />
 </template>
 
 
@@ -88,7 +77,7 @@ import { updateNote } from '../api/questions'
 import { updateQuestionById } from '../api/questions'
 
 
-const orderABC  = ['A', 'B', 'C', 'D', 'E']
+const orderABC = ['A', 'B', 'C', 'D', 'E']
 const order123 = ['1', '2', '3', '4', '5']
 export default {
   props: {
@@ -228,13 +217,13 @@ export default {
           if (Array.isArray(card.answer)) {
 
 
-          const sorted = card.questionType.includes('multipleABC')
-          ? [...card.answer].sort((a,b)=> orderABC.indexOf(a)-orderABC.indexOf(b))
-           : [...card.answer].sort((a,b)=> order123.indexOf(a)-order123.indexOf(b))
-          fd.append('answer', sorted.join(''))
-        } else {
-        fd.append('answer', card.answer)
-        }
+            const sorted = card.questionType.includes('multipleABC')
+              ? [...card.answer].sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
+              : [...card.answer].sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
+            fd.append('answer', sorted.join(''))
+          } else {
+            fd.append('answer', card.answer)
+          }
           // fd.append('note', card.note ?? '')
 
 
@@ -258,6 +247,11 @@ export default {
       editMode.value = !editMode.value
     }
 
+
+    function goToPractice() {
+      console.log('🔄 切換到練習模式')
+      emit('change-page', 'practice', props.currentSubject)
+    }
 
     function goBack() {
       emit('goBack')
@@ -338,6 +332,7 @@ export default {
     }, 1000)
 
 
+
     return {
       cards,
       editMode,
@@ -360,6 +355,7 @@ export default {
       goBack,
       originalCards,
       loadCards,
+      goToPractice,
     }
   },
 }
@@ -393,9 +389,7 @@ export default {
 
 
 .question-container {
-  padding-top: 30px; /* 根據 .toolbar 的高度調整 */
+  padding-top: 30px;
+  /* 根據 .toolbar 的高度調整 */
 }
 </style>
-
-
-

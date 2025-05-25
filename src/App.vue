@@ -11,7 +11,7 @@
       </div>
 
       <div v-else-if="currentPage === 'question'">
-        <ViewQuestions :currentSubject="currentSubject" :book="currentBook" @goBack="goBack" />
+        <ViewQuestions :currentSubject="currentSubject" :book="currentBook" @change-page="handlePageChange" @goBack="goBack" />
       </div>
 
       <div v-else-if="currentPage === 'practice'">
@@ -186,6 +186,13 @@ function handleFinishPractice(result) {
   isFinished.value = true
   practiceResult.value = result
 }
+
+function handlePageChange(page, subject) {
+  console.log('🧭 切換到頁面：', page, subject)
+  currentPage.value = page
+  currentSubject.value = subject
+}
+
 </script>
 
 <style>

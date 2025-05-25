@@ -293,57 +293,6 @@ async function finalizePractice() {
   }
 }
 
-
-
-
-/*
-async function finalizePractice() {
-  const hasUnchecked = props.questions.some((q) => q.checked !== true)
-  if (hasUnchecked) {
-    alert('請先對完所有題目再離開喔 🙏')
-    return false
-  }
-
-  const wrongQuestionIDs = props.questions
-    .filter((q) => q.checked && q.isCorrect === false)
-    .map((q) => q.Question_ID)
-
-  const practicedQuestionIDs = props.questions.map((q) => q.Question_ID)
-
-  console.log('🛠️ 錯題應更新 errCount:', wrongQuestionIDs)
-  console.log('📚 練習過的題目應更新 practiceCount:', practicedQuestionIDs)
-
-  const wrongQuestionCount = wrongQuestionIDs.length
-
-  const practicePayload = {
-    total_qCount: props.total,
-    err_qCount: wrongQuestionCount,
-    accuracy: props.accuracy,
-    time_spent: parseInt(props.timeSpent), // 假設是秒數
-
-    questions: props.questions.map((q) => ({
-      Rquestion_Id: q.Question_ID,
-      user_answer: q.userAnswer,
-      is_correct: q.isCorrect === true,
-    }))
-  }
-
-
-    console.log('🚀 正在送出本次練習結果...')
-
-  try {
-    await submitPracticeResult(practicePayload)
-    console.log('✅ 練習結果已成功送出')
-    return true
-  } catch (err) {
-    alert('❌ 送出練習結果時發生錯誤，請稍後再試')
-    return false
-  }
-
-}
-*/
-
-
 async function goViewQuestion() {
   const proceed = await finalizePractice()
   if (!proceed) return
@@ -361,24 +310,6 @@ async function goBack() {
   if (!proceed) return
   emit('goBack')
 }
-
-
-/*
-function goBack() {
-  finalizePractice()
-  emit('goBack')
-}
-
-function restart() {
-  finalizePractice()
-  emit('rePractice')
-}
-
-function goViewQuestion() {
-  finalizePractice()
-  emit('change-page', 'question', props.currentSubject)
-}
-  */
 
 </script>
 
