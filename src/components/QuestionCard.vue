@@ -89,7 +89,8 @@
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
 const orderABC  = ['A', 'B', 'C', 'D', 'E']
- const order123 = ['1', '2', '3', '4', '5']
+const order123 = ['1', '2', '3', '4', '5']
+
 
 
 export default {
@@ -116,44 +117,50 @@ export default {
 
 
     const sortedAnswer = computed(() => {
-  // 1️⃣ 轉成「純陣列」格式（多選題才需要）
+  // 1️⃣ 轉成純陣列（多選題才需）
   let arr = Array.isArray(props.card.answer)
     ? props.card.answer
     : typeof props.card.answer === 'string'
-      ? [...new Set(props.card.answer.trim().split(''))]
+      // 只改這一行 ▼
+      ? [...new Set(
+          props.card.answer
+            .split(',')            // 先用逗號切
+            .map(s => s.trim())    // 去空白
+            .filter(Boolean)       // 過濾空字串
+        )]
       : []
 
-
-  // 2️⃣ 排序（只針對多選題）
+  // 2️⃣ 排序（同原本）
   if (props.card.questionType === 'multipleABC') {
     arr = [...arr].sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
   } else if (props.card.questionType === 'multiple123') {
     arr = [...arr].sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
   }
 
-
-
-
+  // 3️⃣ 回傳顯示字串
   return props.card.questionType.includes('multiple')
     ? arr.join(', ')
     : typeof props.card.answer === 'string'
       ? props.card.answer
       : ''
 })
-    const normalizeAnswerFormat = () => {
-      if ((props.card.questionType === 'multipleABC' || props.card.questionType === 'multiple123')) {
-        if (!Array.isArray(props.card.answer)) {
-          if (typeof props.card.answer === 'string') {
-              const raw = [...new Set(props.card.answer.trim().split(''))]
-              props.card.answer =
-                  props.card.questionType === 'multipleABC'
-                    ? raw.sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
-                    : raw.sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
-          }
-        }
-      }
-    }
 
+const normalizeAnswerFormat = () => {
+  if (props.card.questionType === 'multipleABC' || props.card.questionType === 'multiple123') {
+    if (!Array.isArray(props.card.answer) && typeof props.card.answer === 'string') {
+      const raw = [...new Set(
+        props.card.answer
+          .split(',')            // 先用逗號切
+          .map(s => s.trim())    // 去空白
+          .filter(Boolean)
+      )]
+      props.card.answer =
+        props.card.questionType === 'multipleABC'
+          ? raw.sort((a, b) => orderABC.indexOf(a) - orderABC.indexOf(b))
+          : raw.sort((a, b) => order123.indexOf(a) - order123.indexOf(b))
+    }
+  }
+}
 
     const toggleMultipleAnswer = (opt) => {
       const index = props.card.answer.indexOf(opt)
