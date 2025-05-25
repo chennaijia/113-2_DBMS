@@ -94,6 +94,23 @@ export const copyQB = async (id: number, owner: number) => {
     const newId = (r as ResultSetHeader).insertId;
 
     // 3️⃣  若之後要連同題目一起複製，可在這裡再 INSERT … SELECT
+    const [result] = await conn.execute<ResultSetHeader>(
+      `INSERT INTO QUESTION_COLLECTION
+         (QuestionBook_ID, Question_ID, User_ID, Error_Count, isReview)
+       SELECT ?, Question_ID, User_ID, Error_Count, isReview
+         FROM QUESTION_COLLECTION
+        WHERE QuestionBook_ID = ? AND User_ID = ?`,
+      [newId, id, owner],
+    );
+
+    /*--- 4️⃣ 更新新題本的題數 ---*/
+    await conn.execute(
+      `UPDATE QUESTION_BOOK
+          SET Question_Count = ?
+        WHERE QuestionBook_ID = ?`,
+      [result.affectedRows, newId],
+    );
+
     await conn.commit();
     return newId;
   } catch (err) {
