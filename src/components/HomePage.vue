@@ -260,6 +260,9 @@ export default {
   data() {
     const today = new Date()
     return {
+      userInput: '',
+      normalized: '',
+
       currentMonth: today.getMonth(),
       currentYear: today.getFullYear(),
       weekDays: ['日', '一', '二', '三', '四', '五', '六'],
@@ -366,11 +369,36 @@ export default {
     },
   },
   methods: {
+    normalizeAnswer(ans, qType = '') {
+      if (!ans) return ''
+
+      let cleaned = ans
+        .toString()
+        .trim()
+        .replace(/\s+/g, '')
+        .toLowerCase()
+        .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (ch) =>
+          String.fromCharCode(ch.charCodeAt(0) - 0xfee0)
+         )
+         .replace(/[\u3000]/g, '')
+        .replace(/[，,、;；．.]/g, '')
+
+      if (qType === 'multipleABC' || qType === 'multiple123') {
+        cleaned = cleaned.split('').sort().join('')
+      }
+      return cleaned
+    },
+    handleNormalize() {
+      this.normalized = this.normalizeAnswer(this.userInput, 'multipleABC')
+    },
+  
+
     async submitAnswer() {
       // 取得題目 id & 使用者輸入
+      
       const questionId = this.currentQuestion.id
-      const userAns = this.userAnswer.trim().toUpperCase()
-
+      const userAns = this.normalizeAnswer(this.userAnswer, this.currentQuestion.type)
+      console.log('提交答案:', userAns)
       if (!questionId || !userAns) {
         alert('請先輸入答案！')
         return
@@ -1199,3 +1227,4 @@ button:hover {
   transform: translate(-50%, -50%); /* 確保真正置中 */
 }
 </style>
+
